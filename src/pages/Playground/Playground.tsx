@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Info,
   Play,
@@ -8,14 +9,17 @@ import {
   Wrench,
   BookText,
   Variable,
-  GripVertical,
-  X,
-  MessageSquarePlus,
-  PlusSquare,
 } from "lucide-react";
 import styles from "./Playground.module.css";
+import ChatBox, { ChatMessage } from "../../components/ChatBox/ChatBox"; // ChatBox import
 
 export default function Playground() {
+  // Playground 페이지의 상태로 메시지 관리
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { id: 1, role: 'System', content: 'Enter a system message here.'},
+    { id: 2, role: 'User', content: 'Enter a user message here.'}
+  ]);
+
   return (
     <div className={styles.container}>
       {/* 1. Header */}
@@ -33,6 +37,7 @@ export default function Playground() {
           </button>
         </div>
       </div>
+
 
       {/* 2. Main Content Grid */}
       <div className={styles.mainGrid}>
@@ -67,39 +72,7 @@ export default function Playground() {
               <Variable size={14} /> Variables
             </button>
           </div>
-
-          {/* Message Inputs */}
-          <div className={styles.messageList}>
-            <div className={styles.messageRow}>
-              <GripVertical className={styles.dragHandle} size={18} />
-              <span className={styles.messageRole}>System</span>
-              <input
-                type="text"
-                className={styles.messageInput}
-                placeholder="Enter a system message here."
-              />
-              <X className={styles.removeBtn} size={18} />
-            </div>
-            <div className={styles.messageRow}>
-              <GripVertical className={styles.dragHandle} size={18} />
-              <span className={styles.messageRole}>User</span>
-              <input
-                type="text"
-                className={styles.messageInput}
-                placeholder="Enter a user message here."
-              />
-              <X className={styles.removeBtn} size={18} />
-            </div>
-          </div>
-
-          <div className={styles.addButtons}>
-            <button className={styles.addBtn}>
-              <MessageSquarePlus size={16} /> Message
-            </button>
-            <button className={styles.addBtn}>
-              <PlusSquare size={16} /> Placeholder
-            </button>
-          </div>
+            <ChatBox messages={messages} setMessages={setMessages} />
         </div>
 
         {/* 2b. Right Panel (Output) */}
@@ -115,7 +88,7 @@ export default function Playground() {
         </div>
       </div>
 
-      {/* 3. Footer */}
+      {/* 3. Footer (변경 없음) */}
       <div className={styles.footer}>
         <button className={styles.submitBtn}>Submit</button>
       </div>
