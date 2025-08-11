@@ -10,6 +10,7 @@ import SpanDetail from './pages/Tracing/SpanDetail';
 import SessionDetail from './pages/Tracing/SessionDetail';
 
 import Prompts from './pages/Prompts/Prompts';
+import PromptsDetail from './pages/Prompts/PromptsDetail';
 
 import Playground from './pages/Playground/Playground';
 
@@ -69,6 +70,9 @@ export default function App() {
 
         {/* Prompts */}
         <Route path="prompts" element={<Prompts />} />
+        <Route path="prompts/:id" element={<PromptsDetail />} />
+
+        {/* Tracing */}
 
         {/* Playground */}
         <Route path="playground" element={<Playground />} />

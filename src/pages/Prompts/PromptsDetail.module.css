@@ -1,0 +1,269 @@
+.container {
+  color: #e2e8f0;
+  background-color: #020817;
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 48px); /* ProjectHeader 높이 제외 */
+  box-sizing: border-box;
+}
+
+/* 1. 상단 헤더 */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+}
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #94a3b8;
+}
+.promptName {
+  color: #e2e8f0;
+  font-weight: 500;
+}
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.actionButton, .navButton {
+  background: transparent;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.navButtons {
+  display: flex;
+}
+.navButton {
+  padding: 6px;
+}
+.navButton:first-child {
+  border-right: none;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.navButton:last-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* 2. 탭 */
+.tabs {
+  border-bottom: 1px solid #1e293b;
+}
+.tabButton {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.tabButton.active {
+  color: #f1f5f9;
+  border-bottom-color: #f1f5f9;
+}
+
+/* 3. 메인 그리드 */
+.mainGrid {
+  flex-grow: 1;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+  padding-top: 16px;
+  overflow: hidden;
+}
+
+/* 3a. 좌측 패널 */
+.leftPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.versionToolbar {
+  display: flex;
+  padding: 8px;
+  gap: 8px;
+  border-bottom: 1px solid #1e293b;
+}
+.searchBox {
+  display: flex;
+  align-items: center;
+  background-color: #0f172a;
+  border-radius: 6px;
+  padding: 0 8px;
+  flex-grow: 1;
+}
+.searchIcon {
+  color: #64748b;
+}
+.searchBox input {
+  background: none; border: none; outline: none; color: white; padding: 6px; font-size: 13px; width: 100%;
+}
+.newButton {
+  background-color: #0f172a;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.versionList {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.versionItem {
+  padding: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.versionItem:hover {
+  background-color: #1e293b;
+}
+.versionItem.selected {
+  background-color: #27272a;
+}
+.versionTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.versionLabel {
+  color: #a78bfa;
+}
+.statusTagLatest, .statusTagProd {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.statusTagLatest {
+  background-color: #164e63;
+  color: #67e8f9;
+}
+.statusTagProd {
+  background-color: #166534;
+  color: #4ade80;
+}
+.versionMeta {
+  font-size: 12px;
+  color: #94a3b8;
+  white-space: pre-wrap;
+  margin-top: 4px;
+}
+.versionMeta p {
+  margin: 0;
+}
+
+/* 3b. 우측 패널 */
+.rightPanel {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.detailTabs {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 4px 4px 12px;
+  border-bottom: 1px solid #1e293b;
+}
+.detailTabButton {
+  background: none; border: none; color: #94a3b8; padding: 6px 10px;
+  cursor: pointer; font-size: 13px; border-radius: 6px;
+}
+.detailTabButton.active {
+  background-color: #1e293b;
+  color: #f1f5f9;
+}
+.detailActions {
+  display: flex;
+  align-items: center;
+}
+.playgroundButton {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  color: #cbd5e1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.iconButton {
+  background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px;
+}
+.promptArea {
+  flex-grow: 1;
+  padding: 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.promptCard {
+  background-color: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+}
+.promptHeader {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #94a3b8;
+  border-bottom: 1px solid #1e293b;
+}
+.promptBody {
+  padding: 12px;
+}
+.promptBody pre {
+  margin: 0;
+  font-family: 'D2Coding', monospace;
+  font-size: 13px;
+  color: #cbd5e1;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.variableTag {
+  display: inline-block;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  color: #94a3b8;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-top: 12px;
+}
