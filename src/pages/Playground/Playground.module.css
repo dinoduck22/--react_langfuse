@@ -61,13 +61,15 @@
   gap: 16px;
   overflow-y: auto;
 }
-.leftPanel, .rightPanel {
+.leftPanel,
+.rightPanel {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.card, .outputCard {
+.card,
+.outputCard {
   background: #0f172a;
   border: 1px solid #1e293b;
   border-radius: 10px;
@@ -136,7 +138,8 @@
   align-items: center;
   gap: 8px;
 }
-.dragHandle, .removeBtn {
+.dragHandle,
+.removeBtn {
   color: #64748b;
   cursor: pointer;
 }
