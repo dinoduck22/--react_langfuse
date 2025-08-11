@@ -219,3 +219,14 @@
   align-items: center;
   gap: 8px;
 }
+
+
+/* ✅ 상세 페이지 이동을 위한 링크 스타일 추가 */
+.promptLink {
+  color: #f1f5f9;
+  text-decoration: none;
+}
+
+.promptLink:hover {
+  text-decoration: underline;
+}

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom'; // Link 컴포넌트 import
 import styles from './Prompts.module.css';
 import {
   Info,
@@ -30,17 +31,17 @@ type Prompt = {
 // 이미지와 유사한 더미 데이터
 const dummyPromptsData: Prompt[] = [
   {
-    id: '1',
+    id: 'folder-1', // 폴더는 고유 ID를 가짐
     isFolder: true,
     name: 'snippets',
     versions: 0,
-    type: 'chat', // 폴더는 실제 타입이 없지만, 레이아웃을 위해 임의 지정
+    type: 'chat',
     latestVersionCreatedAt: '',
     observations: 0,
     tags: [],
   },
   {
-    id: '2',
+    id: 'qa-answer-with-context-chat', // ID를 실제 이름으로 사용
     name: 'qa-answer-with-context-chat',
     isFolder: false,
     versions: 79,
@@ -50,7 +51,7 @@ const dummyPromptsData: Prompt[] = [
     tags: ['core'],
   },
   {
-    id: '3',
+    id: 'docx-qa',
     name: 'docx-qa',
     isFolder: false,
     versions: 1,
@@ -60,7 +61,7 @@ const dummyPromptsData: Prompt[] = [
     tags: [],
   },
   {
-    id: '4',
+    id: 'qa-answer-no-context-chat',
     name: 'qa-answer-no-context-chat',
     isFolder: false,
     versions: 1,
@@ -70,7 +71,7 @@ const dummyPromptsData: Prompt[] = [
     tags: [],
   },
   {
-    id: '5',
+    id: 'qa-answer-with-context',
     name: 'qa-answer-with-context',
     isFolder: false,
     versions: 7,
@@ -80,7 +81,7 @@ const dummyPromptsData: Prompt[] = [
     tags: [],
   },
   {
-    id: '6',
+    id: 'agent',
     name: 'agent',
     isFolder: false,
     versions: 4,
@@ -94,7 +95,6 @@ const dummyPromptsData: Prompt[] = [
 const Prompts: React.FC = () => {
   const [prompts] = useState<Prompt[]>(dummyPromptsData);
 
-  // 숫자를 K 형식으로 포맷팅하는 함수
   const formatObservations = (num: number) => {
     if (num === 0) return null;
     if (num > 999) {
@@ -150,7 +150,14 @@ const Prompts: React.FC = () => {
                 <td>
                   <div className={styles.nameCell}>
                     {prompt.isFolder ? <Folder size={18} /> : <FileText size={18} />}
-                    <span>{prompt.name}</span>
+                    {/* 폴더가 아닐 경우에만 Link 적용 */}
+                    {prompt.isFolder ? (
+                      <span>{prompt.name}</span>
+                    ) : (
+                      <Link to={`/prompts/${prompt.id}`} className={styles.promptLink}>
+                        {prompt.name}
+                      </Link>
+                    )}
                   </div>
                 </td>
                 <td>{prompt.versions > 0 ? prompt.versions : ''}</td>
@@ -199,18 +206,10 @@ const Prompts: React.FC = () => {
         </div>
         <div className={styles.pageInfo}>Page 1 of 1</div>
         <div className={styles.pageControls}>
-          <button className={styles.iconButton} disabled>
-            <ChevronsLeft size={18} />
-          </button>
-          <button className={styles.iconButton} disabled>
-            <ChevronLeft size={18} />
-          </button>
-          <button className={styles.iconButton} disabled>
-            <ChevronRight size={18} />
-          </button>
-          <button className={styles.iconButton} disabled>
-            <ChevronsRight size={18} />
-          </button>
+          <button className={styles.iconButton} disabled><ChevronsLeft size={18} /></button>
+          <button className={styles.iconButton} disabled><ChevronLeft size={18} /></button>
+          <button className={styles.iconButton} disabled><ChevronRight size={18} /></button>
+          <button className={styles.iconButton} disabled><ChevronsRight size={18} /></button>
         </div>
       </div>
     </div>

@@ -83,7 +83,7 @@ export default function App() {
         <Route path="scores/:id" element={<ScoresDetail />} />
         <Route path="scores/:id/edit" element={<ScoresEdit />} />
 
-        {/* ✅ 실제 페이지로 교체 */}
+        {/* 실제 페이지로 교체 */}
         <Route path="llm-as-a-judge" element={<JudgePage />} />
         <Route path="human-annotation" element={<HumanAnnotationPage />} />
         <Route path="datasets" element={<DatasetsList />} />
