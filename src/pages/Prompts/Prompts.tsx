@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; // Link 컴포넌트 import
+import { Link, useNavigate } from 'react-router-dom'; // Link 컴포넌트 import
 import styles from './Prompts.module.css';
 import {
   Info,
@@ -95,6 +95,12 @@ const dummyPromptsData: Prompt[] = [
 const Prompts: React.FC = () => {
   const [prompts] = useState<Prompt[]>(dummyPromptsData);
 
+    const navigate = useNavigate();
+
+    const navigateToNewPrompts = () => {
+        navigate("/prompts/new");
+    };
+
   const formatObservations = (num: number) => {
     if (num === 0) return null;
     if (num > 999) {
@@ -113,7 +119,7 @@ const Prompts: React.FC = () => {
         </div>
         <div className={styles.actions}>
           <button className={styles.secondaryButton}>Automations 1</button>
-          <button className={styles.primaryButton}>
+          <button className={styles.primaryButton} onClick={navigateToNewPrompts}>
             <Plus size={16} /> New prompt
           </button>
         </div>

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, ChangeEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styles from './PromptsNew.module.css';
 import { Book } from 'lucide-react';
@@ -14,29 +14,53 @@ const chatPlaceholder = `[
   }
 ]`;
 
+// 줄 번호가 있는 텍스트 에디터를 위한 재사용 컴포넌트
+const LineNumberedTextarea: React.FC<{
+  id: string;
+  value: string;
+  onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+  placeholder?: string;
+  minHeight?: number;
+}> = ({ id, value, onChange, placeholder, minHeight = 150 }) => {
+  const lineNumbers = useMemo(() => {
+    const lines = value.split('\n').length;
+    return Array.from({ length: lines }, (_, i) => i + 1);
+  }, [value]);
+
+  return (
+    <div className={styles.configEditor} style={{ minHeight: `${minHeight}px` }}>
+      <div className={styles.lineNumbers}>
+        {lineNumbers.map(num => <div key={num}>{num}</div>)}
+      </div>
+      <textarea
+        id={id}
+        className={styles.configTextarea}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        spellCheck="false"
+      />
+    </div>
+  );
+};
+
 const PromptsNew: React.FC = () => {
   const navigate = useNavigate();
   const [promptName, setPromptName] = useState('');
-  const [promptType, setPromptType] = useState<'Text' | 'Chat'>('Text');
+  const [promptType, setPromptType] = useState<'Chat' | 'Text'>('Text');
   const [promptContent, setPromptContent] = useState('');
-  const [config, setConfig] = useState('{\n  \n}'); // Config 상태 추가 및 기본값 설정
-
-  // Config 텍스트의 줄 수를 계산
-  const lineNumbers = useMemo(() => {
-    const lines = config.split('\n').length;
-    return Array.from({ length: lines }, (_, i) => i + 1);
-  }, [config]);
+  const [promptCommit, setPromptCommit] = useState('');
+  const [config, setConfig] = useState('{\n  \n}');
 
   const handleSave = () => {
-    // 실제 저장 로직은 여기에 구현합니다.
     console.log({
       name: promptName,
       type: promptType,
       content: promptContent,
-      config, // 저장 객체에 config 포함
+      config,
     });
     alert('새 프롬프트가 저장되었습니다. (콘솔 로그 확인)');
-    navigate('/prompts'); // 저장 후 목록 페이지로 이동
+    navigate('/prompts');
   };
 
   return (
@@ -51,77 +75,94 @@ const PromptsNew: React.FC = () => {
 
       {/* 2. 메인 폼 */}
       <div className={styles.form}>
-        {/* Name Input */}
-        <div className={styles.formGroup}>
-          <label htmlFor="prompt-name" className={styles.label}>Name</label>
-          <p className={styles.subLabel}>
-            Unique identifier for this prompt. Use dot-notation for grouping (e.g. "chat.summarization").
-          </p>
-          <input
-            id="prompt-name"
-            type="text"
-            className={styles.input}
-            placeholder="e.g. summarize-short-text"
-            value={promptName}
-            onChange={(e) => setPromptName(e.target.value)}
-          />
-        </div>
+        {/* Name과 Type을 한 줄에 배치하기 위한 Row */}
+        <div className={styles.formRow}>
+          <div className={styles.formGroup}>
+            <label htmlFor="prompt-name" className={styles.label}>Name</label>
+            <p className={styles.subLabel}>
+              Unique identifier for this prompt.
+            </p>
+            <input
+              id="prompt-name"
+              type="text"
+              className={styles.input}
+              placeholder="e.g. summarize-short-text"
+              value={promptName}
+              onChange={(e) => setPromptName(e.target.value)}
+            />
+          </div>
 
-        {/* Type Selector */}
-        <div className={styles.formGroup}>
-          <label className={styles.label}>Type</label>
-          <div className={styles.typeSelector}>
-            <button
-              className={`${styles.typeButton} ${promptType === 'Text' ? styles.active : ''}`}
-              onClick={() => setPromptType('Text')}
-            >
-              Text
-            </button>
-            
-            <button
-              className={`${styles.typeButton} ${promptType === 'Chat' ? styles.active : ''}`}
-              onClick={() => setPromptType('Chat')}
-            >
-              Chat
-            </button>
-            
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Type</label>
+            <p className={styles.subLabel}>'Chat' for OpenAI chat models.</p>
+            <div className={styles.typeSelector}>
+              <button
+                className={`${styles.typeButton} ${promptType === 'Text' ? styles.active : ''}`}
+                onClick={() => setPromptType('Text')}
+              >
+                Text
+              </button>
+              
+              <button
+                className={`${styles.typeButton} ${promptType === 'Chat' ? styles.active : ''}`}
+                onClick={() => setPromptType('Chat')}
+              >
+                Chat
+              </button>      
+            </div>
           </div>
         </div>
 
         {/* Prompt Content */}
         <div className={styles.formGroup}>
           <label htmlFor="prompt-content" className={styles.label}>Prompt</label>
+          {/* Prompt Type에 따라 다른 에디터 렌더링 */}
+          {promptType === 'Chat' ? (
+             <textarea
+                id="prompt-content"
+                className={styles.textarea}
+                placeholder={chatPlaceholder}
+                value={promptContent}
+                onChange={(e) => setPromptContent(e.target.value)}
+             />
+          ) : (
+             <LineNumberedTextarea
+                id="prompt-content"
+                value={promptContent}
+                onChange={(e) => setPromptContent(e.target.value)}
+                placeholder='Enter your text prompt here, e.g. "Summarize this: {{text}}"'
+                minHeight={200}
+             />
+          )}
+        </div>
+
+        {/* Config 섹션 */}
+        <div className={styles.formGroup}>
+          <label htmlFor="prompt-config" className={styles.label}>Config</label>
           <p className={styles.subLabel}>
-            Define your prompt template. You can use variables to insert variables into your prompt. Note: Variables must be alphabetical characters or underscores. You can also link other text prompts using the plus button.
+            Arbitrary JSON configuration that is available on the prompt. Use this to track LLM parameters, function definitions, or any other metadata.
           </p>
-          <textarea
-            id="prompt-content"
-            className={styles.textarea}
-            placeholder={promptType === 'Chat' ? chatPlaceholder : 'Enter your text prompt here, e.g. "Summarize this: {{text}}"'}
-            value={promptContent}
-            onChange={(e) => setPromptContent(e.target.value)}
+          <LineNumberedTextarea
+            id="prompt-config"
+            value={config}
+            onChange={(e) => setConfig(e.target.value)}
           />
         </div>
 
-        {/* Config 섹션 추가 */}
-        <div className={styles.formGroup}>
-            <label htmlFor="prompt-config" className={styles.label}>Config</label>
-            <p className={styles.subLabel}>
-                Arbitrary JSON configuration that is available on the prompt. Use this to track LLM parameters, function definitions, or any other metadata.
-            </p>
-            <div className={styles.configEditor}>
-                <div className={styles.lineNumbers}>
-                    {lineNumbers.map(num => <div key={num}>{num}</div>)}
-                </div>
-                <textarea
-                    id="prompt-config"
-                    className={styles.configTextarea}
-                    value={config}
-                    onChange={(e) => setConfig(e.target.value)}
-                    spellCheck="false"
-                />
-            </div>
-        </div>
+        {/* Commit message (optional) */}
+      <div className={styles.formGroup}>
+        <label htmlFor="prompt-commit-message" className={styles.label}>Commit Message</label>
+        <p className={styles.subLabel}>
+          A brief description of the changes made.
+        </p>
+        <textarea
+            id="commit-message"
+            className={styles.textarea}
+            placeholder="Addit Commit messages..."
+            value={promptCommit}
+            onChange={(e) => setPromptCommit(e.target.value)}
+        />
+      </div>
       </div>
 
       {/* 3. 액션 버튼 */}
