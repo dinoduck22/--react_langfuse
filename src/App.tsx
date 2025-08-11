@@ -11,6 +11,7 @@ import SessionDetail from './pages/Tracing/SessionDetail';
 
 import Prompts from './pages/Prompts/Prompts';
 import PromptsDetail from './pages/Prompts/PromptsDetail';
+import PromptsNew from './pages/Prompts/PromptsNew';
 
 import Playground from './pages/Playground/Playground';
 
@@ -71,6 +72,7 @@ export default function App() {
         {/* Prompts */}
         <Route path="prompts" element={<Prompts />} />
         <Route path="prompts/:id" element={<PromptsDetail />} />
+        <Route path="prompts/new" element={<PromptsNew />} />
 
         {/* Tracing */}
 

@@ -1,0 +1,176 @@
+.container {
+  color: #e2e8f0;
+  background-color: #020817;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 1. 헤더 */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.breadcrumbLink {
+  color: #94a3b8;
+  text-decoration: none;
+}
+.breadcrumbLink:hover {
+  text-decoration: underline;
+}
+.breadcrumbActive {
+  color: #f1f5f9;
+  font-weight: 500;
+}
+
+/* 2. 폼 */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  background-color: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #f1f5f9;
+}
+
+.subLabel {
+  font-size: 13px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.input, .textarea {
+  background-color: #020817;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: #e2e8f0;
+  font-size: 14px;
+  width: 100%;
+}
+
+.input:focus, .textarea:focus {
+  outline: none;
+  border-color: #4f46e5;
+}
+
+.textarea {
+  min-height: 200px;
+  font-family: 'D2Coding', monospace;
+  resize: vertical;
+}
+
+.typeSelector {
+  display: flex;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  width: fit-content;
+  overflow: hidden;
+}
+
+.typeButton {
+  background-color: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.typeButton:first-child {
+  border-right: 1px solid #334155;
+}
+
+.typeButton.active {
+  background-color: #334155;
+  color: #f1f5f9;
+}
+
+/* ✅ Config 에디터 스타일 추가 */
+.configEditor {
+    display: flex;
+    background-color: #020817;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 10px 0;
+    min-height: 150px;
+}
+
+.configEditor:focus-within {
+    border-color: #4f46e5;
+}
+
+.lineNumbers {
+    font-family: 'D2Coding', monospace;
+    font-size: 14px;
+    text-align: right;
+    color: #64748b;
+    padding: 0 12px;
+    user-select: none;
+    line-height: 1.5;
+}
+
+.configTextarea {
+    flex-grow: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #e2e8f0;
+    font-size: 14px;
+    font-family: 'D2Coding', monospace;
+    resize: none;
+    padding: 0;
+    line-height: 1.5;
+}
+
+
+/* 3. 액션 버튼 */
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.cancelButton, .saveButton {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.cancelButton {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  color: #f1f5f9;
+}
+.cancelButton:hover {
+  background-color: #334155;
+}
+
+.saveButton {
+  background-color: #4f46e5;
+  border: 1px solid #4f46e5;
+  color: white;
+}
+.saveButton:hover {
+  filter: brightness(1.1);
+}
