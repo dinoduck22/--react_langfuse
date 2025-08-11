@@ -61,6 +61,7 @@ const dummyVersions: Version[] = [
   },
 ];
 
+// 프롬프트 및 설정 템플릿
 const systemPrompt = `You are a very enthusiastic Langfuse representative who loves to help people! Langfuse is an open source observability tool for developers of applications that use Large Language Models (LLMs).
 
 Answer with "Sorry, I don't know how to help with that." if the question is not related to Langfuse or if you are unable to answer it based on the context.`;
@@ -69,13 +70,20 @@ const userPrompt = `{{question}}
 
 The following variables are available:`;
 
+const configContent = `{
+  "temperature": 1,
+  "max_tokens": 256,
+  "top_p": 1,
+  "frequency_penalty": 0,
+  "presence_penalty": 0
+}`;
+
 export default function PromptsDetail() {
   const { id } = useParams();
   const [selectedVersion, setSelectedVersion] = useState<number>(5);
   const [activeTab, setActiveTab] = useState<'Versions' | 'Metrics'>('Versions');
   const [activeDetailTab, setActiveDetailTab] = useState<'Prompt' | 'Config' | 'Linked' | 'Use'>('Prompt');
 
-  // URL 파라미터가 실제 데이터 ID라고 가정하고, 간단히 표시용으로 사용합니다.
   const promptName = id || 'qa-answer-no-context-chat';
 
   return (
@@ -172,13 +180,13 @@ export default function PromptsDetail() {
               >
                 Config
               </button>
-               <button
+              <button
                 className={`${styles.detailTabButton} ${activeDetailTab === 'Linked' ? styles.active : ''}`}
                 onClick={() => setActiveDetailTab('Linked')}
               >
                 Linked Generations
               </button>
-               <button
+              <button
                 className={`${styles.detailTabButton} ${activeDetailTab === 'Use' ? styles.active : ''}`}
                 onClick={() => setActiveDetailTab('Use')}
               >
@@ -186,30 +194,65 @@ export default function PromptsDetail() {
               </button>
             </div>
             <div className={styles.detailActions}>
-                <button className={styles.playgroundButton}>
-                    <Play size={14} /> Playground
-                </button>
-                <button className={styles.iconButton}>
-                    <MoreVertical size={18} />
-                </button>
+              <button className={styles.playgroundButton}>
+                <Play size={14} /> Playground
+              </button>
+              <button className={styles.iconButton}>
+                <MoreVertical size={18} />
+              </button>
             </div>
           </div>
+
+          {/* 탭 콘텐츠 조건부 렌더링 */}
           <div className={styles.promptArea}>
-            {/* System Prompt */}
-            <div className={styles.promptCard}>
-              <div className={styles.promptHeader}>System</div>
-              <div className={styles.promptBody}>
-                <pre>{systemPrompt}</pre>
+            {activeDetailTab === 'Prompt' && (
+              <>
+                <div className={styles.promptCard}>
+                  <div className={styles.promptHeader}>System</div>
+                  <div className={styles.promptBody}>
+                    <pre>{systemPrompt}</pre>
+                  </div>
+                </div>
+                <div className={styles.promptCard}>
+                  <div className={styles.promptHeader}>User</div>
+                  <div className={styles.promptBody}>
+                    <pre>{userPrompt}</pre>
+                    <div className={styles.variableTag}>question</div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {activeDetailTab === 'Config' && (
+              <div className={styles.promptCard}>
+                 <div className={styles.promptHeader}>Config</div>
+                  <div className={styles.promptBody}>
+                    <pre>{configContent}</pre>
+                  </div>
               </div>
-            </div>
-            {/* User Prompt */}
-            <div className={styles.promptCard}>
-              <div className={styles.promptHeader}>User</div>
-              <div className={styles.promptBody}>
-                <pre>{userPrompt}</pre>
-                <div className={styles.variableTag}>question</div>
+            )}
+             {/* 다른 탭들에 대한 플레이스홀더 */}
+            {activeDetailTab === 'Linked' && (
+              <div className={styles.placeholder}>
+                정양수가 Tracing 페이지를 아직 안만듦...
               </div>
-            </div>
+            )}
+            {activeDetailTab === 'Use' && (
+                <>
+                    <div className={styles.promptCard}>
+                        <div className={styles.promptHeader}>Python</div>
+                        <div className={styles.promptBody}>
+                        <pre> example python </pre>
+                        </div>
+                    </div>
+                    <div className={styles.promptCard}>
+                        <div className={styles.promptHeader}>JS/TS</div>
+                        <div className={styles.promptBody}>
+                        <pre> example js/ts </pre>
+                        </div>
+                    </div>
+                </>
+            )}
           </div>
         </div>
       </div>

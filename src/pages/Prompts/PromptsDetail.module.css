@@ -267,3 +267,9 @@
   font-size: 12px;
   margin-top: 12px;
 }
+/* 다른 탭 클릭 시 보일 플레이스홀더 스타일 */
+.placeholder {
+  padding: 24px;
+  color: #64748b;
+  font-size: 14px;
+}
