@@ -1,0 +1,26 @@
+.container { color:#e2e8f0; padding:16px; display:grid; gap:16px; }
+.title { font-size:20px; font-weight:700; }
+.grid { display:grid; grid-template-columns:1.2fr 1fr; gap:16px; }
+
+.card { background:#0b1222; border:1px solid #1e293b; border-radius:10px; padding:14px; }
+.cardTitle { font-size:14px; color:#94a3b8; margin-bottom:8px; }
+
+.table { width:100%; border-collapse:collapse; font-size:13px; }
+.table th, .table td { text-align:left; padding:10px 8px; border-bottom:1px solid #132035; }
+
+.badge { padding:2px 8px; border-radius:9999px; background:#14223a; border:1px solid #1e293b; }
+.good { color:#34d399; }
+.bad  { color:#ef4444; }
+
+.link { background:none; border:none; color:#93c5fd; cursor:pointer; padding:0; }
+.link:hover { text-decoration: underline; }
+
+.panel { display:grid; gap:12px; }
+.block { display:grid; gap:6px; }
+.label { color:#94a3b8; font-size:12px; }
+.value { background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:10px; }
+.actions { display:flex; gap:8px; }
+.approve { background:#065f46; border:1px solid #064e3b; color:#fff; border-radius:8px; padding:8px 10px; cursor:pointer; }
+.reject  { background:#7f1d1d; border:1px solid #7f1d1d; color:#fff; border-radius:8px; padding:8px 10px; cursor:pointer; }
+.empty { opacity:.8; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }

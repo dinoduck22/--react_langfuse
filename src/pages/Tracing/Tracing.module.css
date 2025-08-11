@@ -1,0 +1,39 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.filter {
+  padding: 8px 12px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background-color: #1e1e2f;
+  color: white;
+  width: 300px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #2b2b3d;
+  color: white;
+}
+
+.table th,
+.table td {
+  padding: 12px;
+  border: 1px solid #444;
+  text-align: left;
+}
+
+.table th {
+  background-color: #3a3a4f;
+}
