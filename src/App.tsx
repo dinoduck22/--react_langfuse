@@ -10,9 +10,8 @@ import SpanDetail from './pages/Tracing/SpanDetail';
 import SessionDetail from './pages/Tracing/SessionDetail';
 
 import Prompts from './pages/Prompts/Prompts';
-import PromptDetail from './pages/Prompts/PromptsDetail';
-import PromptNew from './pages/Prompts/PromptNew';
-import PromptEdit from './pages/Prompts/PromptEdit';
+
+import Playground from './pages/Playground/Playground';
 
 import ScoresList from './pages/Evaluation/Scores/ScoresList';
 import ScoresDetail from './pages/Evaluation/Scores/ScoresDetail';
@@ -46,7 +45,7 @@ const AuditLogs = Placeholder('Audit Logs');
 
 const Sessions = Placeholder('Sessions');  // 사이드바 링크용 (/sessions)
 const Users = Placeholder('Users');        // 사이드바 링크용 (/users)
-const Playground = Placeholder('Playground');  // 사이드바 링크용 (/playground)
+// const Playground = Placeholder('Playground');  // 사이드바 링크용 (/playground)
 // const Datasets = Placeholder('Datasets');      // 사이드바 링크용 (/datasets)
 // const LlmAsAJudge = Placeholder('LLM as a Judge'); // 사이드바 링크용 (/llm-as-a-judge)
 // const HumanAnnotation = Placeholder('Human Annotation'); // (/human-annotation)
@@ -56,13 +55,11 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Layout />}>
         {/* 홈 */}
-        <Route index element={<Home />} />
+        <Route index element={<Home />} />Pages/
 
         {/* 사이드바 링크 보완용 라우트들 */}
         <Route path="sessions" element={<Sessions />} />
         <Route path="users" element={<Users />} />
-        <Route path="playground" element={<Playground />} />
-
 
         {/* Tracing */}
         <Route path="tracing" element={<Tracing />} />
@@ -72,9 +69,9 @@ export default function App() {
 
         {/* Prompts */}
         <Route path="prompts" element={<Prompts />} />
-        <Route path="prompts/new" element={<PromptNew />} />
-        <Route path="prompts/:id" element={<PromptDetail />} />
-        <Route path="prompts/:id/edit" element={<PromptEdit />} />
+
+        {/* Playground */}
+        <Route path="playground" element={<Playground />} />
 
         {/* Scores */}
         <Route path="scores" element={<ScoresList />} />
