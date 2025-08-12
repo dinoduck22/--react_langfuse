@@ -210,3 +210,142 @@
 .submitBtn:hover {
   filter: brightness(1.1);
 }
+/* 컨트롤 버튼 안의 뱃지 스타일 */
+.controlBtn .badge {
+  background-color: #334155;
+  color: #e2e8f0;
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  margin-left: 6px;
+}
+
+/* 패널 내부 컨텐츠 스타일 */
+.toolSection {
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #e2e8f0;
+}
+
+.toolSearch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #020817;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 0 8px;
+}
+.toolSearch input {
+  background: none;
+  border: none;
+  outline: none;
+  color: white;
+  padding: 8px 4px;
+  font-size: 13px;
+  width: 100%;
+}
+.toolSearch svg {
+  color: #64748b;
+}
+
+.toolMessage {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+  padding: 16px 0;
+}
+
+.toolList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 8px;
+}
+
+.toolItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px;
+  border-radius: 6px;
+}
+
+.toolItem:hover {
+  background-color: #1e293b;
+}
+
+.toolInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e2e8f0;
+}
+
+.toolText {
+  display: flex;
+  flex-direction: column;
+}
+
+.toolName {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.toolDesc {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.editButton {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+.editButton:hover {
+  color: #e2e8f0;
+}
+
+.toolButton {
+  background: transparent;
+  border: 1px solid #1e293b;
+  color: #e2e8f0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.toolButton:hover {
+  background-color: #1e293b;
+}
+
+.iconCircle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #94a3b8;
+}
+.iconCircle:hover {
+  background-color: #1e293b;
+  color: #e2e8f0;
+}

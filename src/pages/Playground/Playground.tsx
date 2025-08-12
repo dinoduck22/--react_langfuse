@@ -9,100 +9,246 @@ import {
   Wrench,
   BookText,
   Variable,
+  Search,
+  Minus,
+  Edit,
 } from "lucide-react";
 import styles from "./Playground.module.css";
 import ChatBox, { ChatMessage } from "../../components/ChatBox/ChatBox";
-import NewLlmConnectionModal from "./NewLlmConnectionModal"; // 모달 컴포넌트 import
+import NewLlmConnectionModal from "./NewLlmConnectionModal";
+import PlaygroundPanel from "./PlaygroundPanel";
+import NewToolModal from "./NewToolModal"; // 새로 만든 모달 import
 
+// ===== 타입 정의 =====
+interface Tool {
+  id: string;
+  name: string;
+  description: string;
+}
+
+interface Schema {
+  id: string;
+  name: string;
+  description: string;
+}
+
+
+// ===== 패널 컨텐츠 컴포넌트 =====
+
+// Tools 패널
+const ToolsPanelContent = ({ attachedTools, availableTools, onAddTool, onRemoveTool, onCreateTool }: {
+  attachedTools: Tool[];
+  availableTools: Tool[];
+  onAddTool: (tool: Tool) => void;
+  onRemoveTool: (id: string) => void;
+  onCreateTool: () => void;
+}) => (
+  <>
+    {attachedTools.map(tool => (
+      <div className={styles.toolSection} key={tool.id}>
+        <div className={styles.toolItem}>
+          <div className={styles.toolInfo}>
+            <Wrench size={14} />
+            <div className={styles.toolText}>
+              <span className={styles.toolName}>{tool.name}</span>
+              <span className={styles.toolDesc}>{tool.description}</span>
+            </div>
+          </div>
+          <div className={styles.iconCircle} onClick={() => onRemoveTool(tool.id)}>
+            <Minus size={14} />
+          </div>
+        </div>
+      </div>
+    ))}
+    <div className={styles.toolSearch}>
+      <Search size={14} />
+      <input type="text" placeholder="Search tools..." />
+    </div>
+    <div className={styles.toolList}>
+      {availableTools.map(tool => (
+        <div className={styles.toolItem} key={tool.id} onDoubleClick={() => onAddTool(tool)}>
+          <div className={styles.toolInfo}>
+            <Wrench size={14} />
+            <div className={styles.toolText}>
+              <span className={styles.toolName}>{tool.name}</span>
+              <span className={styles.toolDesc}>{tool.description}</span>
+            </div>
+          </div>
+          <button className={styles.editButton}><Edit size={14} /></button>
+        </div>
+      ))}
+    </div>
+    <button className={styles.toolButton} onClick={onCreateTool}><Plus size={14} /> Create new tool</button>
+  </>
+);
+
+// Schema 패널
+const SchemaPanelContent = ({ userSchema, onAddSchema, onRemoveSchema, availableSchemas }: {
+  userSchema: Schema | null;
+  onAddSchema: (schema: Schema) => void;
+  onRemoveSchema: (id: string) => void;
+  availableSchemas: Schema[];
+}) => (
+  <>
+    {userSchema && (
+      <div className={styles.toolSection}>
+        <div className={styles.toolItem}>
+          <div className={styles.toolInfo}>
+            <BookText size={14} />
+            <div className={styles.toolText}>
+              <span className={styles.toolName}>{userSchema.name}</span>
+              <span className={styles.toolDesc}>{userSchema.description}</span>
+            </div>
+          </div>
+          <div className={styles.iconCircle} onClick={() => onRemoveSchema(userSchema.id)}>
+            <Minus size={14} />
+          </div>
+        </div>
+      </div>
+    )}
+    <div className={styles.toolSearch}>
+      <Search size={14} />
+      <input type="text" placeholder="Search schemas..." />
+    </div>
+    <div className={styles.toolList}>
+      {availableSchemas.map(schema => (
+        <div className={styles.toolItem} key={schema.id} onDoubleClick={() => onAddSchema(schema)}>
+          <div className={styles.toolInfo}>
+            <div className={styles.toolText}>
+              <span className={styles.toolName}>{schema.name}</span>
+              <span className={styles.toolDesc}>{schema.description}</span>
+            </div>
+          </div>
+          <button className={styles.editButton}><Edit size={14} /></button>
+        </div>
+      ))}
+    </div>
+    <button className={styles.toolButton}><Plus size={14} /> Create new schema</button>
+  </>
+);
+
+
+// ===== 메인 컴포넌트 =====
 export default function Playground() {
   const [messages, setMessages] = useState<ChatMessage[]>([
     { id: 1, role: "System", content: "Enter a system message here." },
-    { id: 2, role: "User", content: "Enter a user message here." },
   ]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLlmModalOpen, setIsLlmModalOpen] = useState(false);
+  const [isToolModalOpen, setIsToolModalOpen] = useState(false); // Tool 모달 상태 추가
+  const [activePanel, setActivePanel] = useState<string | null>(null);
+  
+  const [attachedTools, setAttachedTools] = useState<Tool[]>([]);
+  const [availableTools, setAvailableTools] = useState<Tool[]>([
+    { id: 'tool-1', name: 'tool', description: 'ddd' },
+    { id: 'tool-2', name: 'search_web', description: 'Search the web for information.' },
+  ]);
+
+  const [attachedUserSchema, setAttachedUserSchema] = useState<Schema | null>(null);
+  const [availableSchemas, setAvailableSchemas] = useState<Schema[]>([
+    { id: 'schema-1', name: 'waetae', description: 'weddfwe' }
+  ]);
+
+
+  const togglePanel = (panelName: string) => {
+    setActivePanel(activePanel === panelName ? null : panelName);
+  };
+
+  const handleAddTool = (toolToAdd: Tool) => {
+    if (!attachedTools.some(t => t.id === toolToAdd.id)) {
+      setAttachedTools(prev => [...prev, toolToAdd]);
+    }
+  };
+  const handleRemoveTool = (toolId: string) => {
+    setAttachedTools(prev => prev.filter(t => t.id !== toolId));
+  };
+  const handleAddSchema = (schemaToAdd: Schema) => {
+    setAttachedUserSchema(schemaToAdd);
+  };
+  const handleRemoveSchema = (schemaId: string) => {
+    if (attachedUserSchema && attachedUserSchema.id === schemaId) {
+      setAttachedUserSchema(null);
+    }
+  };
 
   return (
     <>
       <div className={styles.container}>
-        {/* 1. Header */}
         <div className={styles.header}>
           <div className={styles.title}>
             Playground <Info size={16} />
           </div>
           <div className={styles.actions}>
             <span className={styles.windowInfo}>1 window</span>
-            <button className={styles.actionBtn}>
-              <Play size={16} /> Run All (Ctrl + Enter)
-            </button>
-            <button className={styles.actionBtn}>
-              <RotateCcw size={16} /> Reset playground
-            </button>
+            <button className={styles.actionBtn}><Play size={16} /> Run All (Ctrl + Enter)</button>
+            <button className={styles.actionBtn}><RotateCcw size={16} /> Reset playground</button>
           </div>
         </div>
 
-        {/* 2. Main Content Grid */}
         <div className={styles.mainGrid}>
-          {/* 2a. Left Panel (Settings & Inputs) */}
           <div className={styles.leftPanel}>
             <div className={styles.card}>
               <div className={styles.cardHeader}>
                 <span>Model</span>
-                <div className={styles.cardActions}>
-                  <Copy size={16} />
-                  <Save size={16} />
-                </div>
+                <div className={styles.cardActions}><Copy size={16} /><Save size={16} /></div>
               </div>
               <div className={styles.cardBody}>
-                <p className={styles.noApiKeyText}>
-                  No LLM API key set in project.
-                </p>
-                <button
-                  className={styles.addLlmBtn}
-                  onClick={() => setIsModalOpen(true)}
-                >
+                <p className={styles.noApiKeyText}>No LLM API key set in project.</p>
+                <button className={styles.addLlmBtn} onClick={() => setIsLlmModalOpen(true)}>
                   <Plus size={16} /> Add LLM Connection
                 </button>
               </div>
             </div>
 
             <div className={styles.controlsBar}>
-              <button className={styles.controlBtn}>
-                <Wrench size={14} /> Tools
+              <button className={styles.controlBtn} onClick={() => togglePanel("tools")}>
+                <Wrench size={14} /> Tools <span className={styles.badge}>{attachedTools.length}</span>
               </button>
-              <button className={styles.controlBtn}>
-                <BookText size={14} /> Schema
+              <button className={styles.controlBtn} onClick={() => togglePanel("schema")}>
+                <BookText size={14} /> Schema <span className={styles.badge}>{attachedUserSchema ? 1 : 0}</span>
               </button>
-              <button className={styles.controlBtn}>
-                <Variable size={14} /> Variables
-              </button>
+              <button className={styles.controlBtn}><Variable size={14} /> Variables</button>
             </div>
+
+            {activePanel === "tools" && (
+              <PlaygroundPanel title="Tools" description="Configure tools for your model to use.">
+                <ToolsPanelContent
+                  attachedTools={attachedTools}
+                  availableTools={availableTools}
+                  onAddTool={handleAddTool}
+                  onRemoveTool={handleRemoveTool}
+                  onCreateTool={() => setIsToolModalOpen(true)} // 모달 열기 함수 연결
+                />
+              </PlaygroundPanel>
+            )}
+            {activePanel === "schema" && (
+              <PlaygroundPanel title="Structured Output" description="Configure JSON schema for structured output.">
+                <SchemaPanelContent
+                  userSchema={attachedUserSchema}
+                  availableSchemas={availableSchemas}
+                  onAddSchema={handleAddSchema}
+                  onRemoveSchema={handleRemoveSchema}
+                />
+              </PlaygroundPanel>
+            )}
+
             <ChatBox messages={messages} setMessages={setMessages} />
           </div>
 
-          {/* 2b. Right Panel (Output) */}
           <div className={styles.rightPanel}>
             <div className={styles.outputCard}>
-              <div className={styles.cardHeader}>
-                <span>Output</span>
-              </div>
-              <div className={styles.outputBody}>
-                {/* Output content would go here */}
-              </div>
+              <div className={styles.cardHeader}><span>Output</span></div>
+              <div className={styles.outputBody}></div>
             </div>
           </div>
         </div>
 
-        {/* 3. Footer */}
         <div className={styles.footer}>
           <button className={styles.submitBtn}>Submit</button>
         </div>
       </div>
 
-      {/* 모달 렌더링 */}
-      <NewLlmConnectionModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
+      <NewLlmConnectionModal isOpen={isLlmModalOpen} onClose={() => setIsLlmModalOpen(false)} />
+      <NewToolModal isOpen={isToolModalOpen} onClose={() => setIsToolModalOpen(false)} />
     </>
   );
 }
