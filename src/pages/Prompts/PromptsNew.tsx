@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom'; // useLocation import
 import styles from './PromptsNew.module.css';
 import { Book } from 'lucide-react';
 import PromptsReference from './PromptsReference';
@@ -8,11 +8,16 @@ import LineNumberedTextarea from 'components/LineNumberedTextarea/LineNumberedTe
 
 const PromptsNew: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation(); // useLocation 훅 사용
+
+    // location.state에서 initialMessages를 가져오거나, 없으면 기본값 사용
+    const initialMessages = location.state?.initialMessages || [
+        { id: 1, role: 'System', content: 'You are a helpful assistant.' },
+    ];
+
     const [promptName, setPromptName] = useState('');
     const [promptType, setPromptType] = useState<'Chat' | 'Text'>('Chat');
-    const [chatContent, setChatContent] = useState<ChatMessage[]>([
-        { id: 1, role: 'System', content: 'You are a helpful assistant.' },
-    ]);
+    const [chatContent, setChatContent] = useState<ChatMessage[]>(initialMessages);
     const [textContent, setTextContent] = useState('');
     const [config, setConfig] = useState('{\n  \n}');
     const [labels, setLabels] = useState({ latest: false, production: false });
