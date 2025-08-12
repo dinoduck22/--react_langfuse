@@ -1,5 +1,5 @@
-import React, { useState, ChangeEvent } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom'; // useLocation import
+import React, { useState, ChangeEvent, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import styles from './PromptsNew.module.css';
 import { Book } from 'lucide-react';
 import PromptsReference from './PromptsReference';
@@ -8,22 +8,39 @@ import LineNumberedTextarea from 'components/LineNumberedTextarea/LineNumberedTe
 
 const PromptsNew: React.FC = () => {
     const navigate = useNavigate();
-    const location = useLocation(); // useLocation 훅 사용
-
-    // location.state에서 initialMessages를 가져오거나, 없으면 기본값 사용
-    const initialMessages = location.state?.initialMessages || [
-        { id: 1, role: 'System', content: 'You are a helpful assistant.' },
-    ];
-
     const [promptName, setPromptName] = useState('');
     const [promptType, setPromptType] = useState<'Chat' | 'Text'>('Chat');
-    const [chatContent, setChatContent] = useState<ChatMessage[]>(initialMessages);
+    const [chatContent, setChatContent] = useState<ChatMessage[]>([
+        { id: 1, role: 'System', content: 'You are a helpful assistant.' },
+    ]);
     const [textContent, setTextContent] = useState('');
     const [config, setConfig] = useState('{\n  \n}');
     const [labels, setLabels] = useState({ latest: false, production: false });
     const [commitMessage, setCommitMessage] = useState('');
     const [isReferenceModalOpen, setIsReferenceModalOpen] = useState(false);
-    
+    const [variables, setVariables] = useState<string[]>([]);
+
+    // 텍스트 내용이 변경될 때마다 {{...}} 구문을 파싱하여 변수 추출
+    useEffect(() => {
+        const extractVariables = (text: string): string[] => {
+            const regex = /{{\s*(\w+)\s*}}/g;
+            const matches = text.match(regex) || [];
+            return matches.map(match => match.replace(/[{}]/g, '').trim());
+        };
+
+        let allVars: string[] = [];
+        if (promptType === 'Text') {
+            allVars = extractVariables(textContent);
+        } else {
+            const chatVars = chatContent.flatMap(msg => extractVariables(msg.content));
+            allVars = [...chatVars];
+        }
+
+        // 중복 제거 후 상태 업데이트
+        setVariables([...new Set(allVars)]);
+    }, [textContent, chatContent, promptType]);
+
+
     const handleLabelChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, checked } = e.target;
         setLabels(prev => ({ ...prev, [name]: checked }));
@@ -93,6 +110,17 @@ const PromptsNew: React.FC = () => {
                         >
                             <button className={styles.addReferenceButtonInEditor} onClick={() => setIsReferenceModalOpen(true)}>+ AddPromptReferenct</button>
                         </LineNumberedTextarea>
+                    )}
+                    {/* 변수 태그 표시 */}
+                    {variables.length > 0 && (
+                        <div className={styles.variablesContainer}>
+                            <span className={styles.variablesLabel}>VARIABLES:</span>
+                            {variables.map((variable, index) => (
+                                <span key={index} className={styles.variableTag}>
+                                    {variable}
+                                </span>
+                            ))}
+                        </div>
                     )}
                 </div>
                 <div className={styles.formGroup}>

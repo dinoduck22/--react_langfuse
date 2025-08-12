@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Link 컴포넌트 import
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import styles from './Prompts.module.css';
 import {
   Info,
   Plus,
   Search,
   ChevronDown,
-  Folder,
   FileText,
   Copy,
   Trash2,
@@ -15,91 +14,64 @@ import {
   ChevronRight,
   ChevronsRight,
 } from 'lucide-react';
+import { langfuse } from 'lib/langfuse'; // Langfuse 클라이언트 import
 
-// 데이터 타입 정의
-type Prompt = {
+// 화면 표시용 데이터 타입
+type DisplayPrompt = {
   id: string;
-  isFolder: boolean;
   name: string;
   versions: number;
-  type: 'chat' | 'text' | 'rhar';
+  type: 'chat' | 'text';
   latestVersionCreatedAt: string;
   observations: number;
   tags: string[];
 };
 
-// 이미지와 유사한 더미 데이터
-const dummyPromptsData: Prompt[] = [
-  {
-    id: 'folder-1', // 폴더는 고유 ID를 가짐
-    isFolder: true,
-    name: 'snippets',
-    versions: 0,
-    type: 'chat',
-    latestVersionCreatedAt: '',
-    observations: 0,
-    tags: [],
-  },
-  {
-    id: 'qa-answer-with-context-chat', // ID를 실제 이름으로 사용
-    name: 'qa-answer-with-context-chat',
-    isFolder: false,
-    versions: 79,
-    type: 'chat',
-    latestVersionCreatedAt: '2025-08-07 19:27:29',
-    observations: 10643,
-    tags: ['core'],
-  },
-  {
-    id: 'docx-qa',
-    name: 'docx-qa',
-    isFolder: false,
-    versions: 1,
-    type: 'rhar',
-    latestVersionCreatedAt: '2025-07-28 17:08:11',
-    observations: 0,
-    tags: [],
-  },
-  {
-    id: 'qa-answer-no-context-chat',
-    name: 'qa-answer-no-context-chat',
-    isFolder: false,
-    versions: 1,
-    type: 'rhar',
-    latestVersionCreatedAt: '2025-07-11 20:25:50',
-    observations: 14439,
-    tags: [],
-  },
-  {
-    id: 'qa-answer-with-context',
-    name: 'qa-answer-with-context',
-    isFolder: false,
-    versions: 7,
-    type: 'text',
-    latestVersionCreatedAt: '2025-01-14 21:25:00',
-    observations: 321,
-    tags: [],
-  },
-  {
-    id: 'agent',
-    name: 'agent',
-    isFolder: false,
-    versions: 4,
-    type: 'chat',
-    latestVersionCreatedAt: '2025-04-08 21:54:53',
-    observations: 0,
-    tags: [],
-  },
-];
-
 const Prompts: React.FC = () => {
-  const [prompts] = useState<Prompt[]>(dummyPromptsData);
+  const [prompts, setPrompts] = useState<DisplayPrompt[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const navigateToNewPrompts = () => {
-        navigate("/prompts/new");
+  useEffect(() => {
+    const fetchPrompts = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await langfuse.api.promptsList({});
+        
+        // API 응답을 DisplayPrompt 타입으로 변환
+        const formattedPrompts = response.data.map((prompt): DisplayPrompt => {
+          // 반환 타입을 명시하여 TypeScript 타입 오류 해결
+          return {
+            id: prompt.name,
+            name: prompt.name,
+            versions: 1,
+            type: 'text', // API 응답에 type 정보가 없으므로 'text'로 고정
+            latestVersionCreatedAt: '-', // API 응답에 updatedAt 정보가 없으므로 '-'로 고정
+            observations: 0,
+            tags: prompt.tags || [],
+          };
+        });
+
+        setPrompts(formattedPrompts);
+      } catch (err) {
+        console.error("Failed to fetch prompts:", err);
+        setError("Failed to load prompts. Please check your API keys and network connection.");
+      } finally {
+        setIsLoading(false);
+      }
     };
+
+    fetchPrompts();
+  }, []);
+
+
+  const navigateToNewPrompts = () => {
+      navigate("/prompts/new");
+  };
 
   const formatObservations = (num: number) => {
     if (num === 0) return null;
@@ -140,10 +112,10 @@ const Prompts: React.FC = () => {
           <thead>
             <tr>
               <th>Name</th>
-              <th>Versions</th>
+              <th>Version</th>
               <th>Type</th>
               <th>
-                Latest Version Created At <ChevronDown size={14} />
+                Last updated At <ChevronDown size={14} />
               </th>
               <th>Number of Observations</th>
               <th>Tags</th>
@@ -151,52 +123,53 @@ const Prompts: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {prompts.map((prompt) => (
-              <tr key={prompt.id}>
-                <td>
-                  <div className={styles.nameCell}>
-                    {prompt.isFolder ? <Folder size={18} /> : <FileText size={18} />}
-                    {/* 폴더가 아닐 경우에만 Link 적용 */}
-                    {prompt.isFolder ? (
-                      <span>{prompt.name}</span>
-                    ) : (
+            {isLoading ? (
+              <tr><td colSpan={7} style={{ textAlign: 'center' }}>Loading prompts...</td></tr>
+            ) : error ? (
+              <tr><td colSpan={7} style={{ textAlign: 'center', color: 'red' }}>{error}</td></tr>
+            ) : (
+              prompts.map((prompt) => (
+                <tr key={prompt.id}>
+                  <td>
+                    <div className={styles.nameCell}>
+                      <FileText size={18} />
                       <Link to={`/prompts/${prompt.id}`} className={styles.promptLink}>
                         {prompt.name}
                       </Link>
-                    )}
-                  </div>
-                </td>
-                <td>{prompt.versions > 0 ? prompt.versions : ''}</td>
-                <td>{prompt.isFolder ? 'folder' : prompt.type}</td>
-                <td>{prompt.latestVersionCreatedAt}</td>
-                <td>
-                  {prompt.observations > 0 && (
-                    <div className={styles.observationCell}>
-                      {formatObservations(prompt.observations)}
                     </div>
-                  )}
-                </td>
-                <td>
-                  <div className={styles.tagsCell}>
-                    {prompt.tags.map((tag) => (
-                      <span key={tag} className={styles.tag}>
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.actionCell}>
-                    <button className={styles.iconButton}>
-                      <Copy size={16} />
-                    </button>
-                    <button className={styles.iconButton}>
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td>{prompt.versions}</td>
+                  <td>{prompt.type}</td>
+                  <td>{prompt.latestVersionCreatedAt}</td>
+                  <td>
+                    {prompt.observations > 0 && (
+                      <div className={styles.observationCell}>
+                        {formatObservations(prompt.observations)}
+                      </div>
+                    )}
+                  </td>
+                  <td>
+                    <div className={styles.tagsCell}>
+                      {prompt.tags.map((tag) => (
+                        <span key={tag} className={styles.tag}>
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
+                  <td>
+                    <div className={styles.actionCell}>
+                      <button className={styles.iconButton}>
+                        <Copy size={16} />
+                      </button>
+                      <button className={styles.iconButton}>
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
