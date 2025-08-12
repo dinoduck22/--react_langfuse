@@ -17,36 +17,16 @@ import styles from "./Playground.module.css";
 import ChatBox, { ChatMessage } from "../../components/ChatBox/ChatBox";
 import NewLlmConnectionModal from "./NewLlmConnectionModal";
 import PlaygroundPanel from "./PlaygroundPanel";
-import NewItemModal from "./NewItemModal"; // 이름이 변경된 모달 import
+import NewItemModal from "./NewItemModal";
+import SavePromptPopover from "./SavePromptPopover";
 
-// ===== 타입 정의 =====
-interface Tool {
-  id: string;
-  name: string;
-  description: string;
-}
+interface Tool { id: string; name: string; description: string; }
+interface Schema { id: string; name: string; description: string; }
 
-interface Schema {
-  id: string;
-  name: string;
-  description: string;
-}
-
-// ===== 패널 컨텐츠 컴포넌트 =====
-
-// Tools 패널
-const ToolsPanelContent = ({ attachedTools, availableTools, onAddTool, onRemoveTool, onCreateTool }: {
-  attachedTools: Tool[];
-  availableTools: Tool[];
-  onAddTool: (tool: Tool) => void;
-  onRemoveTool: (id: string) => void;
-  onCreateTool: () => void;
-}) => (
+const ToolsPanelContent = ({ attachedTools, availableTools, onAddTool, onRemoveTool, onCreateTool }: { attachedTools: Tool[]; availableTools: Tool[]; onAddTool: (tool: Tool) => void; onRemoveTool: (id: string) => void; onCreateTool: () => void; }) => (
   <>
     {attachedTools.map(tool => (
-      <div className={styles.toolSection} key={tool.id}>
-        <div className={styles.toolItem}><div className={styles.toolInfo}><Wrench size={14} /><div className={styles.toolText}><span className={styles.toolName}>{tool.name}</span><span className={styles.toolDesc}>{tool.description}</span></div></div><div className={styles.iconCircle} onClick={() => onRemoveTool(tool.id)}><Minus size={14} /></div></div>
-      </div>
+      <div className={styles.toolSection} key={tool.id}><div className={styles.toolItem}><div className={styles.toolInfo}><Wrench size={14} /><div className={styles.toolText}><span className={styles.toolName}>{tool.name}</span><span className={styles.toolDesc}>{tool.description}</span></div></div><div className={styles.iconCircle} onClick={() => onRemoveTool(tool.id)}><Minus size={14} /></div></div></div>
     ))}
     <div className={styles.toolSearch}><Search size={14} /><input type="text" placeholder="Search tools..." /></div>
     <div className={styles.toolList}>
@@ -57,20 +37,10 @@ const ToolsPanelContent = ({ attachedTools, availableTools, onAddTool, onRemoveT
     <button className={styles.toolButton} onClick={onCreateTool}><Plus size={14} /> Create new tool</button>
   </>
 );
-
-// Schema 패널
-const SchemaPanelContent = ({ userSchema, onAddSchema, onRemoveSchema, availableSchemas, onCreateSchema }: {
-  userSchema: Schema | null;
-  onAddSchema: (schema: Schema) => void;
-  onRemoveSchema: (id: string) => void;
-  availableSchemas: Schema[];
-  onCreateSchema: () => void;
-}) => (
+const SchemaPanelContent = ({ userSchema, onAddSchema, onRemoveSchema, availableSchemas, onCreateSchema }: { userSchema: Schema | null; onAddSchema: (schema: Schema) => void; onRemoveSchema: (id: string) => void; availableSchemas: Schema[]; onCreateSchema: () => void; }) => (
   <>
     {userSchema && (
-      <div className={styles.toolSection}>
-        <div className={styles.toolItem}><div className={styles.toolInfo}><BookText size={14} /><div className={styles.toolText}><span className={styles.toolName}>{userSchema.name}</span><span className={styles.toolDesc}>{userSchema.description}</span></div></div><div className={styles.iconCircle} onClick={() => onRemoveSchema(userSchema.id)}><Minus size={14} /></div></div>
-      </div>
+      <div className={styles.toolSection}><div className={styles.toolItem}><div className={styles.toolInfo}><BookText size={14} /><div className={styles.toolText}><span className={styles.toolName}>{userSchema.name}</span><span className={styles.toolDesc}>{userSchema.description}</span></div></div><div className={styles.iconCircle} onClick={() => onRemoveSchema(userSchema.id)}><Minus size={14} /></div></div></div>
     )}
     <div className={styles.toolSearch}><Search size={14} /><input type="text" placeholder="Search schemas..." /></div>
     <div className={styles.toolList}>
@@ -82,41 +52,29 @@ const SchemaPanelContent = ({ userSchema, onAddSchema, onRemoveSchema, available
   </>
 );
 
-
 // ===== 메인 컴포넌트 =====
 export default function Playground() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLlmModalOpen, setIsLlmModalOpen] = useState(false);
-  const [modalType, setModalType] = useState<'tool' | 'schema' | null>(null); // 모달 타입을 관리할 state
+  const [modalType, setModalType] = useState<'tool' | 'schema' | null>(null);
   const [activePanel, setActivePanel] = useState<string | null>(null);
+  const [isSavePopoverOpen, setIsSavePopoverOpen] = useState(false); // 팝오버 상태 추가
   
   const [attachedTools, setAttachedTools] = useState<Tool[]>([]);
   const [availableTools, setAvailableTools] = useState<Tool[]>([
     { id: 'tool-1', name: 'tool', description: 'ddd' },
     { id: 'tool-2', name: 'search_web', description: 'Search the web for information.' },
   ]);
-
   const [attachedUserSchema, setAttachedUserSchema] = useState<Schema | null>(null);
   const [availableSchemas, setAvailableSchemas] = useState<Schema[]>([
     { id: 'schema-1', name: 'waetae', description: 'weddfwe' }
   ]);
 
-  const togglePanel = (panelName: string) => {
-    setActivePanel(activePanel === panelName ? null : panelName);
-  };
-
-  const handleAddTool = (toolToAdd: Tool) => {
-    if (!attachedTools.some(t => t.id === toolToAdd.id)) setAttachedTools(prev => [...prev, toolToAdd]);
-  };
-  const handleRemoveTool = (toolId: string) => {
-    setAttachedTools(prev => prev.filter(t => t.id !== toolId));
-  };
-  const handleAddSchema = (schemaToAdd: Schema) => {
-    setAttachedUserSchema(schemaToAdd);
-  };
-  const handleRemoveSchema = (schemaId: string) => {
-    if (attachedUserSchema && attachedUserSchema.id === schemaId) setAttachedUserSchema(null);
-  };
+  const togglePanel = (panelName: string) => { setActivePanel(activePanel === panelName ? null : panelName); };
+  const handleAddTool = (toolToAdd: Tool) => { if (!attachedTools.some(t => t.id === toolToAdd.id)) setAttachedTools(prev => [...prev, toolToAdd]); };
+  const handleRemoveTool = (toolId: string) => { setAttachedTools(prev => prev.filter(t => t.id !== toolId)); };
+  const handleAddSchema = (schemaToAdd: Schema) => { setAttachedUserSchema(schemaToAdd); };
+  const handleRemoveSchema = (schemaId: string) => { if (attachedUserSchema && attachedUserSchema.id === schemaId) setAttachedUserSchema(null); };
 
   return (
     <>
@@ -133,11 +91,21 @@ export default function Playground() {
         <div className={styles.mainGrid}>
           <div className={styles.leftPanel}>
             <div className={styles.card}>
-              <div className={styles.cardHeader}><span>Model</span><div className={styles.cardActions}><Copy size={16} /><Save size={16} /></div></div>
+              <div className={styles.cardHeader}>
+                <span>Model</span>
+                <div className={styles.cardActions}>
+                  <button className={styles.iconActionBtn}><Copy size={16} /></button>
+                  <button className={styles.iconActionBtn} onClick={() => setIsSavePopoverOpen(prev => !prev)}>
+                    <Save size={16} />
+                  </button>
+                </div>
+              </div>
               <div className={styles.cardBody}>
                 <p className={styles.noApiKeyText}>No LLM API key set in project.</p>
                 <button className={styles.addLlmBtn} onClick={() => setIsLlmModalOpen(true)}><Plus size={16} /> Add LLM Connection</button>
               </div>
+              {/* 팝오버를 조건부로 렌더링 */}
+              {isSavePopoverOpen && <SavePromptPopover />}
             </div>
 
             <div className={styles.controlsBar}>
@@ -148,24 +116,12 @@ export default function Playground() {
 
             {activePanel === "tools" && (
               <PlaygroundPanel title="Tools" description="Configure tools for your model to use.">
-                <ToolsPanelContent
-                  attachedTools={attachedTools}
-                  availableTools={availableTools}
-                  onAddTool={handleAddTool}
-                  onRemoveTool={handleRemoveTool}
-                  onCreateTool={() => setModalType('tool')}
-                />
+                <ToolsPanelContent attachedTools={attachedTools} availableTools={availableTools} onAddTool={handleAddTool} onRemoveTool={handleRemoveTool} onCreateTool={() => setModalType('tool')} />
               </PlaygroundPanel>
             )}
             {activePanel === "schema" && (
               <PlaygroundPanel title="Structured Output" description="Configure JSON schema for structured output.">
-                <SchemaPanelContent
-                  userSchema={attachedUserSchema}
-                  availableSchemas={availableSchemas}
-                  onAddSchema={handleAddSchema}
-                  onRemoveSchema={handleRemoveSchema}
-                  onCreateSchema={() => setModalType('schema')}
-                />
+                <SchemaPanelContent userSchema={attachedUserSchema} availableSchemas={availableSchemas} onAddSchema={handleAddSchema} onRemoveSchema={handleRemoveSchema} onCreateSchema={() => setModalType('schema')} />
               </PlaygroundPanel>
             )}
 

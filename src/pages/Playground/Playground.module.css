@@ -67,12 +67,12 @@
   flex-direction: column;
   gap: 16px;
 }
-
 .card,
 .outputCard {
   background: #0f172a;
   border: 1px solid #1e293b;
   border-radius: 10px;
+  position: relative; /* 자식 요소의 absolute 포지셔닝 기준 */
 }
 .cardHeader {
   padding: 10px 14px;
@@ -85,8 +85,21 @@
 }
 .cardActions {
   display: flex;
-  gap: 12px;
-  cursor: pointer;
+  gap: 8px;
+}
+.iconActionBtn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+}
+.iconActionBtn:hover {
+    background-color: #1e293b;
+    color: #e2e8f0;
 }
 .cardBody {
   padding: 14px;

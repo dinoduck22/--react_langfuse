@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { X } from 'lucide-react';
-import styles from './NewItemModal.module.css'; // CSS 파일 이름 변경에 맞춰 수정
+import styles from './NewItemModal.module.css';
+import LineNumberedTextarea from '../../components/LineNumberedTextarea/LineNumberedTextarea'; // 공통 컴포넌트 import
 
 interface NewItemModalProps {
   isOpen: boolean;
@@ -15,7 +16,6 @@ const NewItemModal: React.FC<NewItemModalProps> = ({ isOpen, type, onClose }) =>
     '{\n  "type": "object",\n  "properties": {},\n  "required": [],\n  "additionalProperties": false\n}'
   );
 
-  // type prop에 따라 모달의 컨텐츠를 동적으로 결정
   const content = useMemo(() => {
     if (type === 'tool') {
       return {
@@ -27,7 +27,6 @@ const NewItemModal: React.FC<NewItemModalProps> = ({ isOpen, type, onClose }) =>
         footerNote: 'Note: Changes to tools are reflected to all new traces of this project.'
       };
     }
-    // type === 'schema'
     return {
       title: 'Create LLM Schema',
       subtitle: 'Define a JSON Schema for structured outputs',
@@ -68,11 +67,19 @@ const NewItemModal: React.FC<NewItemModalProps> = ({ isOpen, type, onClose }) =>
           </div>
           <div className={styles.formGroup}>
             <label htmlFor="item-parameters">{content.parametersLabel}</label>
-            <div className={styles.codeEditorWrapper}>
-              <textarea id="item-parameters" className={styles.codeEditor} rows={8} value={parameters} onChange={(e) => setParameters(e.target.value)} spellCheck="false" />
+            <p className={styles.descriptionText}>
+              Define the structure of your tool parameters using JSON Schema format.
+            </p>
+            {/* 기존 textarea를 LineNumberedTextarea 컴포넌트로 교체 */}
+            <LineNumberedTextarea
+              id="item-parameters"
+              value={parameters}
+              onChange={(e) => setParameters(e.target.value)}
+              minHeight={120}
+            >
               <button className={styles.prettifyButton}>Prettify</button>
-            </div>
-          </div>parametersLabel
+            </LineNumberedTextarea>
+          </div>
         </div>
         <div className={styles.modalFooter}>
           <span className={styles.footerNote}>{content.footerNote}</span>
