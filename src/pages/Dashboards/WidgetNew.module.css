@@ -1,0 +1,122 @@
+/* 전체 페이지 컨테이너 */
+.pageContainer {
+  display: flex;
+  height: calc(100vh - 48px); /* ProjectHeader 높이 제외 */
+  background-color: #020817;
+  color: #e2e8f0;
+}
+
+/* 왼쪽 폼 영역 */
+.formContainer {
+  width: 450px;
+  min-width: 450px;
+  border-right: 1px solid #1e293b;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  overflow-y: auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #94a3b8;
+}
+
+.header a {
+  color: #94a3b8;
+  text-decoration: none;
+}
+.header a:hover {
+  text-decoration: underline;
+}
+.header span.active {
+  color: #f1f5f9;
+  font-weight: 500;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex-grow: 1;
+}
+
+/* 중간 제목 스타일 */
+.subheading {
+  font-size: 16px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin-top: 8px; /* 위쪽 섹션과의 간격 */
+  margin-bottom: -8px; /* 아래쪽 폼 그룹과의 간격 조정 */
+  padding-bottom: 8px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: auto; /* 버튼을 하단에 고정 */
+  padding-top: 24px;
+}
+
+.cancelButton,
+.saveButton {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.cancelButton {
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  color: #f1f5f9;
+}
+.cancelButton:hover {
+  background-color: #334155;
+}
+
+.saveButton {
+  background-color: #4f46e5;
+  border: 1px solid #4f46e5;
+  color: white;
+}
+.saveButton:hover {
+  filter: brightness(1.1);
+}
+.saveButton:disabled {
+    background-color: #312e81;
+    border-color: #312e81;
+    cursor: not-allowed;
+}
+
+/* 오른쪽 미리보기 영역 */
+.previewContainer {
+  flex-grow: 1;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.previewHeader {
+  font-size: 14px;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.previewContent {
+  flex-grow: 1;
+  border: 1px dashed #334155;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

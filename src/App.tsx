@@ -25,7 +25,9 @@ import HumanAnnotationPage from './pages/Evaluation/HumanAnnotation/HumanAnnotat
 import DatasetsList from './pages/Evaluation/DataSets/DatasetsList';
 
 import Dashboards from './pages/Dashboards/Dashboards';
+import DashboardNew from './pages/Dashboards/DashboardNew';
 import DashboardDetail from './pages/Dashboards/DashboardDetail';
+import WidgetNew from './pages/Dashboards/WidgetNew';
 
 import SettingsPage from './pages/Settings/SettingsPage';
 import General from './pages/Settings/General';
@@ -99,6 +101,8 @@ export default function App() {
 
         {/* Dashboards */}
         <Route path="dashboards" element={<Dashboards />} />
+        <Route path="dashboards/new" element={<DashboardNew />} /> {/* '/dashboards/new' 라우트 추가 */}
+        <Route path="dashboards/widgets/new" element={<WidgetNew />} />
         <Route path="dashboards/:dashboardId" element={<DashboardDetail />} />
 
         {/* Settings (상대 경로로 선언) */}

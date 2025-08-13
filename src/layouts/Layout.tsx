@@ -48,7 +48,7 @@ export default function Layout() {
       {
           title: "Dashboards",
           items: [
-              { label: "Dashboards", icon: <LayoutDashboard size={18} />, path: "/dashboards/llm" },
+              { label: "Dashboards", icon: <LayoutDashboard size={18} />, path: "/dashboards" },
           ],
       },
     {
