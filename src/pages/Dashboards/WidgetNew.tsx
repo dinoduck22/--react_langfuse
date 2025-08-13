@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LayoutDashboard } from 'lucide-react';
-import styles from './WidgetNew.module.css'; // 새로 만든 CSS 모듈 import
+import { LayoutDashboard, Calendar } from 'lucide-react';
+import styles from './WidgetNew.module.css';
 import FormGroup from '../../components/Form/FormGroup';
 import WidgetCard from '../../components/Dashboard/WidgetCard';
-import TraceChart from '../../components/Chart/TraceChart'; // 미리보기용 차트 import
+import TraceChart from '../../components/Chart/TraceChart';
+import WidgetNewPopup from './WidgetNewPopup';
+import dayjs from 'dayjs'; 
 
 const WidgetNew: React.FC = () => {
   const navigate = useNavigate();
@@ -13,11 +15,19 @@ const WidgetNew: React.FC = () => {
   const [description, setDescription] = useState('');
   const [viewType, setViewType] = useState('Trace');
   const [chartType, setChartType] = useState('LineChart');
-  const [filters, setFilters] = useState('');
-  const [groupBy, setGroupBy] = useState('');
+  const [isDateRangePickerOpen, setIsDateRangePickerOpen] = useState(false);
+
+  const [startDate, setStartDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(dayjs().add(7, 'day').toDate());
+  
+  const formattedDateRange = useMemo(() => {
+    const start = dayjs(startDate).format('MMM DD, YY : HH:mm');
+    const end = dayjs(endDate).format('MMM DD, YY : HH:mm');
+    return `${start} - ${end}`;
+  }, [startDate, endDate]);
 
   const handleSave = () => {
-    console.log({ name, description, viewType, chartType, filters, groupBy });
+    console.log({ name, description, viewType, chartType, startDate, endDate });
     alert(`Widget "${name}" saved! Check the console for details.`);
     navigate('/dashboards');
   };
@@ -30,105 +40,88 @@ const WidgetNew: React.FC = () => {
     <div className={styles.pageContainer}>
       {/* 왼쪽 폼 영역 */}
       <div className={styles.formContainer}>
-        <header className={styles.header}>
-          <LayoutDashboard size={16} />
-          <Link to="/dashboards">Dashboards</Link>
-          <span>/</span>
-          <Link to="/dashboards">Widgets</Link>
-          <span>/</span>
-          <span className="active">New widget</span>
-        </header>
+        <div className={styles.fixedHeader}>
+          <header className={styles.breadcrumbs}>
+            <LayoutDashboard size={16} />
+            <Link to="/dashboards">Dashboards</Link>
+            <span>/</span>
+            <Link to="/dashboards">Widgets</Link>
+            <span>/</span>
+            <span className="active">New widget</span>
+          </header>
+          <div className={styles.titleGroup}>
+            <h2 className={styles.title}>Widget Configuration</h2>
+            <p className={styles.sublabel}>
+              Configure your widget by selecting data and visualization options
+            </p>
+          </div>
+        </div>
 
-        <div className={styles.form}>          
-            <h3 className={styles.subheading}>Data Selection</h3>
-
-            {/* 데이터 소스 관련 설정 */}
-            <FormGroup
+        <div className={styles.scrollableForm}>
+          <h3 className={styles.subheading}>Data Selection</h3>
+          <FormGroup
             htmlFor="widget-view"
             label="View"
             subLabel="The entity type this widget is based on."
-            >
+          >
             <select
-                id="widget-view"
-                className="form-select"
-                value={viewType}
-                onChange={(e) => setViewType(e.target.value)}
+              id="widget-view"
+              className="form-select"
+              value={viewType}
+              onChange={(e) => setViewType(e.target.value)}
             >
-                <option value="Trace">Trace</option>
-                <option value="Observation">Observation</option>
-                <option value="Score">Score</option>
+              <option value="Trace">Trace</option>
+              <option value="Observation">Observation</option>
+              <option value="Score">Score</option>
             </select>
-            </FormGroup>
-          
-    
-            <FormGroup
-              htmlFor="widget-metrics"
-              label="Metrics"
-              subLabel="Optional filters to apply to the data."
-            >
+          </FormGroup>
+          <FormGroup
+            htmlFor="widget-metrics"
+            label="Metrics"
+            subLabel="Optional filters to apply to the data."
+          >
             <select
-                id="widget-metrics"
-                className="form-select"
-                value=" "
-                onChange={(e) => setViewType(e.target.value)}
+              id="widget-metrics"
+              className="form-select"
+              value=" "
+              onChange={(e) => setViewType(e.target.value)}
             >
-                <option value="Count">Count</option>
-                <option value="Latency">Latency</option>
-                <option value="Observations Count">Observations Count</option>
-                <option value="Scores Count">Scores Count</option>
-                <option value="Total Cost">Total Cost</option>
-                <option value="Total Tokens">Total Tokens</option>
+              <option value="Count">Count</option>
+              <option value="Latency">Latency</option>
+              <option value="Observations Count">Observations Count</option>
+              <option value="Scores Count">Scores Count</option>
+              <option value="Total Cost">Total Cost</option>
+              <option value="Total Tokens">Total Tokens</option>
             </select>
-            </FormGroup>
-          
+          </FormGroup>
 
-          {chartType !== 'Table' && (
-            <FormGroup
-              htmlFor="widget-group-by"
-              label="Group by"
-              subLabel="Optional grouping for the chart."
-            >
-              <input
-                id="widget-group-by"
-                type="text"
-                className="form-input"
-                placeholder='e.g. name'
-                value={groupBy}
-                onChange={(e) => setGroupBy(e.target.value)}
-              />
-            </FormGroup>
-          )}
-
-            <h3 className={styles.subheading}>Visualization</h3>
-
-            <FormGroup
+          <h3 className={styles.subheading}>Visualization</h3>
+          <FormGroup
             htmlFor="d"
             label="Name"
             subLabel="Unique identifier for this widget."
-            >
+          >
             <input
-                id="widget-name"
-                type="text"
-                className="form-input"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+              id="widget-name"
+              type="text"
+              className="form-input"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
-            </FormGroup>
-
-            <FormGroup
+          </FormGroup>
+          <FormGroup
             htmlFor="widget-description"
             label="Description"
             subLabel="Optional description."
-            >
-            <textarea
-                id="widget-description"
-                className="form-textarea"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+          >
+            <input
+              id="widget-description"
+              className="form-input"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
             />
-            </FormGroup>
-
-             <FormGroup
+          </FormGroup>
+          <FormGroup
             htmlFor="widget-chart-type"
             label="Chart Type"
             subLabel="The visualization type for this widget."
@@ -145,37 +138,56 @@ const WidgetNew: React.FC = () => {
               <option value="DonutChart">Donut Chart</option>
             </select>
           </FormGroup>
+          
+          <FormGroup
+            htmlFor="widget-date-range"
+            label="Date Range"
+            subLabel="The time range for the data."
+          >
+            <div className={styles.dateRangeContainer}>
+              <div
+                className={styles.dateRangeInput}
+                onClick={() => setIsDateRangePickerOpen(prev => !prev)}
+              >
+                <Calendar size={16} />
+                {/* 동적으로 계산된 날짜 표시 */}
+                <span>{formattedDateRange}</span>
+              </div>
+              <button className={styles.dateRangePreset}>Past 7...</button>
 
+              {isDateRangePickerOpen && (
+                // 팝업에 현재 날짜 상태 전달
+                <WidgetNewPopup 
+                  startDate={startDate}
+                  endDate={endDate}
+                  onClose={() => setIsDateRangePickerOpen(false)} 
+                />
+              )}
+            </div>
+          </FormGroup>
         </div>
-        {/* 저장/취소 버튼 */}
+
         <div className={styles.actions}>
-          <button className={styles.cancelButton} onClick={handleCancel}>
-            Cancel
-          </button>
-          <button className={styles.saveButton} onClick={handleSave} disabled={!name.trim()}>
+          <button
+            className={styles.saveButton}
+            onClick={handleSave}
+            disabled={!name.trim()}
+          >
             Save
           </button>
         </div>
       </div>
 
-
-
-
-
-      {/* 오른쪽 미리보기 영역 */}
       <div className={styles.previewContainer}>
         <h2 className={styles.previewHeader}>Preview</h2>
         <div className={styles.previewContent}>
-          <WidgetCard title={name || "Widget Preview"} subtitle={description}>
+          <WidgetCard title={name || 'Widget Preview'} subtitle={description}>
             {chartType === 'LineChart' && (
               <div style={{ width: '100%', height: '100%' }}>
                 <TraceChart />
               </div>
             )}
-             {chartType === 'Table' && (
-              <div>Table Preview Here</div>
-            )}
-             {/* 다른 차트 타입에 대한 미리보기도 추가할 수 있습니다. */}
+            {chartType === 'Table' && <div>Table Preview Here</div>}
           </WidgetCard>
         </div>
       </div>

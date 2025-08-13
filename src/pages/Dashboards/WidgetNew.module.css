@@ -11,14 +11,43 @@
   width: 450px;
   min-width: 450px;
   border-right: 1px solid #1e293b;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; /* 내부에서 스크롤을 제어하므로 hidden으로 변경 */
+}
+
+.fixedHeader {
+  padding: 24px 24px 16px;
+  flex-shrink: 0;
+  border-bottom: 1px solid #1e293b;
+}
+
+.titleGroup {
+  margin-top: 24px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.sublabel {
+  font-size: 14px;
+  color: #94a3b8;
+  margin-top: 8px;
+}
+
+.scrollableForm {
   padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 24px;
+  flex-grow: 1;
   overflow-y: auto;
 }
-
-.header {
+.breadcrumbs {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -26,23 +55,16 @@
   color: #94a3b8;
 }
 
-.header a {
+.breadcrumbs a {
   color: #94a3b8;
   text-decoration: none;
 }
-.header a:hover {
+.breadcrumbs a:hover {
   text-decoration: underline;
 }
-.header span.active {
+.breadcrumbs span.active {
   color: #f1f5f9;
   font-weight: 500;
-}
-
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  flex-grow: 1;
 }
 
 /* 중간 제목 스타일 */
@@ -60,36 +82,26 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  margin-top: auto; /* 버튼을 하단에 고정 */
-  padding-top: 24px;
+  padding: 16px 24px; /* actions 영역에도 패딩 추가 */
+  border-top: 1px solid #1e293b;
 }
 
-.cancelButton,
 .saveButton {
-  padding: 8px 16px;
+  background-color: #e2e8f0;
+  color: #1e293b;
+  border: none;
   border-radius: 6px;
+  padding: 10px;
   font-weight: 500;
-  cursor: pointer;
   font-size: 14px;
+  cursor: pointer;
+  width: 100%;
 }
 
-.cancelButton {
-  background-color: #1e293b;
-  border: 1px solid #334155;
-  color: #f1f5f9;
-}
-.cancelButton:hover {
-  background-color: #334155;
-}
-
-.saveButton {
-  background-color: #4f46e5;
-  border: 1px solid #4f46e5;
-  color: white;
-}
 .saveButton:hover {
-  filter: brightness(1.1);
+  filter: brightness(0.95);
 }
+
 .saveButton:disabled {
     background-color: #312e81;
     border-color: #312e81;
@@ -119,4 +131,41 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Date Range 스타일 */
+.dateRangeContainer {
+  display: flex;
+  gap: 8px;
+  position: relative; /* 팝업 위치 기준 */
+}
+
+.dateRangeInput {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #020817;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: #e2e8f0;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.dateRangePreset {
+  background-color: #020817;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dateRangeInput:hover,
+.dateRangePreset:hover {
+  border-color: #4f46e5;
 }
