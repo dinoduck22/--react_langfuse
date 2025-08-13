@@ -4,18 +4,12 @@ import {
     Home,
     LayoutDashboard,
     Activity,
-    Users,
     MessageCircleCode,
     FlaskConical,
     SquareStack,
     Lightbulb,
     Database,
     Settings,
-    UserRound,
-    HelpCircle,
-    //ChevronLeft,
-    //ChevronRight,
-    ArrowUpRight,
     Search,
 } from "lucide-react";
 
@@ -34,17 +28,29 @@ export default function Layout() {
       title: null,
       items: [
         { label: "Home", icon: <Home size={18} />, path: "/" },
-        { label: "Dashboards", icon: <LayoutDashboard size={18} />, path: "/dashboards" },
       ],
     },
     {
-      title: "Observability",
+      title: "Tracing",
       items: [
-        { label: "Tracing", icon: <Activity size={18} />, path: "/tracing" },
+        { label: "Trace", icon: <Activity size={18} />, path: "/trace" },
+        { label: "Span", icon: <Activity size={18} />, path: "/span" },
         { label: "Sessions", icon: <MessageCircleCode size={18} />, path: "/sessions" },
-        { label: "Users", icon: <Users size={18} />, path: "/users" },
       ],
     },
+      {
+      title: "Evaluation",
+      items: [
+        { label: "LLM-as-a-Judge", icon: <Lightbulb size={18} />, path: "/llm-as-a-judge" },
+        { label: "Datasets", icon: <Database size={18} />, path: "/datasets" },
+      ],
+    },
+      {
+          title: "Dashboards",
+          items: [
+              { label: "Dashboards", icon: <LayoutDashboard size={18} />, path: "/dashboards/llm" },
+          ],
+      },
     {
       title: "Prompt Management",
       items: [
@@ -52,21 +58,10 @@ export default function Layout() {
         { label: "Playground", icon: <SquareStack size={18} />, path: "/playground" },
       ],
     },
-    {
-      title: "Evaluation",
-      items: [
-        { label: "Scores", icon: <Database size={18} />, path: "/scores" },
-        { label: "LLM-as-a-Judge", icon: <Lightbulb size={18} />, path: "/llm-as-a-judge" },
-        { label: "Human Annotation", icon: <UserRound size={18} />, path: "/human-annotation" },
-        { label: "Datasets", icon: <Database size={18} />, path: "/datasets" },
-      ],
-    },
   ];
 
   const bottomMenu: MenuItem[] = [
-    { label: "Upgrade", icon: <ArrowUpRight size={18} />, path: "/upgrade" },
     { label: "Settings", icon: <Settings size={18} />, path: "/settings" },
-    { label: "Support", icon: <HelpCircle size={18} />, path: "/support" },
   ];
 
   const navClass = ({ isActive }: { isActive: boolean }) =>
