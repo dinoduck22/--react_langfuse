@@ -1,0 +1,106 @@
+.container {
+    padding: 0 24px;
+}
+
+.title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 32px;
+}
+
+.infoIcon {
+    color: #888;
+}
+
+.keyList {
+    border: 1px solid #333;
+    border-radius: 8px;
+    overflow: hidden; /* 모서리 둥글게 */
+}
+
+.keyRow {
+    display: grid;
+    grid-template-columns: 1fr 2fr 3fr 2fr 0.5fr; /* 칸 비율 조정 */
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    border-bottom: 1px solid #333;
+}
+
+.keyRow:last-child {
+    border-bottom: none;
+}
+
+.keyHeader {
+    background-color: #020817;
+    color: #aaa;
+    font-size: 13px;
+    font-weight: 500;
+
+}
+
+.note {
+    color: #888;
+    cursor: pointer;
+}
+
+.note:hover {
+    color: #fff;
+}
+
+.keyBox {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    border: 1px solid #444;
+    border-radius: 6px;
+    background-color: #020817;
+    font-family: 'D2Coding', monospace;
+    font-size: 13px;
+}
+
+.copyIcon {
+    color: #888;
+    cursor: pointer;
+    margin-left: 8px;
+}
+
+.copyIcon:hover {
+    color: #fff;
+}
+
+.key code {
+    font-family: 'D2Coding', monospace;
+    font-size: 13px;
+}
+
+.deleteIcon {
+    color: #888;
+    cursor: pointer;
+}
+
+.deleteIcon:hover {
+    color: #ff6b6b;
+}
+
+.createButton {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 24px;
+    padding: 8px 14px;
+    background-color: #333;
+    color: white;
+    border: 1px solid #555;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.createButton:hover {
+    background-color: #444;
+}
