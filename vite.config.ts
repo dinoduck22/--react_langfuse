@@ -9,7 +9,7 @@ export default defineConfig({
   base: '/',
   server: {
     host: '0.0.0.0',
-    port: 5173, // ✅ 여기서 포트를 5173 → 3000으로 변경
+    port: 5173,
   },
   plugins: [react(), viteTsconfigPaths()],
   resolve: {

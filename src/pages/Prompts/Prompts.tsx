@@ -15,6 +15,7 @@ import {
   ChevronsRight,
 } from 'lucide-react';
 import { langfuse } from 'lib/langfuse';
+import { AxiosError } from 'axios'
 
 interface PromptMeta {
   name: string;
@@ -65,7 +66,28 @@ const Prompts: React.FC = () => {
         setPrompts(formattedPrompts);
       } catch (err) {
         console.error("Failed to fetch prompts:", err);
-        setError("Failed to load prompts. Please check your API keys and network connection.");
+        // --- 오류 분석 로직 추가 ---
+        if (err instanceof AxiosError) {
+          if (!err.response) {
+            // 응답 자체가 없는 네트워크 오류 -> CORS 문제일 확률이 매우 높음
+            setError(
+              "Network Error: Failed to fetch. This might be a CORS issue. " +
+              "Please check if your Langfuse project's 'Allowed Origins' includes your development URL (e.g., http://localhost:5173)."
+            );
+          } else if (err.response.status === 401 || err.response.status === 403) {
+            // 401/403: 인증/권한 오류
+            setError(
+              "Authentication Failed: The provided API Keys or Base URL are incorrect. " +
+              "Please verify your .env file."
+            );
+          } else {
+            // 그 외 서버 응답 오류
+            setError(`An API error occurred: ${err.response.status} ${err.response.statusText}`);
+          }
+        } else {
+          // Axios 오류가 아닌 경우
+          setError("An unexpected error occurred. Please check the console.");
+        }
       } finally {
         setIsLoading(false);
       }
@@ -93,13 +115,13 @@ const Prompts: React.FC = () => {
     return num;
   };
 
-  // ✅ 삭제 아이콘 클릭 핸들러
+  // 삭제 아이콘 클릭 핸들러
   const handleDeleteClick = (prompt: DisplayPrompt) => {
     // 이미 열려있는 팝업을 다시 클릭하면 닫고, 아니면 새로 엶
     setPromptToDelete(prev => (prev?.id === prompt.id ? null : prompt));
   };
 
-  // ✅ 실제 삭제를 처리하는 함수
+  // 실제 삭제를 처리하는 함수
   const confirmDelete = () => {
     if (!promptToDelete) return;
 
@@ -190,7 +212,7 @@ const Prompts: React.FC = () => {
                       </div>
                     </td>
                   </tr>
-                  {/* ✅ 삭제 확인 팝업을 위한 행 */}
+                  {/* 삭제 확인 팝업을 위한 행 */}
                   {promptToDelete && promptToDelete.id === prompt.id && (
                     <tr className={styles.confirmationRow}>
                       <td colSpan={7}>
