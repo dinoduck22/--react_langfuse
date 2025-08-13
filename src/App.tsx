@@ -24,7 +24,8 @@ import JudgePage from './pages/Evaluation/Judge/JudgePage';
 import HumanAnnotationPage from './pages/Evaluation/HumanAnnotation/HumanAnnotationPage';
 import DatasetsList from './pages/Evaluation/DataSets/DatasetsList';
 
-import LLMDashboard from './pages/Dashboard/LLMDashboard';
+import Dashboards from './pages/Dashboards/Dashboards';
+import DashboardDetail from './pages/Dashboards/DashboardDetail';
 
 import SettingsPage from './pages/Settings/SettingsPage';
 import General from './pages/Settings/General';
@@ -97,7 +98,8 @@ export default function App() {
         <Route path="evaluation/:id/edit" element={<Navigate to="/scores/:id/edit" replace />} />
 
         {/* Dashboards */}
-        <Route path="dashboards/llm" element={<LLMDashboard />} />
+        <Route path="dashboards" element={<Dashboards />} />
+        <Route path="dashboards/:dashboardId" element={<DashboardDetail />} />
 
         {/* Settings (상대 경로로 선언) */}
         <Route path="settings" element={<SettingsPage />}>

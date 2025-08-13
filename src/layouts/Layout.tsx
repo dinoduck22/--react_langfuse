@@ -34,7 +34,7 @@ export default function Layout() {
       title: null,
       items: [
         { label: "Home", icon: <Home size={18} />, path: "/" },
-        { label: "Dashboards", icon: <LayoutDashboard size={18} />, path: "/dashboards/llm" },
+        { label: "Dashboards", icon: <LayoutDashboard size={18} />, path: "/dashboards" },
       ],
     },
     {

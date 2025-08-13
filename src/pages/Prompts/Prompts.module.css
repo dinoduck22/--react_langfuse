@@ -164,12 +164,6 @@
   display: flex;
   /* gap 없음 */
 }
-
-/* 기존 tag 스타일 제거 또는 수정 */
-.tag {
-  /* 이 스타일은 더 이상 사용되지 않습니다. */
-}
-
 .actionCell {
   display: flex;
   justify-content: flex-end; /* 오른쪽 정렬 */

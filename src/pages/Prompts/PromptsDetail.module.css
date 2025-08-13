@@ -197,14 +197,18 @@
   color: #4ade80;
 }
 .versionMeta {
-  font-size: 12px;
+  font-size: 11px; /* 글자 크기를 줄입니다. */
   color: #94a3b8;
-  white-space: pre-wrap;
   margin-top: 4px;
   padding-left: 8px;
+  display: flex; /* 자식 요소들을 가로로 배열합니다. */
+  justify-content: space-between; /* 양 끝으로 정렬합니다. */
+  white-space: nowrap; /* 줄바꿈을 방지합니다. */
 }
 .versionMeta p {
   margin: 0;
+  text-overflow: ellipsis; /* 내용이 길면 말줄임표로 표시합니다. */
+  overflow: hidden;
 }
 
 /* 3b. 우측 패널 */

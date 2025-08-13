@@ -15,7 +15,6 @@ import {
 import { langfuse } from 'lib/langfuse';
 import DuplicatePromptModal from './DuplicatePromptModal'; // 모달 컴포넌트 import
 
-
 // --- 타입 정의 ---
 
 type ChatMessage = {
@@ -73,7 +72,6 @@ export default function PromptsDetail() {
   const [allPromptNames, setAllPromptNames] = useState<string[]>([]);
   const [isDuplicateModalOpen, setDuplicateModalOpen] = useState(false);
 
-
   useEffect(() => {
     if (!id) return;
 
@@ -95,7 +93,7 @@ export default function PromptsDetail() {
         setAllPromptNames(promptNames);
 
         // 'Use' 탭에 들어갈 동적 코드 스니펫 생성
-        const pythonCode = `from langfuse import Langfuse
+ const pythonCode = `from langfuse import Langfuse
 
 # Initialize langfuse client
 langfuse = Langfuse()
@@ -110,7 +108,8 @@ prompt = langfuse.get_prompt("${id}", label="latest")
 # Get by version number, usually not recommended as it requires code changes to deploy new prompt versions
 langfuse.get_prompt("${id}", version=${latestPrompt.version})`;
 
-        const jsTsCode = `import { Langfuse } from "langfuse";
+
+ const jsTsCode = `import { Langfuse } from "langfuse";
 
 // Initialize the langfuse client
 const langfuse = new Langfuse();
@@ -130,7 +129,9 @@ langfuse.getPrompt("${id}", { version: ${latestPrompt.version} });`;
           id: latestPrompt.version,
           label: `Version ${latestPrompt.version}`,
           labels: latestPrompt.labels,
-          details: new Date(latestPrompt.updatedAt).toLocaleString(),
+          details: latestPrompt.createdAt 
+          ? new Date(latestPrompt.createdAt).toLocaleString()
+          : 'N/A',
           author: latestPrompt.createdBy,
           prompt: {
             user: isChatPrompt(latestPrompt.prompt)
