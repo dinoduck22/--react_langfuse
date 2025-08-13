@@ -86,12 +86,10 @@
 .dayCell:disabled {
   color: transparent;
   cursor: default;
+  background-color: transparent !important;
 }
 .dayCell:not(:disabled):hover { 
   background-color: #334155; 
-}
-.dayCell.faded { 
-  color: #64748b; 
 }
 .dayCell.selectedRange { 
   background-color: #1e293b; 

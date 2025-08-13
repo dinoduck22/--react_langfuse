@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import styles from './WidgetNewPopup.module.css';
 import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import dayjs from 'dayjs';
 
 interface WidgetNewPopupProps {
+  startDate: Date;
+  endDate: Date;
   onClose: () => void;
-  // 팝업의 위치를 계산하기 위해 트리거 요소의 ref를 받습니다.
   triggerRef: React.RefObject<HTMLDivElement>;
 }
 
@@ -15,25 +17,26 @@ const CalendarMonth: React.FC<{
   startDate: dayjs.Dayjs;
   endDate: dayjs.Dayjs;
 }> = ({ monthDate, startDate, endDate }) => {
-    const daysOfWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-    const startOfMonth = monthDate.startOf('month');
-    const daysInMonth = monthDate.daysInMonth();
-    const startDayOfWeek = startOfMonth.day();
-  
-    const days: (dayjs.Dayjs | null)[] = [];
-    // 이전 달의 날짜 채우기 (렌더링은 비활성화)
-    for (let i = 0; i < startDayOfWeek; i++) {
-      days.push(null);
-    }
-    // 현재 달의 날짜 채우기
-    for (let i = 1; i <= daysInMonth; i++) {
-      days.push(startOfMonth.date(i));
-    }
-  
-    const isDayInRange = (day: dayjs.Dayjs | null) =>
-      day && day.isAfter(startDate.subtract(1, 'day')) && day.isBefore(endDate.add(1, 'day'));
-    const isRangeStart = (day: dayjs.Dayjs | null) => day && day.isSame(startDate, 'day');
-    const isRangeEnd = (day: dayjs.Dayjs | null) => day && day.isSame(endDate, 'day');
+  const daysOfWeek = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  const startOfMonth = monthDate.startOf('month');
+  const daysInMonth = monthDate.daysInMonth();
+  const startDayOfWeek = startOfMonth.day();
+
+  const days: (dayjs.Dayjs | null)[] = [];
+  // 달력의 시작 부분에 이전 달의 날짜를 null로 채웁니다.
+  for (let i = 0; i < startDayOfWeek; i++) {
+    days.push(null);
+  }
+  // 현재 달의 날짜를 채웁니다.
+  for (let i = 1; i <= daysInMonth; i++) {
+    days.push(startOfMonth.date(i));
+  }
+
+  // props로 받은 날짜를 기준으로 각종 상태(범위 내, 시작, 끝)를 동적으로 확인하는 함수들
+  const isDayInRange = (day: dayjs.Dayjs | null) =>
+    day && day.isAfter(startDate.subtract(1, 'day')) && day.isBefore(endDate);
+  const isRangeStart = (day: dayjs.Dayjs | null) => day && day.isSame(startDate, 'day');
+  const isRangeEnd = (day: dayjs.Dayjs | null) => day && day.isSame(endDate, 'day');
 
   return (
     <div className={styles.monthContainer}>
@@ -63,9 +66,8 @@ const CalendarMonth: React.FC<{
   );
 };
 
-
 // 메인 팝업 컴포넌트
-const WidgetNewPopup: React.FC<WidgetNewPopupProps> = ({ onClose, triggerRef }) => {
+const WidgetNewPopup: React.FC<WidgetNewPopupProps> = ({ startDate, endDate, onClose, triggerRef }) => {
   const popupRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
 
@@ -75,21 +77,21 @@ const WidgetNewPopup: React.FC<WidgetNewPopupProps> = ({ onClose, triggerRef }) 
       const triggerRect = triggerRef.current.getBoundingClientRect();
       const popupRect = popupRef.current.getBoundingClientRect();
       setPosition({
-        top: triggerRect.top - popupRect.height - 8, // 8px 간격
+        top: triggerRect.top - popupRect.height - 8,
         left: triggerRect.left,
       });
     }
   }, [triggerRef]);
-  
-  // 현재 날짜를 기준으로 달력을 생성합니다.
-  const today = dayjs();
-  const startDate = today;
-  const endDate = today.add(7, 'day');
-  const firstMonth = today;
-  const secondMonth = today.add(1, 'month');
 
-  return (
-    // Portal을 통해 body 최상단에 렌더링될 오버레이와 팝업
+  // props로 받은 startDate와 endDate를 dayjs 객체로 변환합니다.
+  const start = dayjs(startDate);
+  const end = dayjs(endDate);
+  
+  // props로 받은 시작 날짜와 그 다음 달을 렌더링합니다.
+  const firstMonth = start;
+  const secondMonth = start.add(1, 'month');
+
+  return ReactDOM.createPortal(
     <div className={styles.overlay} onClick={onClose}>
       <div 
         ref={popupRef}
@@ -99,20 +101,19 @@ const WidgetNewPopup: React.FC<WidgetNewPopupProps> = ({ onClose, triggerRef }) 
       >
         <div className={styles.calendarsWrapper}>
           <button className={`${styles.navButton} ${styles.navLeft}`}><ChevronLeft size={18} /></button>
-          <CalendarMonth monthDate={firstMonth} startDate={startDate} endDate={endDate} />
-          <CalendarMonth monthDate={secondMonth} startDate={startDate} endDate={endDate} />
+          <CalendarMonth monthDate={firstMonth} startDate={start} endDate={end} />
+          <CalendarMonth monthDate={secondMonth} startDate={start} endDate={end} />
           <button className={`${styles.navButton} ${styles.navRight}`}><ChevronRight size={18} /></button>
         </div>
         <div className={styles.timeControls}>
-            {/* ... 시간 입력 부분은 이전과 동일 ... */}
             <div className={styles.timeGroup}>
                 <label>Start time</label>
                 <div className={styles.timeInput}>
                     <Clock size={16} />
-                    <input type="text" value={startDate.format('hh')} readOnly /> :
-                    <input type="text" value={startDate.format('mm')} readOnly /> :
-                    <input type="text" value={startDate.format('ss')} readOnly />
-                    <select defaultValue={startDate.format('A')}>
+                    <input type="text" value={start.format('hh')} readOnly /> :
+                    <input type="text" value={start.format('mm')} readOnly /> :
+                    <input type="text" value={start.format('ss')} readOnly />
+                    <select defaultValue={start.format('A')}>
                     <option>AM</option>
                     <option>PM</option>
                     </select>
@@ -122,10 +123,10 @@ const WidgetNewPopup: React.FC<WidgetNewPopupProps> = ({ onClose, triggerRef }) 
                 <label>End time</label>
                 <div className={styles.timeInput}>
                     <Clock size={16} />
-                    <input type="text" value={endDate.format('hh')} readOnly /> :
-                    <input type="text" value={endDate.format('mm')} readOnly /> :
-                    <input type="text" value={endDate.format('ss')} readOnly />
-                    <select defaultValue={endDate.format('A')}>
+                    <input type="text" value={end.format('hh')} readOnly /> :
+                    <input type="text" value={end.format('mm')} readOnly /> :
+                    <input type="text" value={end.format('ss')} readOnly />
+                    <select defaultValue={end.format('A')}>
                     <option>AM</option>
                     <option>PM</option>
                     </select>
@@ -134,7 +135,8 @@ const WidgetNewPopup: React.FC<WidgetNewPopupProps> = ({ onClose, triggerRef }) 
             <div className={styles.timezone}>GMT+9</div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

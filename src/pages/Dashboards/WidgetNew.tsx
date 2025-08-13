@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
-import ReactDOM from 'react-dom'; // ReactDOM import 추가
+import ReactDOM from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Calendar } from 'lucide-react';
 import styles from './WidgetNew.module.css';
@@ -17,10 +17,10 @@ const WidgetNew: React.FC = () => {
   const [viewType, setViewType] = useState('Trace');
   const [chartType, setChartType] = useState('LineChart');
   const [isDateRangePickerOpen, setIsDateRangePickerOpen] = useState(false);
-  const dateRangeInputRef = useRef<HTMLDivElement>(null); // ref 추가
+  const dateRangeInputRef = useRef<HTMLDivElement>(null);
 
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(dayjs().subtract(7, 'day').toDate());
+  const [startDate, setStartDate] = useState(dayjs().subtract(7, 'day').toDate());
+  const [endDate, setEndDate] = useState(new Date());
   
   const formattedDateRange = useMemo(() => {
     const start = dayjs(startDate).format('MMM DD, YY : HH:mm');
@@ -41,7 +41,6 @@ const WidgetNew: React.FC = () => {
   return (
     <div className={styles.pageContainer}>
       <div className={styles.formContainer}>
-        {/* ... (fixedHeader, scrollableForm의 다른 부분은 이전과 동일) ... */}
         <div className={styles.fixedHeader}>
           <header className={styles.breadcrumbs}>
             <LayoutDashboard size={16} />
@@ -60,7 +59,6 @@ const WidgetNew: React.FC = () => {
         </div>
 
         <div className={styles.scrollableForm}>
-            {/* ... (다른 FormGroup들은 이전과 동일) ... */}
             <h3 className={styles.subheading}>Data Selection</h3>
             <FormGroup
                 htmlFor="widget-view"
@@ -117,9 +115,9 @@ const WidgetNew: React.FC = () => {
                 label="Description"
                 subLabel="Optional description."
             >
-                <textarea
+                <input
                 id="widget-description"
-                className="form-textarea"
+                className="form-input"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 />
@@ -149,9 +147,9 @@ const WidgetNew: React.FC = () => {
             >
                 <div className={styles.dateRangeContainer}>
                 <div
-                    ref={dateRangeInputRef} // ref 연결
+                    ref={dateRangeInputRef}
                     className={styles.dateRangeInput}
-                    onClick={() => setIsDateRangePickerOpen(true)} // 팝업 열기
+                    onClick={() => setIsDateRangePickerOpen(true)}
                 >
                     <Calendar size={16} />
                     <span>{formattedDateRange}</span>
@@ -172,16 +170,18 @@ const WidgetNew: React.FC = () => {
         </div>
       </div>
       
-      {/* Portal을 사용하여 팝업을 body 최상단에 렌더링 */}
+      {/* ---▼ `startDate`와 `endDate` props 전달하도록 수정 ▼--- */}
       {isDateRangePickerOpen && ReactDOM.createPortal(
         <WidgetNewPopup 
+          startDate={startDate}
+          endDate={endDate}
           triggerRef={dateRangeInputRef}
           onClose={() => setIsDateRangePickerOpen(false)} 
         />,
         document.body
       )}
+      {/* ---▲ `startDate`와 `endDate` props 전달하도록 수정 ▲--- */}
 
-      {/* 오른쪽 미리보기 영역 */}
       <div className={styles.previewContainer}>
         <h2 className={styles.previewHeader}>Preview</h2>
         <div className={styles.previewContent}>
