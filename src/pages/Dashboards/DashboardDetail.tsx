@@ -1,4 +1,5 @@
 import React from 'react';
+import { useParams } from 'react-router-dom'; // 1. useParams import
 import styles from './DashboardDetail.module.css';
 import { Info, Calendar, Filter } from 'lucide-react';
 import WidgetCard from 'components/Dashboard/WidgetCard';
@@ -12,26 +13,41 @@ import BigNumberChart from 'components/Chart/BigNumberChart';
 import HistogramChart from 'components/Chart/HistogramChart';
 import PivotTable from 'components/Chart/PivotTableChart';
 
-
 import {
   totalTraces,
-  // totalObservations
   costByModelData,
   costByEnvironmentData,
   totalCostData,
   topUsersCostData,
-  dummyPivotData, // ---▼ dummyPivotData import ▼---
+  dummyPivotData,
 } from 'data/dummyDashboardDetailData';
-
+import { DUMMY_DASHBOARDS } from 'data/dummyDashboardData'; // 2. 대시보드 목록 데이터 import
 
 const DashboardDetail: React.FC = () => {
+  const { dashboardId } = useParams<{ dashboardId: string }>(); // 3. URL에서 dashboardId 추출
+
+  // 4. dashboardId를 이용해 현재 대시보드 정보 찾기
+  const currentDashboard = DUMMY_DASHBOARDS.find(
+    (d) => d.name.toLowerCase().replace(/\s+/g, '-') === dashboardId
+  );
+
   const totalEnvCost = costByEnvironmentData.reduce((sum, item) => sum + item.value, 0).toFixed(3);
+
+  // 5. 대시보드 정보가 없을 경우 처리
+  if (!currentDashboard) {
+    return (
+      <div className={styles.container}>
+        <h1>Dashboard not found</h1>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <div className={styles.titleGroup}>
-          <h1 className={styles.title}>Langfuse Dashboard</h1>
+          {/* 6. 제목을 동적으로 변경 */}
+          <h1 className={styles.title}>{currentDashboard.name}</h1>
           <Info size={16} className={styles.infoIcon} />
         </div>
       </div>
@@ -48,11 +64,10 @@ const DashboardDetail: React.FC = () => {
           <BigNumberChart value={totalTraces} />
         </WidgetCard>
         
-        {/* ---▼ AreaChart 예시 추가 ▼--- */}
+        {/* AreaChart 예시 */}
         <WidgetCard title="Total Observations" subtitle="Shows the count of Observations">
             <AreaChart data={totalCostData} dataKey="value" nameKey="name"/>
         </WidgetCard>
-        {/* ---▲ AreaChart 예시 추가 ▲--- */}
 
         {/* LineChart 예시 (Time Series) */}
         <WidgetCard title="Total costs ($)" subtitle="Total cost across all use cases" gridSpan={2}>

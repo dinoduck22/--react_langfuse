@@ -3,45 +3,15 @@ import { Link } from 'react-router-dom';
 import { DataTable } from '../../components/DataTable/DataTable';
 import { Bot, ChevronDown } from 'lucide-react';
 import styles from './Dashboards.module.css';
-
-type Dashboard = {
-  name: string;
-  description: string;
-  owner: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-const DUMMY_DASHBOARDS: Dashboard[] = [
-    {
-        name: 'Langfuse Cost Dashboard',
-        description: 'Review your LLM costs.',
-        owner: 'Langfuse',
-        createdAt: '2025-05-21 00:38:32',
-        updatedAt: '2025-05-21 01:09:56',
-    },
-    {
-        name: 'Langfuse Usage Management',
-        description: 'Track usage metrics across traces, observations, and scores to manage resource allocation.',
-        owner: 'Langfuse',
-        createdAt: '2025-05-20 23:18:27',
-        updatedAt: '2025-05-21 00:56:46',
-    },
-    {
-        name: 'Langfuse Latency Dashboard',
-        description: 'Monitor latency metrics across traces and generations for performance optimization.',
-        owner: 'Langfuse',
-        createdAt: '2025-05-20 22:36:15',
-        updatedAt: '2025-05-21 00:56:46',
-    },
-];
+import { DUMMY_DASHBOARDS, Dashboard } from 'data/dummyDashboardData'; // 데이터를 분리한 파일에서 import
 
 const columns = [
   {
     header: 'Name',
+    // accessor를 수정하여 Name을 클릭하면 Link 컴포넌트를 통해 페이지 이동이 되도록 설정
     accessor: (row: Dashboard) => (
-        <Link 
-        to={`/dashboards/${row.name.toLowerCase().replace(/\s+/g, '-')}`} 
+        <Link
+        to={`/dashboards/${row.name.toLowerCase().replace(/\s+/g, '-')}`}
         className={styles.dashboardLink}
       >
         {row.name}

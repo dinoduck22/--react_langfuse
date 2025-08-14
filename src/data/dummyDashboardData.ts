@@ -22,3 +22,35 @@ export const dailyTrend: DailyPoint[] = [
   { date: "2025-08-06", score: 86 },
   { date: "2025-08-07", score: 85 },
 ];
+
+export type Dashboard = {
+  name: string;
+  description: string;
+  owner: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export const DUMMY_DASHBOARDS: Dashboard[] = [
+    {
+        name: 'Langfuse Cost Dashboard',
+        description: 'Review your LLM costs.',
+        owner: 'Langfuse',
+        createdAt: '2025-05-21 00:38:32',
+        updatedAt: '2025-05-21 01:09:56',
+    },
+    {
+        name: 'Langfuse Usage Management',
+        description: 'Track usage metrics across traces, observations, and scores to manage resource allocation.',
+        owner: 'Langfuse',
+        createdAt: '2025-05-20 23:18:27',
+        updatedAt: '2025-05-21 00:56:46',
+    },
+    {
+        name: 'Langfuse Latency Dashboard',
+        description: 'Monitor latency metrics across traces and generations for performance optimization.',
+        owner: 'Langfuse',
+        createdAt: '2025-05-20 22:36:15',
+        updatedAt: '2025-05-21 00:56:46',
+    },
+];
