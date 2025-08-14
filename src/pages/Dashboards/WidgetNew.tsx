@@ -23,6 +23,7 @@ import LineChart from '../../components/Chart/LineChart';
 import BarChart from '../../components/Chart/BarChart';
 import PieChart from '../../components/Chart/PieChart';
 import BigNumberChart from '../../components/Chart/BigNumberChart';
+import HistogramChart from '../../components/Chart/HistogramChart';
 // ---▲ 차트 컴포넌트 import 추가 ▲---
 
 // --- Chart Type 옵션 데이터 ---
@@ -158,7 +159,7 @@ const WidgetNew: React.FC = () => {
       case 'HorizontalBarChart':
         return <div style={chartStyle}><BarChart data={dummyChartData} dataKey="value" nameKey="name" layout="vertical" /></div>;
       case 'Histogram':
-        return <div style={chartStyle}><BarChart data={dummyChartData} dataKey="value" nameKey="name" layout="horizontal" /></div>;
+        return <div style={chartStyle}><HistogramChart data={dummyChartData} dataKey="value" nameKey="name" /></div>;
       case 'PieChart':
         return <div style={chartStyle}><PieChart data={dummyChartData} dataKey="value" nameKey="name" /></div>;
       case 'BigNumber':
