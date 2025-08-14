@@ -4,10 +4,7 @@ import Layout from './layouts/Layout';
 
 import Home from './pages/Home/Home';
 
-import Tracing from './pages/Tracing/Tracing';
-import TraceDetail from './pages/Tracing/TraceDetail';
-import SpanDetail from './pages/Tracing/SpanDetail';
-import SessionDetail from './pages/Tracing/SessionDetail';
+import Sessions from './pages/Tracing/Sessions'; 
 
 import Prompts from './pages/Prompts/Prompts';
 import PromptsDetail from './pages/Prompts/PromptsDetail';
@@ -48,7 +45,7 @@ const Integrations = Placeholder('Integrations');
 const Exports = Placeholder('Exports');
 const AuditLogs = Placeholder('Audit Logs');
 
-const Sessions = Placeholder('Sessions');  // 사이드바 링크용 (/sessions)
+// const Sessions = Placeholder('Sessions');  // 사이드바 링크용 (/sessions)
 const Users = Placeholder('Users');        // 사이드바 링크용 (/users)
 // const Playground = Placeholder('Playground');  // 사이드바 링크용 (/playground)
 // const Datasets = Placeholder('Datasets');      // 사이드바 링크용 (/datasets)
@@ -63,21 +60,15 @@ export default function App() {
         <Route index element={<Home />} />Pages/
 
         {/* 사이드바 링크 보완용 라우트들 */}
-        <Route path="sessions" element={<Sessions />} />
         <Route path="users" element={<Users />} />
 
         {/* Tracing */}
-        <Route path="tracing" element={<Tracing />} />
-        <Route path="tracing/:id" element={<TraceDetail />} />
-        <Route path="tracing/:traceId/spans/:spanId" element={<SpanDetail />} />
-        <Route path="tracing/:traceId/sessions/:sessionId" element={<SessionDetail />} />
+        <Route path="sessions" element={<Sessions />} />
 
         {/* Prompts */}
         <Route path="prompts" element={<Prompts />} />
         <Route path="prompts/:id" element={<PromptsDetail />} />
         <Route path="prompts/new" element={<PromptsNew />} />
-
-        {/* Tracing */}
 
         {/* Playground */}
         <Route path="playground" element={<Playground />} />
