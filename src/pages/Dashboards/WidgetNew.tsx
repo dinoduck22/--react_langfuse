@@ -1,8 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-    LayoutDashboard, 
+import {
+    LayoutDashboard,
     Calendar,
     LineChart as LineChartIcon,
     BarChartBig,
@@ -18,18 +18,22 @@ import WidgetCard from '../../components/Dashboard/WidgetCard';
 import WidgetNewPopup from './WidgetNewPopup';
 import dayjs from 'dayjs';
 
-// ---▼ 차트 컴포넌트 import 추가 ▼---
+// --- 차트 컴포넌트 import ---
 import LineChart from '../../components/Chart/LineChart';
 import BarChart from '../../components/Chart/BarChart';
 import PieChart from '../../components/Chart/PieChart';
 import BigNumberChart from '../../components/Chart/BigNumberChart';
 import HistogramChart from '../../components/Chart/HistogramChart';
-// ---▲ 차트 컴포넌트 import 추가 ▲---
+import PivotTable from 'components/Chart/PivotTableChart';
+// import AreaChart from 'components/Chart/AreaChart';
+
+// ---▼ 분리된 더미 데이터 import ▼---
+import { dummyChartData, dummyPivotData } from '../../data/dummyWidgetData';
 
 // --- Chart Type 옵션 데이터 ---
 const chartTypeOptions = [
-    { 
-        group: 'Time Series', 
+    {
+        group: 'Time Series',
         options: [
             { value: 'LineChart', label: 'Line Chart', icon: <LineChartIcon size={16} /> },
             { value: 'VerticalBarChart', label: 'Vertical Bar Chart', icon: <BarChartBig size={16} /> }
@@ -60,22 +64,14 @@ const dateRangeOptions = [
 ];
 type DateRangePreset = typeof dateRangeOptions[number]['value'];
 
-// ---▼ 미리보기 차트를 위한 더미 데이터 ▼---
-const dummyChartData = [
-    { name: 'GPT-4', value: 450 },
-    { name: 'Claude 2', value: 320 },
-    { name: 'GPT-3.5', value: 280 },
-    { name: 'Llama 2', value: 180 },
-];
-// ---▲ 미리보기 차트를 위한 더미 데이터 ▲---
 
 const WidgetNew: React.FC = () => {
   const navigate = useNavigate();
-  
+
   const [name, setName] = useState('Count(Trace)');
   const [description, setDescription] = useState('');
   const [viewType, setViewType] = useState('Trace');
-  
+
   const [chartType, setChartType] = useState(chartTypeOptions[0].options[0]);
   const [isChartTypeOpen, setIsChartTypeOpen] = useState(false);
   const chartTypeRef = useRef<HTMLDivElement>(null);
@@ -103,7 +99,7 @@ const WidgetNew: React.FC = () => {
 
     const valueStr = dateRangePreset.slice(0, -1);
     const unit = dateRangePreset.slice(-1);
-    const value = parseInt(valueStr) || 1; 
+    const value = parseInt(valueStr) || 1;
 
     switch (unit) {
       case 'm':
@@ -124,12 +120,12 @@ const WidgetNew: React.FC = () => {
       default:
         newStartDate = new Date();
     }
-    
+
     setEndDate(newEndDate);
     setStartDate(newStartDate);
 
   }, [dateRangePreset]);
-  
+
   const formattedDateRange = useMemo(() => {
     const start = dayjs(startDate).format('MMM DD, YY : HH:mm');
     const end = dayjs(endDate).format('MMM DD, YY : HH:mm');
@@ -142,11 +138,6 @@ const WidgetNew: React.FC = () => {
     navigate('/dashboards');
   };
 
-  const handleCancel = () => {
-    navigate('/dashboards');
-  };
-
-  // ---▼ 선택된 차트 타입에 따라 미리보기를 렌더링하는 함수 ▼---
   const renderPreviewChart = () => {
     const chartStyle = { width: '100%', height: '100%' };
     const totalValue = dummyChartData.reduce((sum, item) => sum + item.value, 0);
@@ -165,12 +156,11 @@ const WidgetNew: React.FC = () => {
       case 'BigNumber':
         return <BigNumberChart value={totalValue.toLocaleString()} />;
       case 'PivotTable':
-        return <div>Pivot Table Preview</div>;
+        return <PivotTable data={dummyPivotData} rows={['model']} cols={['region']} value="value" />;
       default:
         return <div>Select a chart type to see a preview.</div>;
     }
   };
-  // ---▲ 선택된 차트 타입에 따라 미리보기를 렌더링하는 함수 ▲---
 
   return (
     <div className={styles.pageContainer}>
@@ -247,19 +237,20 @@ const WidgetNew: React.FC = () => {
             >
                 <input
                   id="widget-description"
+                  type="text"
                   className="form-input"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
             </FormGroup>
-            
+
             <FormGroup
                 htmlFor="widget-chart-type"
                 label="Chart Type"
                 subLabel="The visualization type for this widget."
             >
                 <div className={styles.customSelectContainer} ref={chartTypeRef}>
-                    <button 
+                    <button
                         className={styles.customSelectValue}
                         onClick={() => setIsChartTypeOpen(prev => !prev)}
                     >
@@ -272,7 +263,7 @@ const WidgetNew: React.FC = () => {
                                 <React.Fragment key={group.group}>
                                     <li className={styles.optionGroupLabel}>{group.group}</li>
                                     {group.options.map(option => (
-                                        <li 
+                                        <li
                                             key={option.value}
                                             className={styles.option}
                                             onClick={() => {
@@ -329,18 +320,17 @@ const WidgetNew: React.FC = () => {
           </button>
         </div>
       </div>
-      
+
       {isDateRangePickerOpen && ReactDOM.createPortal(
-        <WidgetNewPopup 
+        <WidgetNewPopup
           startDate={startDate}
           endDate={endDate}
           triggerRef={dateRangeInputRef}
-          onClose={() => setIsDateRangePickerOpen(false)} 
+          onClose={() => setIsDateRangePickerOpen(false)}
         />,
         document.body
       )}
 
-      {/* ---▼ 미리보기 영역에 동적 렌더링 함수 연결 ▼--- */}
       <div className={styles.previewContainer}>
         <h2 className={styles.previewHeader}>Preview</h2>
         <div className={styles.previewContent}>
@@ -349,7 +339,6 @@ const WidgetNew: React.FC = () => {
           </WidgetCard>
         </div>
       </div>
-       {/* ---▲ 미리보기 영역에 동적 렌더링 함수 연결 ▲--- */}
     </div>
   );
 };
