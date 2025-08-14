@@ -1,14 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
-import styles from './WidgetNewPopup.module.css';
+import styles from './DateRangePopup.module.css';
 import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import dayjs from 'dayjs';
+import { dateRangeOptions, DateRangePreset } from './dateRangeOptions';
 
-interface WidgetNewPopupProps {
+
+interface DateRangePopupProps {
   startDate: Date;
   endDate: Date;
+  setStartDate: (date: Date) => void;
+  setEndDate: (date: Date) => void;
   onClose: () => void;
-  triggerRef: React.RefObject<HTMLDivElement>;
+  triggerRef: React.RefObject<HTMLElement>;
+  dateRangePreset: DateRangePreset | null;
+  setDateRangePreset: (preset: DateRangePreset) => void;
 }
 
 // 단일 월 달력을 렌더링하는 내부 컴포넌트
@@ -67,7 +73,7 @@ const CalendarMonth: React.FC<{
 };
 
 // 메인 팝업 컴포넌트
-const WidgetNewPopup: React.FC<WidgetNewPopupProps> = ({ startDate, endDate, onClose, triggerRef }) => {
+const DateRangePopup: React.FC<DateRangePopupProps> = ({ startDate, endDate, setStartDate, setEndDate, onClose, triggerRef, dateRangePreset, setDateRangePreset }) => {
   const popupRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 });
 
@@ -75,9 +81,9 @@ const WidgetNewPopup: React.FC<WidgetNewPopupProps> = ({ startDate, endDate, onC
   useEffect(() => {
     if (triggerRef.current && popupRef.current) {
       const triggerRect = triggerRef.current.getBoundingClientRect();
-      const popupRect = popupRef.current.getBoundingClientRect();
+      const popupRect = popupRef.current.getBoundingClientRect(); // 팝업 자신의 크기를 가져옵니다.
       setPosition({
-        top: triggerRect.top - popupRect.height - 8,
+        top: triggerRect.top - popupRect.height - 8, // 버튼의 상단에서 팝업 높이만큼 위로 이동
         left: triggerRect.left,
       });
     }
@@ -88,8 +94,8 @@ const WidgetNewPopup: React.FC<WidgetNewPopupProps> = ({ startDate, endDate, onC
   const end = dayjs(endDate);
   
   // props로 받은 시작 날짜와 그 다음 달을 렌더링합니다.
-  const firstMonth = start;
-  const secondMonth = start.add(1, 'month');
+  const firstMonth = end.subtract(1, 'month');
+  const secondMonth = end;
 
   return ReactDOM.createPortal(
     <div className={styles.overlay} onClick={onClose}>
@@ -140,4 +146,4 @@ const WidgetNewPopup: React.FC<WidgetNewPopupProps> = ({ startDate, endDate, onC
   );
 };
 
-export default WidgetNewPopup;
+export default DateRangePopup;

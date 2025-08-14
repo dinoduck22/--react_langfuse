@@ -40,6 +40,8 @@ const DonutChart = <T extends object>({
             }}
             labelStyle={{ color: '#94a3b8' }}
             itemStyle={{ color: '#e2e8f0' }}
+            // 툴팁이 다른 요소들보다 위에 보이도록 zIndex를 추가합니다.
+            wrapperStyle={{ zIndex: 1000 }}
           />
         </PieChart>
       </ResponsiveContainer>

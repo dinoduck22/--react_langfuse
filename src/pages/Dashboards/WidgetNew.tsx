@@ -1,9 +1,7 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
-    Calendar,
     LineChart as LineChartIcon,
     BarChartBig,
     Sigma,
@@ -13,22 +11,21 @@ import {
     Table2
 } from 'lucide-react';
 import styles from './WidgetNew.module.css';
-import FormGroup from '../../components/Form/FormGroup';
-import WidgetCard from '../../components/Dashboard/WidgetCard';
-import WidgetNewPopup from './WidgetNewPopup';
-import dayjs from 'dayjs';
+import FormGroup from 'components/Form/FormGroup';
+import WidgetCard from 'components/Dashboard/WidgetCard';
+import DateRangePicker from 'components/DateRange/DateRangePicker'; 
 
 // --- 차트 컴포넌트 import ---
-import LineChart from '../../components/Chart/LineChart';
-import BarChart from '../../components/Chart/BarChart';
-import PieChart from '../../components/Chart/PieChart';
-import BigNumberChart from '../../components/Chart/BigNumberChart';
-import HistogramChart from '../../components/Chart/HistogramChart';
+import LineChart from 'components/Chart/LineChart';
+import BarChart from 'components/Chart/BarChart';
+import PieChart from 'components/Chart/PieChart';
+import BigNumberChart from 'components/Chart/BigNumberChart';
+import HistogramChart from 'components/Chart/HistogramChart';
 import PivotTable from 'components/Chart/PivotTableChart';
 // import AreaChart from 'components/Chart/AreaChart';
 
 // ---▼ 분리된 더미 데이터 import ▼---
-import { dummyChartData, dummyPivotData } from '../../data/dummyWidgetData';
+import { dummyChartData, dummyPivotData } from 'data/dummyWidgetData';
 
 // --- Chart Type 옵션 데이터 ---
 const chartTypeOptions = [
@@ -51,20 +48,6 @@ const chartTypeOptions = [
     }
 ];
 
-const dateRangeOptions = [
-  { value: '5m', label: '5 min' },
-  { value: '30m', label: '30 min' },
-  { value: '1h', label: '1 hour' },
-  { value: '3h', label: '3 hours' },
-  { value: '24h', label: '24 hours' },
-  { value: '7d', label: '7 days' },
-  { value: '1M', label: '1 month' },
-  { value: '3M', label: '3 months' },
-  { value: '1y', label: '1 year' },
-];
-type DateRangePreset = typeof dateRangeOptions[number]['value'];
-
-
 const WidgetNew: React.FC = () => {
   const navigate = useNavigate();
 
@@ -76,13 +59,6 @@ const WidgetNew: React.FC = () => {
   const [isChartTypeOpen, setIsChartTypeOpen] = useState(false);
   const chartTypeRef = useRef<HTMLDivElement>(null);
 
-  const [isDateRangePickerOpen, setIsDateRangePickerOpen] = useState(false);
-  const dateRangeInputRef = useRef<HTMLDivElement>(null);
-
-  const [startDate, setStartDate] = useState(dayjs().subtract(7, 'day').toDate());
-  const [endDate, setEndDate] = useState(new Date());
-  const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>('7d');
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (chartTypeRef.current && !chartTypeRef.current.contains(event.target as Node)) {
@@ -93,47 +69,9 @@ const WidgetNew: React.FC = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    const newEndDate = new Date();
-    let newStartDate: Date;
-
-    const valueStr = dateRangePreset.slice(0, -1);
-    const unit = dateRangePreset.slice(-1);
-    const value = parseInt(valueStr) || 1;
-
-    switch (unit) {
-      case 'm':
-        newStartDate = dayjs(newEndDate).subtract(value, 'minute').toDate();
-        break;
-      case 'h':
-        newStartDate = dayjs(newEndDate).subtract(value, 'hour').toDate();
-        break;
-      case 'd':
-        newStartDate = dayjs(newEndDate).subtract(value, 'day').toDate();
-        break;
-      case 'M':
-        newStartDate = dayjs(newEndDate).subtract(value, 'month').toDate();
-        break;
-      case 'y':
-        newStartDate = dayjs(newEndDate).subtract(value, 'year').toDate();
-        break;
-      default:
-        newStartDate = new Date();
-    }
-
-    setEndDate(newEndDate);
-    setStartDate(newStartDate);
-
-  }, [dateRangePreset]);
-
-  const formattedDateRange = useMemo(() => {
-    const start = dayjs(startDate).format('MMM DD, YY : HH:mm');
-    const end = dayjs(endDate).format('MMM DD, YY : HH:mm');
-    return `${start} - ${end}`;
-  }, [startDate, endDate]);
-
   const handleSave = () => {
-    console.log({ name, description, viewType, chartType: chartType.value, startDate, endDate });
+    // 저장 로직에서 날짜 관련 부분은 DateRangePicker의 상태를 참조해야 함 (지금은 단순 예시)
+    console.log({ name, description, viewType, chartType: chartType.value });
     alert(`Widget "${name}" saved! Check the console for details.`);
     navigate('/dashboards');
   };
@@ -287,26 +225,7 @@ const WidgetNew: React.FC = () => {
                 label="Date Range"
                 subLabel="The time range for the data."
             >
-                <div className={styles.dateRangeContainer}>
-                <div
-                    ref={dateRangeInputRef}
-                    className={styles.dateRangeInput}
-                    onClick={() => setIsDateRangePickerOpen(true)}
-                >
-                    <Calendar size={16} />
-                    <span>{formattedDateRange}</span>
-                </div>
-                <select
-                    id="widget-date-range-preset"
-                    className={styles.dateRangePreset}
-                    value={dateRangePreset}
-                    onChange={(e) => setDateRangePreset(e.target.value as DateRangePreset)}
-                    >
-                    {dateRangeOptions.map(option => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                </select>
-                </div>
+              <DateRangePicker />
             </FormGroup>
         </div>
 
@@ -320,16 +239,6 @@ const WidgetNew: React.FC = () => {
           </button>
         </div>
       </div>
-
-      {isDateRangePickerOpen && ReactDOM.createPortal(
-        <WidgetNewPopup
-          startDate={startDate}
-          endDate={endDate}
-          triggerRef={dateRangeInputRef}
-          onClose={() => setIsDateRangePickerOpen(false)}
-        />,
-        document.body
-      )}
 
       <div className={styles.previewContainer}>
         <h2 className={styles.previewHeader}>Preview</h2>

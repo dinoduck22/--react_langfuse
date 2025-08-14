@@ -1,8 +1,10 @@
 import React from 'react';
-import { useParams } from 'react-router-dom'; // 1. useParams import
+import { useParams } from 'react-router-dom';
 import styles from './DashboardDetail.module.css';
-import { Info, Calendar, Filter } from 'lucide-react';
+import { Info, Calendar, Filter, Plus } from 'lucide-react';
 import WidgetCard from 'components/Dashboard/WidgetCard';
+import DateRangePicker from 'components/DateRange/DateRangePicker';
+
 
 // 필요한 모든 차트 컴포넌트를 import 합니다.
 import AreaChart from 'components/Chart/AreaChart';
@@ -50,11 +52,14 @@ const DashboardDetail: React.FC = () => {
           <h1 className={styles.title}>{currentDashboard.name}</h1>
           <Info size={16} className={styles.infoIcon} />
         </div>
+        {/* ▼▼▼ 이미지처럼 Add Widget 버튼 추가 ▼▼▼ */}
+        <button className={styles.addWidgetButton}>
+          <Plus size={16} /> Add Widget
+        </button>
       </div>
 
       <div className={styles.filterBar}>
-        <button className={styles.filterButton}><Calendar size={16} /> Aug 06, 25 13:57 - Aug 13, 25 13:57</button>
-        <button className={styles.filterButton}>Past 7 days</button>
+        <DateRangePicker />
         <button className={styles.filterButton}><Filter size={14} /> Filters</button>
       </div>
 
