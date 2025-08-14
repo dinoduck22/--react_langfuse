@@ -4,7 +4,7 @@ import { Info, Calendar, Filter } from 'lucide-react';
 import WidgetCard from 'components/Dashboard/WidgetCard';
 import AreaChart from 'components/Chart/AreaChart';
 import BarChart from 'components/Chart/BarChart';
-import DonutChart from 'components/Chart/DonutChart';
+import PieChart from 'components/Chart/PieChart';
 import LineChart from 'components/Chart/LineChart'; // Import LineChart
 
 import {
@@ -68,11 +68,11 @@ const DashboardDetail: React.FC = () => {
         </WidgetCard>
 
         <WidgetCard title="Cost by Environment ($)" subtitle="Total cost broken down by trace.environment">
-          <div className={styles.donutContainer}>
-            <DonutChart data={costByEnvironmentData} dataKey="value" nameKey="name" />
-            <div className={styles.donutCenter}>
-              <div className={styles.donutTotal}>${totalEnvCost}</div>
-              <div className={styles.donutSubtitle}>Total</div>
+          <div className={styles.pieContainer}>
+            <PieChart data={costByEnvironmentData} dataKey="value" nameKey="name" />
+            <div className={styles.pieCenter}>
+              <div className={styles.pieTotal}>${totalEnvCost}</div>
+              <div className={styles.pieSubtitle}>Total</div>
             </div>
           </div>
         </WidgetCard>
