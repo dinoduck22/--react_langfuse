@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Calendar } from 'lucide-react';
@@ -8,6 +8,21 @@ import WidgetCard from '../../components/Dashboard/WidgetCard';
 import TraceChart from '../../components/Chart/TraceChart';
 import WidgetNewPopup from './WidgetNewPopup';
 import dayjs from 'dayjs';
+
+// ---▼ 프리셋 옵션과 타입 정의 ▼---
+const dateRangeOptions = [
+  { value: '5m', label: '5 min' },
+  { value: '30m', label: '30 min' },
+  { value: '1h', label: '1 hour' },
+  { value: '3h', label: '3 hours' },
+  { value: '24h', label: '24 hours' },
+  { value: '7d', label: '7 days' },
+  { value: '1M', label: '1 month' },
+  { value: '3M', label: '3 months' },
+  { value: '1y', label: '1 year' },
+];
+type DateRangePreset = typeof dateRangeOptions[number]['value'];
+// ---▲ 프리셋 옵션과 타입 정의 ▲---
 
 const WidgetNew: React.FC = () => {
   const navigate = useNavigate();
@@ -21,6 +36,43 @@ const WidgetNew: React.FC = () => {
 
   const [startDate, setStartDate] = useState(dayjs().subtract(7, 'day').toDate());
   const [endDate, setEndDate] = useState(new Date());
+  // ---▼ dateRangePreset 상태 추가 ▼---
+  const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset>('7d');
+  // ---▲ dateRangePreset 상태 추가 ▲---
+
+  // ---▼ 프리셋 변경 시 날짜를 업데이트하는 useEffect 추가 ▼---
+  useEffect(() => {
+    const newEndDate = new Date();
+    let newStartDate: Date;
+
+    const value = parseInt(dateRangePreset);
+    const unit = dateRangePreset.slice(-1);
+
+    switch (unit) {
+      case 'm':
+        newStartDate = dayjs(newEndDate).subtract(value, 'minute').toDate();
+        break;
+      case 'h':
+        newStartDate = dayjs(newEndDate).subtract(value, 'hour').toDate();
+        break;
+      case 'd':
+        newStartDate = dayjs(newEndDate).subtract(value, 'day').toDate();
+        break;
+      case 'M':
+        newStartDate = dayjs(newEndDate).subtract(value, 'month').toDate();
+        break;
+      case 'y':
+        newStartDate = dayjs(newEndDate).subtract(value, 'year').toDate();
+        break;
+      default:
+        newStartDate = new Date();
+    }
+    
+    setEndDate(newEndDate);
+    setStartDate(newStartDate);
+
+  }, [dateRangePreset]);
+  // ---▲ 프리셋 변경 시 날짜를 업데이트하는 useEffect 추가 ▲---
   
   const formattedDateRange = useMemo(() => {
     const start = dayjs(startDate).format('MMM DD, YY : HH:mm');
@@ -145,6 +197,7 @@ const WidgetNew: React.FC = () => {
                 label="Date Range"
                 subLabel="The time range for the data."
             >
+                {/* ---▼ 버튼을 select로 변경하고 상태와 연결 ▼--- */}
                 <div className={styles.dateRangeContainer}>
                 <div
                     ref={dateRangeInputRef}
@@ -154,13 +207,23 @@ const WidgetNew: React.FC = () => {
                     <Calendar size={16} />
                     <span>{formattedDateRange}</span>
                 </div>
-                <button className={styles.dateRangePreset}>Past 7...</button>
+                <select
+                    id="widget-date-range-preset"
+                    className={styles.dateRangePreset}
+                    value={dateRangePreset}
+                    onChange={(e) => setDateRangePreset(e.target.value as DateRangePreset)}
+                    >
+                    {dateRangeOptions.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                </select>
                 </div>
+                {/* ---▲ 버튼을 select로 변경하고 상태와 연결 ▲--- */}
             </FormGroup>
         </div>
 
         <div className={styles.actions}>
-          <button
+           <button
             className={styles.saveButton}
             onClick={handleSave}
             disabled={!name.trim()}
@@ -170,7 +233,6 @@ const WidgetNew: React.FC = () => {
         </div>
       </div>
       
-      {/* ---▼ `startDate`와 `endDate` props 전달하도록 수정 ▼--- */}
       {isDateRangePickerOpen && ReactDOM.createPortal(
         <WidgetNewPopup 
           startDate={startDate}
@@ -180,7 +242,6 @@ const WidgetNew: React.FC = () => {
         />,
         document.body
       )}
-      {/* ---▲ `startDate`와 `endDate` props 전달하도록 수정 ▲--- */}
 
       <div className={styles.previewContainer}>
         <h2 className={styles.previewHeader}>Preview</h2>
