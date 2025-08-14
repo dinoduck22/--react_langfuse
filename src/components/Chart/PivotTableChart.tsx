@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from './PivotTable.module.css';
+import styles from './PivotTableChart.module.css';
 
 // ---▼ `any` 타입을 Record<string, string | number>로 수정 ▼---
 // 피벗 테이블 데이터의 각 행이 문자열 키와 문자열 또는 숫자 값을 갖도록 명시합니다.
