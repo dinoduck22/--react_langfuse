@@ -4,9 +4,9 @@
   border: 1px solid #1e293b;
   display: flex;
   flex-direction: column;
-  width: 100%; /* WidgetCard의 너비를 부모에 맞춤 */
-  height: 100%; /* WidgetCard의 높이를 부모에 맞춤 */
-  overflow: hidden; /* 내용이 넘칠 경우 처리 */
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 .header {
@@ -32,7 +32,7 @@
 
 .content {
   padding: 16px;
-  flex-grow: 1; /* content 영역이 남은 공간을 모두 차지하도록 함 */
+  flex-grow: 1;
   display: flex;
   width: 100%;
   height: 100%;

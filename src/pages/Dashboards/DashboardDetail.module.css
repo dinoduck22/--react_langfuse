@@ -94,11 +94,12 @@
   color: #f1f5f9;
 }
 
-/* 도넛 차트 관련 스타일 추가 */
+/* 도넛 차트 관련 스타일 수정 */
 .pieContainer {
   position: relative;
-  width: 100%;
-  height: 150px; /* 위젯 카드 높이와 맞게 조정 */
+  width: 150px; /* 차트의 가로 크기 */
+  height: 150px; /* 차트의 세로 크기 */
+  margin: auto; /* flex container 내부에서 자식 요소를 중앙 정렬 */
 }
 
 .pieCenter {
@@ -107,7 +108,7 @@
   left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
-  pointer-events: none; /* 차트 툴팁이 가려지지 않도록 설정 */
+  pointer-events: none;
 }
 
 .pieTotal {

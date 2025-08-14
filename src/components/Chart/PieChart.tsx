@@ -10,10 +10,10 @@ interface DonutChartProps<T> {
 
 const COLORS = ['#60a5fa', '#34d399', '#facc15', '#fb923c', '#f87171'];
 
-const DonutChart = <T extends object>({ 
-  data, 
-  dataKey, 
-  nameKey 
+const DonutChart = <T extends object>({
+  data,
+  dataKey,
+  nameKey
 }: DonutChartProps<T>): React.ReactElement => {
   return (
     <div className={styles.chartContainer}>
@@ -23,8 +23,8 @@ const DonutChart = <T extends object>({
             data={data}
             cx="50%"
             cy="50%"
-            outerRadius={60}
-            innerRadius={40}
+            outerRadius="80%"
+            innerRadius="60%"
             dataKey={dataKey}
             nameKey={nameKey}
           >

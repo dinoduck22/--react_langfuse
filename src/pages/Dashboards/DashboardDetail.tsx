@@ -81,11 +81,11 @@ const DashboardDetail: React.FC = () => {
 
         {/* PieChart 예시 (Total Value) */}
         <WidgetCard title="Cost by Environment ($)" subtitle="Total cost broken down by trace.environment">
-          <div className={styles.donutContainer}>
+          <div className={styles.pieContainer}>
             <PieChart data={costByEnvironmentData} dataKey="value" nameKey="name" />
-            <div className={styles.donutCenter}>
-              <div className={styles.donutTotal}>${totalEnvCost}</div>
-              <div className={styles.donutSubtitle}>Total</div>
+            <div className={styles.pieCenter}>
+              <div className={styles.pieTotal}>${totalEnvCost}</div>
+              <div className={styles.pieSubtitle}>Total</div>
             </div>
           </div>
         </WidgetCard>
