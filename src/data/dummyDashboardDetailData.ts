@@ -97,3 +97,24 @@ export const dummyPivotData = [
     { model: 'Claude 2', region: 'EU', value: 120 },
     { model: 'GPT-3.5', region: 'US', value: 200 },
 ];
+
+// ▼▼▼ TraceChart용 데이터 추가 ▼▼▼
+export const tracesOverTimeData = [
+  { date: '2025-08-01', traces: 12 },
+  { date: '2025-08-02', traces: 18 },
+  { date: '2025-08-03', traces: 8 },
+  { date: '2025-08-04', traces: 20 },
+  { date: '2025-08-05', traces: 10 },
+];
+
+// ▼▼▼ CostChart용 데이터 추가 ▼▼▼
+export const costOverTimeData = [
+  { date: '8/7/25', cost: 1 },
+  { date: '8/8/25', cost: 2 },
+  { date: '8/9/25', cost: 1.5 },
+  { date: '8/10/25', cost: 3 },
+  { date: '8/11/25', cost: 2.5 },
+  { date: '8/12/25', cost: 4 },
+];
+
+// ... (다른 기존 데이터는 동일)

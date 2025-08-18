@@ -1,3 +1,5 @@
+// src/components/Chart/CostChart.tsx
+
 import {
   LineChart,
   Line,
@@ -8,22 +10,17 @@ import {
   CartesianGrid,
 } from 'recharts';
 import styles from './Chart.module.css';
+// 🔽 데이터 import 경로 추가
+import { costOverTimeData } from 'data/dummyDashboardDetailData';
 
-// 이미지의 차트와 유사한 더미 데이터
-const data = [
-  { date: '8/7/25', cost: 1 },
-  { date: '8/8/25', cost: 2 },
-  { date: '8/9/25', cost: 1.5 },
-  { date: '8/10/25', cost: 3 },
-  { date: '8/11/25', cost: 2.5 },
-  { date: '8/12/25', cost: 4 },
-];
+// 🔽 컴포넌트 내부에 있던 'data' 변수 삭제
 
 export default function CostChart() {
   return (
     <div className={styles.chartContainer}>
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 5, right: 20, left: -15, bottom: 5 }}>
+        {/* 🔽 data prop에 import한 데이터 사용 */}
+        <LineChart data={costOverTimeData} margin={{ top: 5, right: 20, left: -15, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
           <XAxis dataKey="date" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
           <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />

@@ -1,3 +1,5 @@
+// src/components/Chart/TraceChart.tsx
+
 import {
   LineChart,
   Line,
@@ -8,21 +10,18 @@ import {
   CartesianGrid,
 } from 'recharts';
 import styles from './TraceChart.module.css';
+// 🔽 데이터 import 경로 추가
+import { tracesOverTimeData } from 'data/dummyDashboardDetailData';
 
-const data = [
-  { date: '2025-08-01', traces: 12 },
-  { date: '2025-08-02', traces: 18 },
-  { date: '2025-08-03', traces: 8 },
-  { date: '2025-08-04', traces: 20 },
-  { date: '2025-08-05', traces: 10 },
-];
+// 🔽 컴포넌트 내부에 있던 'data' 변수 삭제
 
 export default function TraceChart() {
   return (
     <div className={styles.chartContainer}>
       <h3 className={styles.title}>📈 Traces Over Time</h3>
       <ResponsiveContainer width="100%" height={260}>
-        <LineChart data={data}>
+        {/* 🔽 data prop에 import한 데이터 사용 */}
+        <LineChart data={tracesOverTimeData}>
           <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
           <XAxis dataKey="date" stroke="#94a3b8" />
           <YAxis stroke="#94a3b8" />
