@@ -129,11 +129,3 @@ export const costOverTimeData = [
   { date: '8/11/25', cost: 2.5 },
   { date: '8/12/25', cost: 4 },
 ];
-
-export const dummyPivotData: PivotData[] = [
-    { model: 'GPT-4', region: 'US', value: 100 },
-    { model: 'GPT-4', region: 'EU', value: 150 },
-    { model: 'Claude 2', region: 'US', value: 80 },
-    { model: 'Claude 2', region: 'EU', value: 120 },
-    { model: 'GPT-3.5', region: 'US', value: 200 },
-];
