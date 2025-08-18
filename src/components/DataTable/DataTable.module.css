@@ -98,3 +98,19 @@
   align-items: center;
   gap: 8px;
 }
+.clickableRow {
+  cursor: pointer;
+}
+
+.clickableRow:hover {
+  background-color: #1e293b;
+}
+
+.selectedRow {
+  background-color: #2563eb !important; /* 선택 시 파란색 배경 */
+  color: white;
+}
+
+.selectedRow a { /* 선택된 행의 링크 색상도 흰색으로 */
+  color: white;
+}

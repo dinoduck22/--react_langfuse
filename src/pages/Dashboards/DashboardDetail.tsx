@@ -1,6 +1,6 @@
 import React, { useState } from 'react'; // useState 추가
 import { useParams } from 'react-router-dom';
-import { Info, Calendar, Filter, Plus } from 'lucide-react';
+import { Info, Filter, Plus } from 'lucide-react';
 import WidgetCard from 'components/Dashboard/WidgetCard';
 import DateRangePicker from 'components/DateRange/DateRangePicker';
 
@@ -19,6 +19,9 @@ import BigNumberChart from 'components/Chart/BigNumberChart';
 import HistogramChart from 'components/Chart/HistogramChart';
 import PivotTable from 'components/Chart/PivotTableChart';
 
+// add widget 버튼
+import AddWidgetModal from './AddWidgetModal'; // 🔽 모달 컴포넌트 import
+
 import {
   totalTraces,
   costByModelData,
@@ -34,6 +37,7 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 
 const DashboardDetail: React.FC = () => {
   const { dashboardId } = useParams<{ dashboardId: string }>(); // 3. URL에서 dashboardId 추출
+  const [isAddWidgetModalOpen, setAddWidgetModalOpen] = useState(false); // 🔽 모달 상태 추가
 
   // 4. dashboardId를 이용해 현재 대시보드 정보 찾기
   const currentDashboard = DUMMY_DASHBOARDS.find(
@@ -68,6 +72,12 @@ const DashboardDetail: React.FC = () => {
     );
   }
 
+  // 🔽 모달에서 위젯 추가 시 실행될 핸들러 (지금은 콘솔에 로그만 출력)
+  const handleAddWidget = (widgetId: string) => {
+    console.log("Adding widget:", widgetId);
+    // 여기에 실제 대시보드에 위젯을 추가하는 로직을 구현할 수 있습니다.
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -77,7 +87,7 @@ const DashboardDetail: React.FC = () => {
           <Info size={16} className={styles.infoIcon} />
         </div>
         {/* ▼▼▼ 이미지처럼 Add Widget 버튼 추가 ▼▼▼ */}
-        <button className={styles.addWidgetButton}>
+        <button className={styles.addWidgetButton} onClick={() => setAddWidgetModalOpen(true)}>
           <Plus size={16} /> Add Widget
         </button>
       </div>
@@ -144,6 +154,15 @@ const DashboardDetail: React.FC = () => {
           </WidgetCard>
         </div>
       </ResponsiveGridLayout>
+
+      {/* 🔽 모달을 조건부로 렌더링 */}
+      {isAddWidgetModalOpen && (
+        <AddWidgetModal
+          onClose={() => setAddWidgetModalOpen(false)}
+          onAddWidget={handleAddWidget}
+        />
+      )}
+
     </div>
   );
 };

@@ -21,6 +21,9 @@ interface DataTableProps<T> {
   renderEmptyState: () => React.ReactNode;
   // 각 행의 고유 key로 사용할 속성 이름을 받습니다.
   keyField: keyof T;
+  // 🔽 아래 2개 props 추가
+  selectedRowKey?: string | null;
+  onRowClick?: (row: T) => void;
 }
 
 export function DataTable<T>({
@@ -28,6 +31,8 @@ export function DataTable<T>({
   data,
   renderEmptyState,
   keyField,
+  selectedRowKey, // 🔽 추가
+  onRowClick,     // 🔽 추가
 }: DataTableProps<T>) {
   return (
     <>
@@ -43,20 +48,30 @@ export function DataTable<T>({
           </thead>
           <tbody>
             {data.length > 0 ? (
-              data.map((row) => (
-                <tr key={String(row[keyField])}>
-                  {columns.map((col, index) => (
-                    <td key={index}>{col.accessor(row)}</td>
-                  ))}
-                  <td>
-                    <div className={styles.actionsCell}>
-                      <button className={styles.iconButton}>
-                        <MoreVertical size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
+              data.map((row) => {
+                const rowKey = String(row[keyField]);
+                const isSelected = selectedRowKey === rowKey;
+
+                return (
+                  <tr 
+                    key={rowKey}
+                    // 🔽 클릭 이벤트와 선택 클래스 적용
+                    onClick={() => onRowClick?.(row)}
+                    className={`${onRowClick ? styles.clickableRow : ''} ${isSelected ? styles.selectedRow : ''}`}
+                  >
+                    {columns.map((col, index) => (
+                      <td key={index}>{col.accessor(row)}</td>
+                    ))}
+                    <td>
+                      <div className={styles.actionsCell}>
+                        <button className={styles.iconButton}>
+                          <MoreVertical size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
                 <td colSpan={columns.length + 1} className={styles.emptyCell}>
