@@ -1,3 +1,5 @@
+// src/components/DateRange/DateRangePopup.tsx
+
 import React, { useLayoutEffect, useEffect, useRef, useState, useMemo} from 'react';
 import ReactDOM from 'react-dom';
 import styles from './DateRangePopup.module.css';
@@ -69,7 +71,7 @@ const CalendarMonth: React.FC<{
 };
 
 // 메인 팝업 컴포넌트
-const DateRangePopup: React.FC<DateRangePopupProps> = ({ startDate, endDate, setStartDate, setEndDate, onClose, triggerRef }) => {  
+const DateRangePopup: React.FC<DateRangePopupProps> = ({ startDate, endDate, setStartDate, setEndDate, onClose, triggerRef }) => {
   const popupRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState({ top: 0, left: 0 }); // 초기에 화면 밖으로
   const [opacity, setOpacity] = useState(0); // 투명 상태로 시작
@@ -81,22 +83,26 @@ const DateRangePopup: React.FC<DateRangePopupProps> = ({ startDate, endDate, set
     const triggerRect = triggerRef.current.getBoundingClientRect();
     const popupRect = popupRef.current.getBoundingClientRect();
     const margin = 8;
-
-    // 1. 기본적으로 팝업을 버튼 위에 위치시키도록 계산
-    let topPosition = triggerRect.top - popupRect.height - margin;
-
-    // 2. 만약 위로 띄웠을 때 팝업이 화면 상단을 벗어난다면,
-    if (topPosition < 0) {
-      // 위치를 버튼 아래로 재조정
-      topPosition = triggerRect.bottom + margin;
-    }
-
-    setPosition({
-      top: topPosition,
-      left: triggerRect.left,
-    });
     
-    // 3. 위치 계산이 완료된 후 팝업을 보이게 처리
+    // 팝업이 아래로 열릴 때의 예상 위치
+    const topPositionBelow = triggerRect.bottom + margin;
+
+    // 팝업이 화면 하단을 벗어나는지 확인
+    if (topPositionBelow + popupRect.height > window.innerHeight) {
+      // 벗어난다면 버튼 위로 위치 조정
+      const topPositionAbove = triggerRect.top - popupRect.height - margin;
+      setPosition({
+        top: topPositionAbove,
+        left: triggerRect.left,
+      });
+    } else {
+      // 벗어나지 않으면 버튼 아래에 그대로 표시
+      setPosition({
+        top: topPositionBelow,
+        left: triggerRect.left,
+      });
+    }
+    
     setOpacity(1);
 
   }, [triggerRef]);
@@ -120,6 +126,7 @@ const DateRangePopup: React.FC<DateRangePopupProps> = ({ startDate, endDate, set
     // 부모의 날짜 상태에도 현재 시간을 반영
     setStartDate(dayjs(startDate).hour(now.hour()).minute(now.minute()).second(now.second()).toDate());
     setEndDate(dayjs(endDate).hour(now.hour()).minute(now.minute()).second(now.second()).toDate());
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // 빈 배열로 설정하여 최초 1회만 실행
 
   // 시간 입력 필드 변경 핸들러
@@ -174,18 +181,6 @@ const DateRangePopup: React.FC<DateRangePopupProps> = ({ startDate, endDate, set
     return `GMT${offset}`;
   }, []);
 
-  // 팝업의 위치를 트리거 요소 기준으로 동적으로 계산합니다.
-  useEffect(() => {
-    if (triggerRef.current && popupRef.current) {
-      const triggerRect = triggerRef.current.getBoundingClientRect();
-      const popupRect = popupRef.current.getBoundingClientRect(); // 팝업 자신의 크기를 가져옵니다.
-      setPosition({
-        top: triggerRect.top - popupRect.height - 8, // 버튼의 상단에서 팝업 높이만큼 위로 이동
-        left: triggerRect.left,
-      });
-    }
-  }, [triggerRef]);
-
   // props로 받은 startDate와 endDate를 dayjs 객체로 변환합니다.
   const start = dayjs(startDate);
   const end = dayjs(endDate);
@@ -196,11 +191,11 @@ const DateRangePopup: React.FC<DateRangePopupProps> = ({ startDate, endDate, set
 
   return ReactDOM.createPortal(
     <div className={styles.overlay} onClick={onClose}>
-      <div 
+      <div
         ref={popupRef}
-        className={styles.popupContainer} 
-        style={{ 
-          top: `${position.top}px`, 
+        className={styles.popupContainer}
+        style={{
+          top: `${position.top}px`,
           left: `${position.left}px`,
           opacity: opacity, // state에 따라 투명도 조절
           transition: 'opacity 0.1s ease-in-out', // 부드러운 전환 효과
