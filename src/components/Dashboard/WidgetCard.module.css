@@ -89,9 +89,3 @@
   cursor: se-resize; /* 남동쪽(오른쪽 아래) 리사이즈 커서 */
   transition: all 0.2s ease-in-out;
 }
-
-.resizeHandle:hover {
-  opacity: 1;
-  border-color: #f1f5f9; /* 호버 시 색상 변경 */
-}
-/* ▲▲▲ 리사이즈 핸들 스타일 추가 ▲▲▲ */

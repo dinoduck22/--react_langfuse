@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react'; // useState 추가
 import { useParams } from 'react-router-dom';
-import styles from './DashboardDetail.module.css';
 import { Info, Calendar, Filter, Plus } from 'lucide-react';
 import WidgetCard from 'components/Dashboard/WidgetCard';
 import DateRangePicker from 'components/DateRange/DateRangePicker';
 
+// 스타일
+import styles from './DashboardDetail.module.css';
+import { Responsive, WidthProvider } from 'react-grid-layout';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
 
 // 필요한 모든 차트 컴포넌트를 import 합니다.
 import AreaChart from 'components/Chart/AreaChart';
@@ -25,6 +29,9 @@ import {
 } from 'data/dummyDashboardDetailData';
 import { DUMMY_DASHBOARDS } from 'data/dummyDashboardData'; // 2. 대시보드 목록 데이터 import
 
+// 🔽 ResponsiveGridLayout 컴포넌트를 사용하기 위해 WidthProvider로 감싸줍니다.
+const ResponsiveGridLayout = WidthProvider(Responsive);
+
 const DashboardDetail: React.FC = () => {
   const { dashboardId } = useParams<{ dashboardId: string }>(); // 3. URL에서 dashboardId 추출
 
@@ -32,6 +39,23 @@ const DashboardDetail: React.FC = () => {
   const currentDashboard = DUMMY_DASHBOARDS.find(
     (d) => d.name.toLowerCase().replace(/\s+/g, '-') === dashboardId
   );
+
+  // 🔽 위젯들의 레이아웃 상태 정의
+  const [layout, setLayout] = useState([
+    { i: 'total-traces', x: 0, y: 0, w: 1, h: 1 },
+    { i: 'total-observations', x: 1, y: 0, w: 1, h: 1 },
+    { i: 'total-costs', x: 2, y: 0, w: 2, h: 1 },
+    { i: 'cost-by-model', x: 0, y: 1, w: 1, h: 1.5 },
+    { i: 'cost-by-env', x: 1, y: 1, w: 1, h: 1.5 },
+    { i: 'top-users', x: 2, y: 1, w: 2, h: 1.5 },
+    { i: 'cost-distribution', x: 0, y: 2.5, w: 1, h: 1.5 },
+    { i: 'cost-by-model-region', x: 1, y: 2.5, w: 2, h: 1.5 },
+  ]);
+
+  const onLayoutChange = (newLayout: ReactGridLayout.Layout[]) => {
+    // 레이아웃 변경 시 상태를 업데이트 할 수 있습니다 (선택 사항)
+    // setLayout(newLayout);
+  };
 
   const totalEnvCost = costByEnvironmentData.reduce((sum, item) => sum + item.value, 0).toFixed(3);
 
@@ -63,53 +87,63 @@ const DashboardDetail: React.FC = () => {
         <button className={styles.filterButton}><Filter size={14} /> Filters</button>
       </div>
 
-      <div className={styles.grid}>
-        {/* BigNumber 예시 */}
-        <WidgetCard title="Total Traces" subtitle="Shows the count of Traces">
-          <BigNumberChart value={totalTraces} />
-        </WidgetCard>
-        
-        {/* AreaChart 예시 */}
-        <WidgetCard title="Total Observations" subtitle="Shows the count of Observations">
-            <AreaChart data={totalCostData} dataKey="value" nameKey="name"/>
-        </WidgetCard>
-
-        {/* LineChart 예시 (Time Series) */}
-        <WidgetCard title="Total costs ($)" subtitle="Total cost across all use cases" gridSpan={2}>
+      {/* 🔽 기존 grid div를 ResponsiveGridLayout으로 교체 */}
+      <ResponsiveGridLayout
+        className="layout"
+        layouts={{ lg: layout }}
+        breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+        cols={{ lg: 4, md: 4, sm: 2, xs: 1, xxs: 1 }}
+        rowHeight={180} // 행 높이 조절
+        onLayoutChange={onLayoutChange}
+      >
+        {/* 각 위젯을 div로 감싸고 고유한 key를 부여합니다. */}
+        <div key="total-traces">
+          <WidgetCard title="Total Traces" subtitle="Shows the count of Traces">
+            <BigNumberChart value={totalTraces} />
+          </WidgetCard>
+        </div>
+        <div key="total-observations">
+          <WidgetCard title="Total Observations" subtitle="Shows the count of Observations">
+            <AreaChart data={totalCostData} dataKey="value" nameKey="name" />
+          </WidgetCard>
+        </div>
+        <div key="total-costs">
+          <WidgetCard title="Total costs ($)" subtitle="Total cost across all use cases">
             <LineChart data={totalCostData} dataKey="value" nameKey="name" />
-        </WidgetCard>
-
-        {/* VerticalBarChart 예시 (Time Series) */}
-        <WidgetCard title="Cost by Model Name ($)" subtitle="Total cost broken down by model name">
+          </WidgetCard>
+        </div>
+        <div key="cost-by-model">
+          <WidgetCard title="Cost by Model Name ($)" subtitle="Total cost broken down by model name">
             <BarChart data={costByModelData} dataKey="value" nameKey="name" layout="horizontal" />
-        </WidgetCard>
-
-        {/* PieChart 예시 (Total Value) */}
-        <WidgetCard title="Cost by Environment ($)" subtitle="Total cost broken down by trace.environment">
-          <div className={styles.pieContainer}>
-            <PieChart data={costByEnvironmentData} dataKey="value" nameKey="name" />
-            <div className={styles.pieCenter}>
-              <div className={styles.pieTotal}>${totalEnvCost}</div>
-              <div className={styles.pieSubtitle}>Total</div>
+          </WidgetCard>
+        </div>
+        <div key="cost-by-env">
+          <WidgetCard title="Cost by Environment ($)" subtitle="Total cost broken down by trace.environment">
+            <div className={styles.pieContainer}>
+              <PieChart data={costByEnvironmentData} dataKey="value" nameKey="name" />
+              <div className={styles.pieCenter}>
+                <div className={styles.pieTotal}>${totalEnvCost}</div>
+                <div className={styles.pieSubtitle}>Total</div>
+              </div>
             </div>
-          </div>
-        </WidgetCard>
-
-        {/* HorizontalBarChart 예시 (Total Value) */}
-        <WidgetCard title="Top Users by Cost ($)" subtitle="Aggregated model cost by user" gridSpan={2}>
+          </WidgetCard>
+        </div>
+        <div key="top-users">
+          <WidgetCard title="Top Users by Cost ($)" subtitle="Aggregated model cost by user">
             <BarChart data={topUsersCostData} dataKey="value" nameKey="name" layout="vertical" />
-        </WidgetCard>
-        
-        {/* Histogram 예시 (Total Value) */}
-        <WidgetCard title="Cost Distribution" subtitle="Distribution of costs">
+          </WidgetCard>
+        </div>
+        <div key="cost-distribution">
+          <WidgetCard title="Cost Distribution" subtitle="Distribution of costs">
             <HistogramChart data={costByModelData} dataKey="value" nameKey="name" />
-        </WidgetCard>
-        
-        {/* PivotTable 예시 (Total Value) */}
-        <WidgetCard title="Costs by Model and Region" subtitle="Pivot table summary" gridSpan={2}>
+          </WidgetCard>
+        </div>
+        <div key="cost-by-model-region">
+          <WidgetCard title="Costs by Model and Region" subtitle="Pivot table summary">
             <PivotTable data={dummyPivotData} rows={['model']} cols={['region']} value="value" />
-        </WidgetCard>
-      </div>
+          </WidgetCard>
+        </div>
+      </ResponsiveGridLayout>
     </div>
   );
 };
