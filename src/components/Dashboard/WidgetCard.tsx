@@ -8,29 +8,27 @@ interface WidgetCardProps {
   title: string;
   subtitle?: string;
   children?: React.ReactNode;
-  gridSpan?: number;
+  onDelete?: () => void;
+  onCopy?: () => void; // 🔽 onCopy prop 추가
 }
 
-const WidgetCard: React.FC<WidgetCardProps> = ({ title, subtitle, children, gridSpan = 1 }) => {
-  const style = {
-    gridColumn: `span ${gridSpan}`,
-  };
-
+const WidgetCard: React.FC<WidgetCardProps> = ({ title, subtitle, children, onDelete, onCopy }) => {
   return (
-    <div className={styles.card} style={style}>
+    <div className={styles.card}>
       <div className={styles.header}>
-        <div> 
+        <div>
           <h3 className={styles.title}>{title}</h3>
           {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
         </div>
         <div className={styles.cardActions}>
-          <button className={styles.iconButton} aria-label="Move widget">
+          <button className={`${styles.iconButton} drag-handle`} aria-label="Move widget">
             <GripVertical size={16} />
           </button>
-          <button className={styles.iconButton} aria-label="Copy widget">
+          {/* 🔽 onClick 이벤트 핸들러 연결 */}
+          <button className={styles.iconButton} aria-label="Copy widget" onClick={onCopy}>
             <Copy size={16} />
           </button>
-          <button className={styles.iconButton} aria-label="Delete widget">
+          <button className={styles.iconButton} aria-label="Delete widget" onClick={onDelete}>
             <Trash2 size={16} />
           </button>
           <button className={styles.iconButton} aria-label="Download widget data">
@@ -41,7 +39,6 @@ const WidgetCard: React.FC<WidgetCardProps> = ({ title, subtitle, children, grid
       <div className={styles.content}>
         {children}
       </div>
-      {/* 🔽 리사이즈 핸들 아이콘 추가 */}
       <div className={styles.resizeHandle} />
     </div>
   );

@@ -1,3 +1,5 @@
+// src/components/DataTable/DataTable.tsx
+
 import React from 'react';
 import styles from './DataTable.module.css';
 import {
@@ -8,22 +10,19 @@ import {
   ChevronsRight,
 } from 'lucide-react';
 
-// 컬럼 정의를 위한 인터페이스
 interface Column<T> {
   header: React.ReactNode;
   accessor: (row: T) => React.ReactNode;
 }
 
-// DataTable 컴포넌트 Props 타입
 interface DataTableProps<T> {
   columns: Column<T>[];
   data: T[];
   renderEmptyState: () => React.ReactNode;
-  // 각 행의 고유 key로 사용할 속성 이름을 받습니다.
   keyField: keyof T;
-  // 🔽 아래 2개 props 추가
   selectedRowKey?: string | null;
   onRowClick?: (row: T) => void;
+  showActions?: boolean; // 🔽 Actions 열 표시 여부를 제어하는 prop 추가
 }
 
 export function DataTable<T>({
@@ -31,8 +30,9 @@ export function DataTable<T>({
   data,
   renderEmptyState,
   keyField,
-  selectedRowKey, // 🔽 추가
-  onRowClick,     // 🔽 추가
+  selectedRowKey,
+  onRowClick,
+  showActions = true, // 🔽 기본값을 true로 설정
 }: DataTableProps<T>) {
   return (
     <>
@@ -43,7 +43,8 @@ export function DataTable<T>({
               {columns.map((col, index) => (
                 <th key={index}>{col.header}</th>
               ))}
-              <th>Actions</th>
+              {/* 🔽 showActions가 true일 때만 Actions 헤더를 렌더링 */}
+              {showActions && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -53,28 +54,31 @@ export function DataTable<T>({
                 const isSelected = selectedRowKey === rowKey;
 
                 return (
-                  <tr 
+                  <tr
                     key={rowKey}
-                    // 🔽 클릭 이벤트와 선택 클래스 적용
                     onClick={() => onRowClick?.(row)}
                     className={`${onRowClick ? styles.clickableRow : ''} ${isSelected ? styles.selectedRow : ''}`}
                   >
                     {columns.map((col, index) => (
                       <td key={index}>{col.accessor(row)}</td>
                     ))}
-                    <td>
-                      <div className={styles.actionsCell}>
-                        <button className={styles.iconButton}>
-                          <MoreVertical size={16} />
-                        </button>
-                      </div>
-                    </td>
+                    {/* 🔽 showActions가 true일 때만 Actions 셀을 렌더링 */}
+                    {showActions && (
+                      <td>
+                        <div className={styles.actionsCell}>
+                          <button className={styles.iconButton}>
+                            <MoreVertical size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 );
               })
             ) : (
               <tr>
-                <td colSpan={columns.length + 1} className={styles.emptyCell}>
+                {/* 🔽 colSpan도 showActions 값에 따라 동적으로 계산 */}
+                <td colSpan={columns.length + (showActions ? 1 : 0)} className={styles.emptyCell}>
                   {renderEmptyState()}
                 </td>
               </tr>
@@ -82,8 +86,7 @@ export function DataTable<T>({
           </tbody>
         </table>
       </div>
-      
-      {/* 페이지네이션 */}
+
       <div className={styles.pagination}>
         <div className={styles.rowsPerPage}>
           <span>Rows per page</span>

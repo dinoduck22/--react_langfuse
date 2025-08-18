@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import dayjs from 'dayjs';
 import {
     LayoutDashboard,
     LineChart as LineChartIcon,
@@ -50,14 +51,35 @@ const chartTypeOptions = [
 
 const WidgetNew: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams(); // 🔽 URL 파라미터 접근 훅
+  
+  // 🔽 URL 파라미터를 사용해 각 상태의 초기값 설정
+  const [name, setName] = useState(searchParams.get('name') || 'Count(Trace)');
+  const [description, setDescription] = useState(searchParams.get('description') || '');
+  const [viewType, setViewType] = useState(searchParams.get('viewType') || 'Trace');
 
-  const [name, setName] = useState('Count(Trace)');
-  const [description, setDescription] = useState('');
-  const [viewType, setViewType] = useState('Trace');
+  const findChartTypeFromValue = (value: string | null) => {
+  if (!value) return chartTypeOptions[0].options[0];
+  for (const group of chartTypeOptions) {
+    const found = group.options.find(option => option.value === value);
+    if (found) return found;
+  }
+  return chartTypeOptions[0].options[0];
+};
 
-  const [chartType, setChartType] = useState(chartTypeOptions[0].options[0]);
-  const [isChartTypeOpen, setIsChartTypeOpen] = useState(false);
+  const [chartType, setChartType] = useState(() => findChartTypeFromValue(searchParams.get('chartType')));
+
+  // 🔽 날짜 상태도 URL 파라미터로 초기화
+  const [startDate, setStartDate] = useState(
+    searchParams.get('startDate') ? dayjs(searchParams.get('startDate')).toDate() : dayjs().subtract(7, 'day').toDate()
+  );
+  const [endDate, setEndDate] = useState(
+    searchParams.get('endDate') ? dayjs(searchParams.get('endDate')).toDate() : new Date()
+  );
+
   const chartTypeRef = useRef<HTMLDivElement>(null);
+  const [isChartTypeOpen, setIsChartTypeOpen] = useState(false);
+  
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -225,7 +247,12 @@ const WidgetNew: React.FC = () => {
                 label="Date Range"
                 subLabel="The time range for the data."
             >
-              <DateRangePicker />
+              <DateRangePicker 
+                startDate={startDate}
+                endDate={endDate}
+                setStartDate={setStartDate}
+                setEndDate={setEndDate}
+              />
             </FormGroup>
         </div>
 

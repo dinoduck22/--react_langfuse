@@ -5,11 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { X, Plus } from 'lucide-react';
 import { DataTable } from 'components/DataTable/DataTable';
 import styles from './AddWidgetModal.module.css';
-
-// 🔽 새로 만든 데이터 파일에서 Widget 타입과 데이터를 import 합니다.
 import { DUMMY_WIDGETS, type Widget } from 'data/dummyAddWidgetModal';
 
-// 모달 Props 타입 정의 (기존과 동일)
 interface AddWidgetModalProps {
   onClose: () => void;
   onAddWidget: (widgetId: string) => void;
@@ -48,7 +45,7 @@ const AddWidgetModal: React.FC<AddWidgetModalProps> = ({ onClose, onAddWidget })
         <div className={styles.modalBody}>
           <DataTable
             columns={columns}
-            data={DUMMY_WIDGETS} // 🔽 import한 데이터를 사용
+            data={DUMMY_WIDGETS}
             keyField="id"
             selectedRowKey={selectedWidgetId}
             onRowClick={(row) => setSelectedWidgetId(row.id)}
@@ -57,6 +54,7 @@ const AddWidgetModal: React.FC<AddWidgetModalProps> = ({ onClose, onAddWidget })
                 <p>No widgets found. Create a new widget to get started.</p>
               </div>
             )}
+            showActions={false} // 🔽 Actions 열을 숨기도록 설정
           />
         </div>
         <div className={styles.modalFooter}>

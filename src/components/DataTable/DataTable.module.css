@@ -16,7 +16,7 @@
   text-align: left;
   font-size: 13px;
   border-bottom: 1px solid #1e293b;
-  white-space: nowrap;
+  /* white-space: nowrap; */
 }
 
 .table td {

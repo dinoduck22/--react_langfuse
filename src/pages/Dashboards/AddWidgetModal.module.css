@@ -19,7 +19,7 @@
   border: 1px solid #334155;
   border-radius: 8px;
   width: 90%;
-  max-width: 800px;
+  max-width: 900px; /* 🔽 모달 최대 너비 증가 */
   color: #e2e8f0;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   display: flex;
@@ -57,6 +57,35 @@
 .modalBody {
   padding: 24px;
   overflow-y: auto;
+}
+
+
+/* ▼▼▼ 아래 스타일을 파일 하단에 추가해주세요 ▼▼▼ */
+.modalBody :global(.table) {
+  table-layout: fixed; /* 테이블 레이아웃 고정 */
+  width: 100%;
+}
+
+.modalBody :global(th:nth-child(1)), /* Name */
+.modalBody :global(td:nth-child(1)) {
+  width: 20%;
+}
+
+.modalBody :global(th:nth-child(2)), /* Description */
+.modalBody :global(td:nth-child(2)) {
+  width: 40%; /* 설명 열에 더 많은 너비 할당 */
+  white-space: normal; /* 텍스트 줄바꿈 허용 */
+  word-break: break-word; /* 단어가 길 경우 강제 줄바꿈 */
+}
+
+.modalBody :global(th:nth-child(3)), /* View Type */
+.modalBody :global(td:nth-child(3)) {
+  width: 15%;
+}
+
+.modalBody :global(th:nth-child(4)), /* Chart Type */
+.modalBody :global(td:nth-child(4)) {
+  width: 25%;
 }
 
 .emptyState {

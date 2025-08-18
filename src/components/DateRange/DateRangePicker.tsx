@@ -1,3 +1,5 @@
+// src/components/DateRange/DateRangePicker.tsx
+
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import dayjs from 'dayjs';
@@ -6,12 +8,19 @@ import styles from './DateRangePicker.module.css';
 import DateRangePopup from './DateRangePopup';
 import { dateRangeOptions, DateRangePreset } from './dateRangeOptions';
 
-const DateRangePicker: React.FC = () => {
+// 🔽 Props 타입 정의 수정
+interface DateRangePickerProps {
+  startDate: Date;
+  endDate: Date;
+  setStartDate: (date: Date) => void;
+  setEndDate: (date: Date) => void;
+}
+
+const DateRangePicker: React.FC<DateRangePickerProps> = ({ startDate, endDate, setStartDate, setEndDate }) => {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const calendarButtonRef = useRef<HTMLButtonElement>(null);
-
-  const [startDate, setStartDate] = useState(dayjs().subtract(7, 'day').toDate());
-  const [endDate, setEndDate] = useState(new Date());
+  
+  // 🔽 내부에서 관리하던 startDate, endDate 상태 제거
   const [dateRangePreset, setDateRangePreset] = useState<DateRangePreset | null>('7d');
 
   useEffect(() => {
@@ -33,7 +42,7 @@ const DateRangePicker: React.FC = () => {
     }
     setStartDate(newStartDate);
     setEndDate(newEndDate);
-  }, [dateRangePreset]);
+  }, [dateRangePreset, setStartDate, setEndDate]); // 🔽 의존성 배열에 setStartDate, setEndDate 추가
 
   const formattedDateRange = useMemo(() => {
     const start = dayjs(startDate).format('MMM D, YY HH:mm');
@@ -48,7 +57,6 @@ const DateRangePicker: React.FC = () => {
   return (
     <>
       <div className={styles.container}>
-        {/* 1. 달력 팝업을 여는 버튼 */}
         <button
           ref={calendarButtonRef}
           className={styles.filterButton}
@@ -58,16 +66,13 @@ const DateRangePicker: React.FC = () => {
           <span>{formattedDateRange}</span>
         </button>
 
-        {/* 2. 프리셋을 선택하는 드롭다운 버튼 */}
         <div className={styles.presetContainer}>
           <span className={styles.presetDisplay}>{activePresetLabel}</span>
           <ChevronDown size={16} className={styles.presetArrow} />
           <select
             className={styles.presetSelect}
             value={dateRangePreset || ''}
-            onChange={(e) => {
-              setDateRangePreset(e.target.value as DateRangePreset);
-            }}
+            onChange={(e) => setDateRangePreset(e.target.value as DateRangePreset)}
           >
             {dateRangeOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -85,11 +90,11 @@ const DateRangePicker: React.FC = () => {
             endDate={endDate}
             setStartDate={(date) => {
               setStartDate(date);
-              setDateRangePreset(null); // 직접 날짜를 바꾸면 프리셋 선택은 해제
+              setDateRangePreset(null);
             }}
             setEndDate={(date) => {
               setEndDate(date);
-              setDateRangePreset(null); // 직접 날짜를 바꾸면 프리셋 선택은 해제
+              setDateRangePreset(null);
             }}
             onClose={() => setIsPickerOpen(false)}
             triggerRef={calendarButtonRef}
