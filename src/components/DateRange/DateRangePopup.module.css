@@ -108,14 +108,16 @@
 .dayCell.rangeStart.rangeEnd {
   border-radius: 9999px;
 }
+/* ... (기존 스타일) ... */
 
 .timeControls {
   border-top: 1px solid #334155;
   margin-top: 16px;
   padding-top: 16px;
-  display: flex;
+  display: grid; /* Grid 레이아웃으로 변경 */
+  grid-template-columns: 1fr 1fr; /* 1:1 비율로 두 열 생성 */
   gap: 16px;
-  align-items: flex-end;
+  align-items: center;
 }
 
 .timeGroup {
@@ -131,33 +133,61 @@
 .timeInput {
   display: flex;
   align-items: center;
-  gap: 4px;
-  background-color: #020817;
-  border: 1px solid #334155;
-  padding: 6px 8px;
-  border-radius: 6px;
+  gap: 0.2em;
   color: #94a3b8;
 }
+
+.timeIcon {
+  color: #94a3b8;
+  margin-right: 4px;
+}
+
 .timeInput input {
-  background: none;
-  border: none;
+  background-color: #020817;
+  border: 1px solid #334155;
+  border-radius: 6px;
   color: #e2e8f0;
-  width: 24px;
+  height: 36px;
+  width: 36px;
   text-align: center;
   font-size: 14px;
   outline: none;
 }
-.timeInput select {
-  background: none;
-  border: none;
+
+.timeInput input:focus {
+  border-color: #4f46e5;
+}
+
+.timeInput .selectWrapper select {
+  background-color: #020817;
+  border: 1px solid #334155;
+  border-radius: 6px;
   color: #e2e8f0;
+  height: 36px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  padding: 0 24px 0 10px;
   font-size: 14px;
   outline: none;
+  cursor: pointer;
+}
+
+.selectWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.selectArrow {
+  position: absolute;
+  right: 8px;
+  color: #94a3b8;
+  pointer-events: none;
 }
 
 .timezone {
-    margin-left: auto;
     font-size: 13px;
     color: #94a3b8;
-    padding-bottom: 8px;
+    margin-left: auto;
 }
