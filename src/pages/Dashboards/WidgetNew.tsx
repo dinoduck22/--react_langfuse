@@ -9,7 +9,9 @@ import {
     BarChartHorizontalBig,
     BarChart4,
     PieChart as PieChartIcon,
-    Table2
+    Table2,
+    Plus,
+    X,
 } from 'lucide-react';
 import styles from './WidgetNew.module.css';
 import FormGroup from 'components/Form/FormGroup';
@@ -27,6 +29,14 @@ import PivotTable from 'components/Chart/PivotTableChart';
 
 // ---▼ 분리된 더미 데이터 import ▼---
 import { dummyChartData, dummyPivotData } from 'data/dummyWidgetData';
+
+// 🔽 필터 타입 정의
+type Filter = {
+  id: number;
+  column: string;
+  operator: string;
+  value: string;
+};
 
 // --- Chart Type 옵션 데이터 ---
 const chartTypeOptions = [
@@ -57,6 +67,9 @@ const WidgetNew: React.FC = () => {
   const [name, setName] = useState(searchParams.get('name') || 'Count(Trace)');
   const [description, setDescription] = useState(searchParams.get('description') || '');
   const [viewType, setViewType] = useState(searchParams.get('viewType') || 'Trace');
+
+  // 🔽 필터 상태 추가
+  const [filters, setFilters] = useState<Filter[]>([]);
 
   const findChartTypeFromValue = (value: string | null) => {
   if (!value) return chartTypeOptions[0].options[0];
@@ -90,6 +103,27 @@ const WidgetNew: React.FC = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // ▼▼▼ 필터 관련 핸들러 함수 추가 ▼▼▼
+  const addFilter = () => {
+    setFilters(prev => [...prev, {
+      id: Date.now(),
+      column: 'Environment', // 기본값
+      operator: 'is equal to',
+      value: ''
+    }]);
+  };
+
+  const removeFilter = (id: number) => {
+    setFilters(prev => prev.filter(f => f.id !== id));
+  };
+
+  const updateFilter = (id: number, field: keyof Omit<Filter, 'id'>, value: string) => {
+    setFilters(prev => prev.map(f =>
+      f.id === id ? { ...f, [field]: value } : f
+    ));
+  };
+  // ▲▲▲ 필터 관련 핸들러 함수 추가 ▲▲▲
 
   const handleSave = () => {
     // 저장 로직에서 날짜 관련 부분은 DateRangePicker의 상태를 참조해야 함 (지금은 단순 예시)
@@ -175,6 +209,52 @@ const WidgetNew: React.FC = () => {
                   <option value="Total Tokens">Total Tokens</option>
                 </select>
             </FormGroup>
+
+            {/* ▼▼▼ 필터 섹션 추가 ▼▼▼ */}
+            <div className={styles.filterSection}>
+              <label className={styles.filterLabel}>Filters</label>
+              {filters.map((filter) => (
+                <div key={filter.id} className={styles.filterRow}>
+                  <span>Where</span>
+                  <select
+                    className="form-select"
+                    value={filter.column}
+                    onChange={(e) => updateFilter(filter.id, 'column', e.target.value)}
+                  >
+                    <option>Environment</option>
+                    <option>Trace Name</option>
+                    <option>Observation Name</option>
+                    <option>Score Name</option>
+                    <option>Tags</option>
+                    <option>User</option>
+                    <option>Session</option>
+                    <option>Metadata</option>
+                    <option>Release</option>
+                  </select>
+                  <select
+                    className="form-select"
+                    value={filter.operator}
+                    onChange={(e) => updateFilter(filter.id, 'operator', e.target.value)}
+                  >
+                    <option></option>
+                  </select>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Value"
+                    value={filter.value}
+                    onChange={(e) => updateFilter(filter.id, 'value', e.target.value)}
+                  />
+                  <button onClick={() => removeFilter(filter.id)} className={styles.removeFilterBtn}>
+                    <X size={16} />
+                  </button>
+                </div>
+              ))}
+              <button onClick={addFilter} className={styles.addFilterBtn}>
+                <Plus size={14} /> Add filter
+              </button>
+            </div>
+            {/* ▲▲▲ 필터 섹션 추가 ▲▲▲ */}
 
             <h3 className={styles.subheading}>Visualization</h3>
             <FormGroup

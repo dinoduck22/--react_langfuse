@@ -236,3 +236,63 @@
   color: #94a3b8;
 }
 /* ---▲ Chart Type 커스텀 드롭다운 스타일 추가 ▲--- */
+
+
+.filterSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: -8px; /* 위쪽 FormGroup과의 간격 조정 */
+}
+
+.filterLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: #f1f5f9;
+}
+
+.filterRow {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr 1fr auto;
+  gap: 8px;
+  align-items: center;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.addFilterBtn {
+  background-color: transparent;
+  border: 1px dashed #4b5563;
+  color: #94a3b8;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start; /* 버튼 크기가 내용에 맞게 조절되도록 */
+  transition: all 0.2s ease;
+}
+
+.addFilterBtn:hover {
+  border-color: #e2e8f0;
+  color: #e2e8f0;
+}
+
+.removeFilterBtn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  border-radius: 50%;
+}
+
+.removeFilterBtn:hover {
+  background-color: #334155;
+  color: #ef4444;
+}
