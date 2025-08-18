@@ -4,6 +4,7 @@ import dayjs from 'dayjs';
 import {
     LayoutDashboard,
     LineChart as LineChartIcon,
+    AreaChart as AreaChartIcon, // 🔽 AreaChart 아이콘 import 추가
     BarChartBig,
     Sigma,
     BarChartHorizontalBig,
@@ -44,13 +45,14 @@ const chartTypeOptions = [
         group: 'Time Series',
         options: [
             { value: 'LineChart', label: 'Line Chart', icon: <LineChartIcon size={16} /> },
+            { value: 'AreaChart', label: 'Area Chart', icon: <AreaChartIcon size={16} /> }, // 🔽 AreaChart 옵션 추가
             { value: 'VerticalBarChart', label: 'Vertical Bar Chart', icon: <BarChartBig size={16} /> }
         ]
     },
     {
         group: 'Total Value',
         options: [
-            { value: 'BigNumber', label: 'Big Number', icon: <Sigma size={16} /> },
+            { value: 'BigNumberChart', label: 'Big Number', icon: <Sigma size={16} /> },
             { value: 'HorizontalBarChart', label: 'Horizontal Bar Chart', icon: <BarChartHorizontalBig size={16} /> },
             { value: 'Histogram', label: 'Histogram', icon: <BarChart4 size={16} /> },
             { value: 'PieChart', label: 'Pie Chart', icon: <PieChartIcon size={16} /> },
@@ -147,7 +149,7 @@ const WidgetNew: React.FC = () => {
         return <div style={chartStyle}><HistogramChart data={dummyChartData} dataKey="value" nameKey="name" /></div>;
       case 'PieChart':
         return <div style={chartStyle}><PieChart data={dummyChartData} dataKey="value" nameKey="name" /></div>;
-      case 'BigNumber':
+      case 'BigNumberChart':
         return <BigNumberChart value={totalValue.toLocaleString()} />;
       case 'PivotTable':
         return <PivotTable data={dummyPivotData} rows={['model']} cols={['region']} value="value" />;
