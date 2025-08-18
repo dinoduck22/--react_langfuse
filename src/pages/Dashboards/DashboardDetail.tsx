@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom'; // 🔽 useNavigate 추가
-import dayjs from 'dayjs'; // 🔽 dayjs 추가import styles from './DashboardDetail.module.css';
 import { Info, Filter, Plus } from 'lucide-react';
 import WidgetCard from 'components/Dashboard/WidgetCard';
 import DateRangePicker from 'components/DateRange/DateRangePicker';
@@ -25,7 +24,10 @@ import { DUMMY_DASHBOARDS } from 'data/dummyDashboardData';
 import * as dummyData from 'data/dummyDashboardDetailData';
 import { DUMMY_WIDGETS, type Widget } from 'data/dummyAddWidgetModal';
 
+// Modal and Utils
 import AddWidgetModal from './AddWidgetModal';
+import { downloadAsCSV } from 'lib/csvUtils'; // 🔽 CSV 유틸리티 import
+import dayjs from 'dayjs';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -53,6 +55,27 @@ const initialLayout: ReactGridLayout.Layout[] = [
   { i: 'cost-by-model-region', x: 1, y: 2.5, w: 2, h: 1.5 },
 ];
 
+// 🔽 위젯 타입에 따라 적절한 데이터를 반환하는 헬퍼 함수
+const getWidgetData = (widget: Widget): Record<string, string | number>[] => {
+    switch (widget.chartType) {
+        case 'BigNumberChart':
+            return [{ total_traces: dummyData.totalTraces }];
+        case 'AreaChart':
+        case 'LineChart':
+            return dummyData.totalCostData;
+        case 'VerticalBarChart':
+        case 'Histogram':
+            return dummyData.costByModelData;
+        case 'HorizontalBarChart':
+            return dummyData.topUsersCostData;
+        case 'PieChart':
+            return dummyData.costByEnvironmentData;
+        case 'PivotTable':
+            return dummyData.dummyPivotData;
+        default:
+            return [];
+    }
+}
 
 // 차트 타입에 따라 적절한 컴포넌트를 렌더링하는 헬퍼 함수
 const renderChart = (widget: Widget) => {
@@ -161,6 +184,13 @@ const DashboardDetail: React.FC = () => {
     );
   }
 
+  // ▼▼▼ 위젯 데이터 다운로드 핸들러 함수 추가 ▼▼▼
+  const handleDownloadWidgetData = (widget: Widget) => {
+    const dataToDownload = getWidgetData(widget);
+    const filename = widget.name.toLowerCase().replace(/[^a-z0-9]/g, '-'); // 파일 이름 정규화
+    downloadAsCSV(dataToDownload, filename);
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -200,6 +230,7 @@ const DashboardDetail: React.FC = () => {
               subtitle={widget.description}
               onDelete={() => handleDeleteWidget(widget.id)} // 🔽 onDelete prop 전달
               onCopy={() => handleCopyWidget(widget.id)} // 🔽 onCopy 핸들러 연결
+              onDownload={() => handleDownloadWidgetData(widget)} // 🔽 onDownload prop 전달
             >
               {renderChart(widget)}
             </WidgetCard>

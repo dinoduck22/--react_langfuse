@@ -7,6 +7,19 @@ export interface ChartDataPoint {
   value: number;
 }
 
+// ▼▼▼ 타입 선언에 extends Record<string, string | number> 추가 ▼▼▼
+export interface ChartDataPoint extends Record<string, string | number> {
+  name: string;
+  value: number;
+}
+
+// ▼▼▼ 피벗 테이블용 타입 및 데이터 추가 ▼▼▼
+export interface PivotData extends Record<string, string | number> {
+    model: string;
+    region: string;
+    value: number;
+}
+
 // KPI 위젯 데이터
 export const totalTraces: number = 444;
 export const totalObservations: string = "2.619 k";
@@ -117,4 +130,10 @@ export const costOverTimeData = [
   { date: '8/12/25', cost: 4 },
 ];
 
-// ... (다른 기존 데이터는 동일)
+export const dummyPivotData: PivotData[] = [
+    { model: 'GPT-4', region: 'US', value: 100 },
+    { model: 'GPT-4', region: 'EU', value: 150 },
+    { model: 'Claude 2', region: 'US', value: 80 },
+    { model: 'Claude 2', region: 'EU', value: 120 },
+    { model: 'GPT-3.5', region: 'US', value: 200 },
+];

@@ -9,10 +9,11 @@ interface WidgetCardProps {
   subtitle?: string;
   children?: React.ReactNode;
   onDelete?: () => void;
-  onCopy?: () => void; // 🔽 onCopy prop 추가
+  onCopy?: () => void;
+  onDownload?: () => void; // 🔽 onDownload prop 추가
 }
 
-const WidgetCard: React.FC<WidgetCardProps> = ({ title, subtitle, children, onDelete, onCopy }) => {
+const WidgetCard: React.FC<WidgetCardProps> = ({ title, subtitle, children, onDelete, onCopy, onDownload }) => {
   return (
     <div className={styles.card}>
       <div className={styles.header}>
@@ -24,14 +25,14 @@ const WidgetCard: React.FC<WidgetCardProps> = ({ title, subtitle, children, onDe
           <button className={`${styles.iconButton} drag-handle`} aria-label="Move widget">
             <GripVertical size={16} />
           </button>
-          {/* 🔽 onClick 이벤트 핸들러 연결 */}
           <button className={styles.iconButton} aria-label="Copy widget" onClick={onCopy}>
             <Copy size={16} />
           </button>
           <button className={styles.iconButton} aria-label="Delete widget" onClick={onDelete}>
             <Trash2 size={16} />
           </button>
-          <button className={styles.iconButton} aria-label="Download widget data">
+          {/* 🔽 onClick 이벤트에 onDownload 함수 연결 */}
+          <button className={styles.iconButton} aria-label="Download widget data" onClick={onDownload}>
             <Download size={16} />
           </button>
         </div>
