@@ -4,6 +4,7 @@ import styles from './PromptsDetail.module.css';
 import {
   Book,
   Clipboard,
+  Trash2,
   Play,
   MoreVertical,
   Search,
@@ -218,7 +219,7 @@ export default function PromptsDetail() {
             <div className={styles.detailActions}>
               <button className={styles.playgroundButton}><Play size={14} /> Playground</button>
               <button className={styles.playgroundButton}>Experiment</button>
-              <button className={styles.iconButton}><Clipboard size={16} /></button>
+              <button className={styles.iconButton}><Trash2 size={16} /></button>
               <button className={styles.iconButton}><MoreVertical size={18} /></button>
             </div>
           </div>

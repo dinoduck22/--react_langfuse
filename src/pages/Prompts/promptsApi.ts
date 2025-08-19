@@ -11,32 +11,41 @@ import {
 // --- API 함수 ---
 
 /**
- * 프롬프트 목록 전체를 가져옵니다.
+ * 프롬프트 목록 전체를 가져오고, 각 프롬프트의 최신 버전 정보와 타입을 포함합니다.
  */
 export const fetchPrompts = async (): Promise<DisplayPrompt[]> => {
-  const response = await langfuse.api.promptsList({});
-  // 참고: 현재 API 응답만으로는 정확한 버전 수를 알 수 없어 1로 표시합니다.
-  return response.data.map((prompt): DisplayPrompt => ({
+  // 1. 모든 프롬프트의 기본 목록(이름 위주)을 가져옵니다.
+  const listResponse = await langfuse.api.promptsList({});
+  
+  // 2. 각 프롬프트의 상세 정보를 병렬로 조회합니다.
+  const detailedPrompts = await Promise.all(
+    listResponse.data.map(promptInfo => 
+      langfuse.api.promptsGet({ promptName: promptInfo.name }) as Promise<FetchedPrompt>
+    )
+  );
+
+  // 3. 상세 정보가 포함된 데이터를 DisplayPrompt 형태로 가공합니다.
+  return detailedPrompts.map((prompt): DisplayPrompt => ({
     id: prompt.name,
     name: prompt.name,
-    versions: 1,
-    type: 'text', 
-    observations: 0,
-    latestVersionCreatedAt: '-',
+    versions: prompt.version, // API에서 받은 최신 버전 번호를 사용합니다.
+    type: prompt.type,       // API에서 받은 프롬프트 타입을 사용합니다.
+    observations: 0, // 이 정보는 현재 API에서 제공되지 않으므로 0으로 유지합니다.
+    latestVersionCreatedAt: new Date(prompt.updatedAt).toLocaleString(), // 업데이트된 시간을 보기 좋게 포맷합니다.
     tags: prompt.tags || [],
   }));
 };
+
 
 /**
  * 특정 프롬프트의 최신 버전을 가져옵니다.
  * Langfuse API가 단일 버전 객체를 반환하므로, 이를 배열로 감싸서 UI와 호환되도록 합니다.
  */
 export const fetchPromptVersions = async (promptName: string): Promise<Version[]> => {
-    // API가 단일 FetchedPrompt 객체를 반환한다고 가정하고 타입 캐스팅합니다.
     const response = await langfuse.api.promptsGet({ promptName }) as unknown as FetchedPrompt;
     
     // 단일 응답 객체를 배열로 감싸서 처리합니다.
-    const versionsResponse: FetchedPrompt[] = [response];
+    const versionsResponse: FetchedPrompt[] = response ? [response] : [];
     const isChatPrompt = (prompt: PromptContentType): prompt is ChatMessage[] => Array.isArray(prompt);
 
     return versionsResponse.map((v): Version => {
@@ -63,10 +72,10 @@ export const fetchPromptVersions = async (promptName: string): Promise<Version[]
     const prompt = await langfuse.getPrompt("${v.name}");
 
     // Get by Label
-    // You can use as many labels as you'd like to identify different deployment targets
+    # You can use as many labels as you'd like to identify different deployment targets
     const prompt = await langfuse.getPrompt("${v.name}", { label: "latest" });
 
-    // Get by version number, usually not recommended as it requires code changes to deploy new prompt versions
+    # Get by version number, usually not recommended as it requires code changes to deploy new prompt versions
     langfuse.getPrompt("${v.name}", { version: ${v.version} });`;
 
         return {
