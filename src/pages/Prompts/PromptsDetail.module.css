@@ -30,15 +30,13 @@
 }
 .versionDropdown {
   background-color: #0f172a;
-  border: 1px solid #1e293b;
-  color: #94a3b8;
-  padding: 2px 6px;
+  border: 0px solid #1e293b;
+  padding: 2px 2px;
   border-radius: 6px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px; 
   font-size: 13px;
-  cursor: pointer;
 }
 .headerActions {
   display: flex;

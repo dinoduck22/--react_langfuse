@@ -4,7 +4,6 @@ import styles from './PromptsDetail.module.css';
 import {
   Book,
   Clipboard,
-  Trash2,
   Play,
   MoreVertical,
   Search,
@@ -16,7 +15,7 @@ import {
 } from 'lucide-react';
 import DuplicatePromptModal from './DuplicatePromptModal';
 // 새로 만든 API 파일과 타입들을 import 합니다.
-import { fetchPromptVersions } from './promptsApi';
+import { fetchPromptVersions, createNewPromptVersion } from './promptsApi';
 import { type Version } from './promptTypes'
 
 // --- 메인 컴포넌트 ---
@@ -55,7 +54,7 @@ export default function PromptsDetail() {
     loadPromptData();
   }, [loadPromptData]);
 
-  // "New" 버튼 클릭 핸들러: 새 버전 생성을 위해 New 페이지로 이동
+    // "New" 버튼 클릭 핸들러: 새 버전 생성을 위해 New 페이지로 이동
   const handleNewVersion = () => {
     if (!id || !selectedVersion) return;
 
@@ -146,9 +145,11 @@ export default function PromptsDetail() {
           <h1 className={styles.promptNameH1}>
             {id}
           </h1>
-          <button className={styles.versionDropdown}>
-            v{selectedVersion.id}: {selectedVersion.label} <ChevronRight size={14} />
-          </button>
+          <div className={styles.versionDropdown}>
+            {selectedVersion.tags.map(tag => (
+              <span key={tag} className={styles.tagItem}><Tag size={12}/> {tag}</span>
+            ))}
+          </div>
         </div>
         <div className={styles.headerActions}>
           <button className={styles.actionButton} onClick={() => setDuplicateModalOpen(true)}>
@@ -190,13 +191,11 @@ export default function PromptsDetail() {
                 <div className={styles.versionTitle}>
                   <span className={styles.versionLabel}>#{version.id}</span>
                 </div>
-                {/* Labels와 Tags를 함께 보여주는 부분 */}
                 <div className={styles.tagsContainer}>
                   {version.labels.map(label => (
-                    <span key={label} className={styles.statusTagProd}><GitCommitHorizontal size={12}/> {label}</span>
-                  ))}
-                  {version.tags.map(tag => (
-                     <span key={tag} className={styles.tagItem}><Tag size={12}/> {tag}</span>
+                      <span key={label} className={label.toLowerCase() === 'production' ? styles.statusTagProd : styles.statusTagLatest}>
+                          <GitCommitHorizontal size={12}/>{label}
+                      </span>
                   ))}
                 </div>
                 <div className={styles.versionMeta}>
@@ -219,7 +218,7 @@ export default function PromptsDetail() {
             <div className={styles.detailActions}>
               <button className={styles.playgroundButton}><Play size={14} /> Playground</button>
               <button className={styles.playgroundButton}>Experiment</button>
-              <button className={styles.iconButton}><Trash2 size={16} /></button>
+              <button className={styles.iconButton}><Clipboard size={16} /></button>
               <button className={styles.iconButton}><MoreVertical size={18} /></button>
             </div>
           </div>

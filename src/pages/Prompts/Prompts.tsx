@@ -6,13 +6,13 @@ import {
   Plus,
   Search,
   ChevronDown,
-  Bookmark,
   FileText,
   Trash2,
   ChevronsLeft,
   ChevronLeft,
   ChevronRight,
   ChevronsRight,
+  Tag, // ✅ Tag 아이콘 import 추가
 } from 'lucide-react';
 import { AxiosError } from 'axios';
 // 새로 만든 API 파일에서 fetchPrompts 함수와 DisplayPrompt 타입을 가져옵니다.
@@ -28,13 +28,11 @@ const Prompts: React.FC = () => {
   const [promptToDelete, setPromptToDelete] = useState<DisplayPrompt | null>(null);
   
   useEffect(() => {
-    // API 호출 로직을 포함한 함수를 정의합니다.
     const loadPrompts = async () => {
       try {
         setIsLoading(true);
         setError(null);
         
-        // 분리된 fetchPrompts 함수를 호출하여 데이터를 가져옵니다.
         const formattedPrompts = await fetchPrompts();
         
         setPrompts(formattedPrompts);
@@ -98,7 +96,6 @@ const Prompts: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      {/* ... (이하 JSX 코드는 변경 없음) ... */}
       <div className={styles.header}>
         <div className={styles.title}>
           <h1>Prompts</h1>
@@ -130,7 +127,7 @@ const Prompts: React.FC = () => {
           <thead>
             <tr>
               <th>Name</th>
-              <th>Version</th>
+              <th>Versions</th>
               <th>Type</th>
               <th>Latest Version Created At <ChevronDown size={14} /></th>
               <th>Number of Observations</th>
@@ -159,9 +156,20 @@ const Prompts: React.FC = () => {
                     <td>{prompt.type}</td>
                     <td>{prompt.latestVersionCreatedAt}</td>
                     <td><div className={styles.observationCell}>{formatObservations(prompt.observations)}</div></td>
+                    {/* ✅ 이 부분을 수정하여 태그가 없을 때 아이콘 버튼을 표시합니다. */}
                     <td>
                       <div className={styles.tagsCell}>
-                        <button className={styles.iconButton}><Bookmark size={16} /></button>
+                        {prompt.tags && prompt.tags.length > 0 ? (
+                          prompt.tags.map(tag => (
+                            <span key={tag} className={styles.tagPill}>
+                              {tag}
+                            </span>
+                          ))
+                        ) : (
+                          <button className={styles.iconButton} onClick={() => alert('Add tags!')}>
+                            <Tag size={16} />
+                          </button>
+                        )}
                       </div>
                     </td>
                     <td>

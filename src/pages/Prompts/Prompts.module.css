@@ -162,8 +162,21 @@
 
 .tagsCell {
   display: flex;
-  /* gap 없음 */
+  gap: 6px; /* 태그 사이의 간격을 추가합니다. */
+  align-items: center;
 }
+
+/* ✅ 아래 tagPill 스타일을 파일 하단에 추가해주세요. */
+.tagPill {
+  background-color: #312e81; /* 이미지와 유사한 보라색 배경 */
+  color: #e0e7ff;             /* 밝은 텍스트 색상 */
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;        /* 태그 이름이 길어도 줄바꿈 방지 */
+}
+
 .actionCell {
   display: flex;
   justify-content: flex-end; /* 오른쪽 정렬 */
