@@ -1,6 +1,6 @@
 // src/pages/Dashboards/DashboardDetail.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom'; // 🔽 useNavigate 추가
 import { Info, Filter, Plus } from 'lucide-react';
 import WidgetCard from 'components/Dashboard/WidgetCard';
@@ -19,10 +19,10 @@ import BigNumberChart from 'components/Chart/BigNumberChart';
 import HistogramChart from 'components/Chart/HistogramChart';
 import PivotTable from 'components/Chart/PivotTableChart';
 
-// Data
-import { DUMMY_DASHBOARDS } from 'data/dummyDashboardData';
-import * as dummyData from 'data/dummyDashboardDetailData';
-import { DUMMY_WIDGETS, type Widget } from 'data/dummyAddWidgetModal';
+// Data and API
+import { DUMMY_DASHBOARDS } from "data/dummyDashboardData";
+import { DUMMY_WIDGETS, type Widget } from "data/dummyAddWidgetModal";
+import { fetchMetrics, MetricDataPoint, MetricsApiParams } from "./metricsApi"; // API 함수 및 타입 import
 
 // Modal and Utils
 import AddWidgetModal from './AddWidgetModal';
@@ -34,11 +34,11 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 // 🔽 기본 위젯 데이터 정의
 const initialWidgets: Widget[] = [
   { id: 'total-traces', name: 'Total Traces', description: 'Shows the count of Traces', viewType: 'Traces', chartType: 'BigNumberChart' },
-  { id: 'total-observations', name: 'Total Observations', description: 'Shows the count of Observations', viewType: 'Observations', chartType: 'AreaChart' },
+  { id: 'total-observations', name: 'Total Observations', description: 'Shows the count of Observations', viewType: 'Observations', chartType: 'BigNumberChart' },
   { id: 'total-costs', name: 'Total costs ($)', description: 'Total cost across all use cases', viewType: 'Traces', chartType: 'LineChart' },
   { id: 'cost-by-model', name: 'Cost by Model Name ($)', description: 'Total cost broken down by model name', viewType: 'Observations', chartType: 'VerticalBarChart' },
   { id: 'cost-by-env', name: 'Cost by Environment ($)', description: 'Total cost broken down by trace.environment', viewType: 'Traces', chartType: 'PieChart' },
-  { id: 'top-users', name: 'Top Users by Cost ($)', description: 'Aggregated model cost by user', viewType: 'Users', chartType: 'HorizontalBarChart' },
+  { id: 'top-users', name: 'Top Users by Cost ($)', description: 'Aggregated model cost by user', viewType: 'Traces', chartType: 'HorizontalBarChart' },
   { id: 'cost-distribution', name: 'Cost Distribution', description: 'Distribution of costs', viewType: 'Traces', chartType: 'Histogram' },
   { id: 'cost-by-model-region', name: 'Costs by Model and Region', description: 'Pivot table summary', viewType: 'Observations', chartType: 'PivotTable' },
 ];
@@ -55,63 +55,48 @@ const initialLayout: ReactGridLayout.Layout[] = [
   { i: 'cost-by-model-region', x: 1, y: 2.5, w: 2, h: 1.5 },
 ];
 
-// 🔽 위젯 타입에 따라 적절한 데이터를 반환하는 헬퍼 함수
-const getWidgetData = (widget: Widget): Record<string, string | number>[] => {
-    switch (widget.chartType) {
-        case 'BigNumberChart':
-            return [{ total_traces: dummyData.totalTraces }];
-        case 'AreaChart':
-        case 'LineChart':
-            return dummyData.totalCostData;
-        case 'VerticalBarChart':
-        case 'Histogram':
-            return dummyData.costByModelData;
-        case 'HorizontalBarChart':
-            return dummyData.topUsersCostData;
-        case 'PieChart':
-            return dummyData.costByEnvironmentData;
-        case 'PivotTable':
-            return dummyData.dummyPivotData;
+const getApiParamsForWidget = (widget: Widget, from: string, to: string): MetricsApiParams | null => {
+    const view = widget.viewType.toLowerCase() as MetricsApiParams['view'];
+    const baseParams = { fromTimestamp: from, toTimestamp: to };
+
+    switch (widget.id) {
+        case 'total-traces':
+            return { ...baseParams, view: 'traces', metrics: [{ measure: 'count', aggregation: 'sum' }] };
+        case 'total-observations':
+            return { ...baseParams, view: 'observations', metrics: [{ measure: 'count', aggregation: 'sum' }] };
+        case 'total-costs':
+            return {
+                ...baseParams,
+                view: 'traces',
+                metrics: [{ measure: 'totalCost', aggregation: 'sum' }],
+                timeDimension: { granularity: 'day' }
+            };
+        case 'cost-by-model':
+            return {
+                ...baseParams,
+                view: 'observations',
+                metrics: [{ measure: 'totalCost', aggregation: 'sum' }],
+                groupBy: [{ field: 'model' }]
+            };
+        case 'cost-by-env':
+             return {
+                ...baseParams,
+                view: 'traces',
+                metrics: [{ measure: 'totalCost', aggregation: 'sum' }],
+                groupBy: [{ field: 'environment' }]
+            };
+        case 'top-users':
+            return {
+                ...baseParams,
+                view: 'traces',
+                metrics: [{ measure: 'totalCost', aggregation: 'sum' }],
+                groupBy: [{ field: 'userId' }],
+                config: { row_limit: 10 }
+            };
         default:
-            return [];
+            return null;
     }
-}
-
-// 차트 타입에 따라 적절한 컴포넌트를 렌더링하는 헬퍼 함수
-const renderChart = (widget: Widget) => {
-  const chartStyle = { width: '100%', height: '100%' };
-  const totalEnvCost = dummyData.costByEnvironmentData.reduce((sum, item) => sum + item.value, 0).toFixed(3);
-
-  switch (widget.chartType) {
-    case 'BigNumberChart':
-      return <BigNumberChart value={dummyData.totalTraces} />;
-    case 'AreaChart':
-        return <div style={chartStyle}><AreaChart data={dummyData.totalCostData} dataKey="value" nameKey="name" /></div>;
-    case 'LineChart':
-      return <div style={chartStyle}><LineChart data={dummyData.totalCostData} dataKey="value" nameKey="name" /></div>;
-    case 'VerticalBarChart':
-      return <div style={chartStyle}><BarChart data={dummyData.costByModelData} dataKey="value" nameKey="name" layout="horizontal" /></div>;
-    case 'HorizontalBarChart':
-        return <div style={chartStyle}><BarChart data={dummyData.topUsersCostData} dataKey="value" nameKey="name" layout="vertical" /></div>;
-    case 'PieChart':
-      return (
-        <div className={styles.pieContainer}>
-          <PieChart data={dummyData.costByEnvironmentData} dataKey="value" nameKey="name" />
-          <div className={styles.pieCenter}>
-            <div className={styles.pieTotal}>${totalEnvCost}</div>
-            <div className={styles.pieSubtitle}>Total</div>
-          </div>
-        </div>
-      );
-    case 'Histogram':
-        return <div style={chartStyle}><HistogramChart data={dummyData.costByModelData} dataKey="value" nameKey="name" /></div>;
-    case 'PivotTable':
-        return <PivotTable data={dummyData.dummyPivotData} rows={['model']} cols={['region']} value="value" />;
-    default:
-      return <div>Chart for "{widget.chartType}" not implemented yet.</div>;
-  }
 };
-
 
 const DashboardDetail: React.FC = () => {
   const { dashboardId } = useParams<{ dashboardId: string }>();
@@ -119,14 +104,92 @@ const DashboardDetail: React.FC = () => {
   const currentDashboard = DUMMY_DASHBOARDS.find(
     (d) => d.name.toLowerCase().replace(/\s+/g, '-') === dashboardId
   );
-
-  const [isAddWidgetModalOpen, setAddWidgetModalOpen] = useState(false);
   const [widgets, setWidgets] = useState<Widget[]>(initialWidgets);
   const [layouts, setLayouts] = useState<ReactGridLayout.Layout[]>(initialLayout);
 
-  // 🔽 날짜 상태를 DashboardDetail에서 직접 관리
+  // API 데이터, 로딩, 에러 상태 관리
+  const [widgetData, setWidgetData] = useState<Record<string, MetricDataPoint[]>>({});
+  const [loading, setLoading] = useState<Record<string, boolean>>({});
+  const [error, setError] = useState<Record<string, string | null>>({});
+  
+  const [isAddWidgetModalOpen, setAddWidgetModalOpen] = useState(false);
   const [startDate, setStartDate] = useState(dayjs().subtract(7, 'day').toDate());
   const [endDate, setEndDate] = useState(new Date());
+
+  // Metrics API 호출 로직
+  useEffect(() => {
+    const fetchAllWidgetData = async () => {
+        const fromISO = startDate.toISOString();
+        const toISO = endDate.toISOString();
+
+        for (const widget of initialWidgets) {
+            setLoading(prev => ({ ...prev, [widget.id]: true }));
+            setError(prev => ({ ...prev, [widget.id]: null }));
+
+            const params = getApiParamsForWidget(widget, fromISO, toISO);
+
+            if (!params) {
+                setLoading(prev => ({ ...prev, [widget.id]: false }));
+                continue;
+            }
+
+            try {
+                const response = await fetchMetrics(params);
+                setWidgetData(prev => ({ ...prev, [widget.id]: response.data }));
+            } catch (e) {
+                // e가 Error 인스턴스인지 확인하여 구체적인 에러 메시지를 상태에 저장
+                if (e instanceof Error) {
+                    setError(prev => ({ ...prev, [widget.id]: e.message }));
+                } else {
+                    setError(prev => ({ ...prev, [widget.id]: 'An unknown error occurred.' }));
+                }
+            } finally {
+                setLoading(prev => ({ ...prev, [widget.id]: false }));
+            }
+        }
+    };
+
+    fetchAllWidgetData();
+  }, [startDate, endDate]); // 날짜 범위가 변경되면 데이터를 다시 불러옵니다.
+
+  const renderChart = (widget: Widget) => {
+    const data = widgetData[widget.id];
+    const isLoading = loading[widget.id];
+    const fetchError = error[widget.id];
+
+    if (isLoading) return <div>Loading...</div>;
+    if (fetchError) return <div>Error: {fetchError}</div>;
+    if (!data) return <div>No data available.</div>;
+    
+    const chartStyle = { width: '100%', height: '100%' };
+
+    switch (widget.chartType) {
+      case 'BigNumberChart':{
+        const countKey = Object.keys(data[0] || {}).find(k => k.includes('count')) || 'value';
+        return <BigNumberChart value={data[0]?.[countKey] as number || 0} />;
+      }
+      case 'LineChart':
+          return <div style={chartStyle}><LineChart data={data} dataKey="totalCost_sum" nameKey="time" /></div>;
+      case 'VerticalBarChart':
+          return <div style={chartStyle}><BarChart data={data} dataKey="totalCost_sum" nameKey="model" layout="horizontal" /></div>;
+      case 'HorizontalBarChart':{
+        const sortedData = [...data].sort((a, b) => (b.totalCost_sum as number) - (a.totalCost_sum as number));
+        return <div style={chartStyle}><BarChart data={sortedData} dataKey="totalCost_sum" nameKey="userId" layout="vertical" /></div>;
+      }
+      case 'PieChart':
+            return <div style={chartStyle}><PieChart data={data} dataKey="totalCost_sum" nameKey="environment" /></div>;
+    default:
+      return <div>Chart for "{widget.chartType}" not implemented yet.</div>;
+    }
+  };
+
+  if (!currentDashboard) {
+    return (
+      <div className={styles.container}>
+        <h1>Dashboard not found</h1>
+      </div>
+    );
+  }
 
   const handleAddWidget = (widgetId: string) => {
     const widgetToAdd = DUMMY_WIDGETS.find(w => w.id === widgetId);
@@ -175,14 +238,6 @@ const DashboardDetail: React.FC = () => {
 
     navigate(`/dashboards/widgets/new?${params.toString()}`);
   };
-
-  if (!currentDashboard) {
-    return (
-      <div className={styles.container}>
-        <h1>Dashboard not found</h1>
-      </div>
-    );
-  }
 
   // ▼▼▼ 위젯 데이터 다운로드 핸들러 함수 추가 ▼▼▼
   const handleDownloadWidgetData = (widget: Widget) => {
