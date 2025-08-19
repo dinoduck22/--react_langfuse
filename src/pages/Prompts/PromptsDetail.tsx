@@ -12,52 +12,9 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import { langfuse } from 'lib/langfuse';
-import DuplicatePromptModal from './DuplicatePromptModal'; // 모달 컴포넌트 import
-
-// --- 타입 정의 ---
-
-type ChatMessage = {
-  role: "system" | "user" | "assistant";
-  content: string;
-};
-
-type PromptContentType = string | ChatMessage[];
-type ConfigContent = Record<string, unknown> | null;
-
-type UseContent = {
-  python: string;
-  jsTs: string;
-};
-
-// GET /api/public/v2/prompts/{promptName} 응답을 기반으로 한 타입
-interface FetchedPrompt {
-  name: string;
-  prompt: PromptContentType;
-  type: 'chat' | 'text';
-  version: number;
-  config: ConfigContent;
-  tags: string[];
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
-  labels: string[];
-}
-
-// 화면에 표시하기 위한 Version 데이터 구조
-interface Version {
-  id: number;
-  label: string;
-  labels: string[];
-  details: string; // updatedAt을 포맷팅하여 사용
-  author: string;  // createdBy 값을 사용
-  prompt: {
-    system?: string;
-    user: string;
-  };
-  config: ConfigContent;
-  useprompts: UseContent;
-}
+import DuplicatePromptModal from './DuplicatePromptModal';
+// 새로 만든 API 파일과 타입들을 import 합니다.
+import { fetchPromptDetails, type Version } from './promptsDetailApi';
 
 // --- 메인 컴포넌트 ---
 export default function PromptsDetail() {
@@ -75,78 +32,16 @@ export default function PromptsDetail() {
   useEffect(() => {
     if (!id) return;
 
-    const isChatPrompt = (prompt: PromptContentType): prompt is ChatMessage[] => {
-        return Array.isArray(prompt);
-    }
-
-    const fetchPromptAndSimulateVersions = async () => {
+    const loadPromptData = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const [latestPrompt, promptListResponse] = await Promise.all([
-          // langfuse.getPrompt는 내부적으로 GET /api/public/v2/prompts/{promptName} 호출
-          langfuse.getPrompt(id) as unknown as FetchedPrompt,
-          langfuse.api.promptsList({})
-        ]);
-        
-        const promptNames = promptListResponse.data.map(p => p.name);
-        setAllPromptNames(promptNames);
+        // 분리된 API 함수를 호출합니다.
+        const { promptDetails, allPromptNames } = await fetchPromptDetails(id);
 
-        // 'Use' 탭에 들어갈 동적 코드 스니펫 생성
- const pythonCode = `from langfuse import Langfuse
-
-# Initialize langfuse client
-langfuse = Langfuse()
-
-# Get production prompt
-prompt = langfuse.get_prompt("${id}")
-
-# Get by Label
-# You can use as many labels as you'd like to identify different deployment targets
-prompt = langfuse.get_prompt("${id}", label="latest")
-
-# Get by version number, usually not recommended as it requires code changes to deploy new prompt versions
-langfuse.get_prompt("${id}", version=${latestPrompt.version})`;
-
-
- const jsTsCode = `import { Langfuse } from "langfuse";
-
-// Initialize the langfuse client
-const langfuse = new Langfuse();
-
-// Get production prompt
-const prompt = await langfuse.getPrompt("${id}");
-
-// Get by Label
-// You can use as many labels as you'd like to identify different deployment targets
-const prompt = await langfuse.getPrompt("${id}", { label: "latest" });
-
-// Get by version number, usually not recommended as it requires code changes to deploy new prompt versions
-langfuse.getPrompt("${id}", { version: ${latestPrompt.version} });`;
-
-
-        const fetchedVersion: Version = {
-          id: latestPrompt.version,
-          label: `Version ${latestPrompt.version}`,
-          labels: latestPrompt.labels,
-          details: latestPrompt.createdAt 
-          ? new Date(latestPrompt.createdAt).toLocaleString()
-          : 'N/A',
-          author: latestPrompt.createdBy,
-          prompt: {
-            user: isChatPrompt(latestPrompt.prompt)
-              ? latestPrompt.prompt.find(p => p.role === 'user')?.content ?? ''
-              : latestPrompt.prompt,
-            system: isChatPrompt(latestPrompt.prompt)
-              ? latestPrompt.prompt.find(p => p.role === 'system')?.content
-              : undefined,
-          },
-          config: latestPrompt.config,
-          useprompts: { python: pythonCode, jsTs: jsTsCode },
-        };
-
-        setVersions([fetchedVersion]);
-        setSelectedVersion(fetchedVersion);
+        setVersions([promptDetails]); // API 결과로 버전 목록 상태 설정
+        setSelectedVersion(promptDetails); // 선택된 버전 상태 설정
+        setAllPromptNames(allPromptNames); // 전체 프롬프트 이름 목록 상태 설정
 
       } catch (err) {
         console.error("Failed to fetch prompt details:", err);
@@ -156,7 +51,7 @@ langfuse.getPrompt("${id}", { version: ${latestPrompt.version} });`;
       }
     };
 
-    fetchPromptAndSimulateVersions();
+    loadPromptData();
   }, [id]);
 
   const { currentPromptIndex, handlePrev, handleNext } = useMemo(() => {
@@ -188,7 +83,6 @@ langfuse.getPrompt("${id}", { version: ${latestPrompt.version} });`;
     return Array.from(uniqueVars);
   }, [selectedVersion]);
 
-    // 복제 제출 핸들러 추가
   const handleDuplicateSubmit = (newName: string, copyAll: boolean) => {
     console.log({
       action: 'Duplicate Prompt',
@@ -198,7 +92,6 @@ langfuse.getPrompt("${id}", { version: ${latestPrompt.version} });`;
     });
     alert(`Prompt duplicated as "${newName}" (자세한 내용은 콘솔 확인)`);
     setDuplicateModalOpen(false);
-    // 실제 앱에서는 navigate(`/prompts/${newName}`); 등으로 이동할 수 있습니다.
   };
 
   if (isLoading) {

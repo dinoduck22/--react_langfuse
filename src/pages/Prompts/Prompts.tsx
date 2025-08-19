@@ -14,24 +14,9 @@ import {
   ChevronRight,
   ChevronsRight,
 } from 'lucide-react';
-import { langfuse } from 'lib/langfuse';
-import { AxiosError } from 'axios'
-
-interface PromptMeta {
-  name: string;
-  tags: string[];
-  updatedAt?: string;
-}
-
-type DisplayPrompt = {
-  id: string;
-  name: string;
-  versions: number;
-  type: 'chat' | 'text';
-  latestVersionCreatedAt: string;
-  observations: number;
-  tags: string[];
-};
+import { AxiosError } from 'axios';
+// 새로 만든 API 파일에서 fetchPrompts 함수와 DisplayPrompt 타입을 가져옵니다.
+import { fetchPrompts, type DisplayPrompt } from './PromptsApi';
 
 const Prompts: React.FC = () => {
   const [prompts, setPrompts] = useState<DisplayPrompt[]>([]);
@@ -41,58 +26,42 @@ const Prompts: React.FC = () => {
   const navigate = useNavigate();
   const [promptToDelete, setPromptToDelete] = useState<DisplayPrompt | null>(null);
   
-
   useEffect(() => {
-    const fetchPrompts = async () => {
+    // API 호출 로직을 포함한 함수를 정의합니다.
+    const loadPrompts = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        const response = await langfuse.api.promptsList({});
-        const formattedPrompts = response.data.map((prompt: PromptMeta): DisplayPrompt => {
-          const latestVersionCreatedAt = prompt.updatedAt
-            ? new Date(prompt.updatedAt).toLocaleString()
-            : '-';
-
-          return {
-            id: prompt.name,
-            name: prompt.name,
-            versions: 1,
-            type: 'text',
-            latestVersionCreatedAt: latestVersionCreatedAt,
-            observations: 0,
-            tags: prompt.tags || [],
-          };
-        });
+        
+        // 분리된 fetchPrompts 함수를 호출하여 데이터를 가져옵니다.
+        const formattedPrompts = await fetchPrompts();
+        
         setPrompts(formattedPrompts);
       } catch (err) {
         console.error("Failed to fetch prompts:", err);
-        // --- 오류 분석 로직 추가 ---
         if (err instanceof AxiosError) {
           if (!err.response) {
-            // 응답 자체가 없는 네트워크 오류 -> CORS 문제일 확률이 매우 높음
             setError(
               "Network Error: Failed to fetch. This might be a CORS issue. " +
               "Please check if your Langfuse project's 'Allowed Origins' includes your development URL (e.g., http://localhost:5173)."
             );
           } else if (err.response.status === 401 || err.response.status === 403) {
-            // 401/403: 인증/권한 오류
             setError(
               "Authentication Failed: The provided API Keys or Base URL are incorrect. " +
               "Please verify your .env file."
             );
           } else {
-            // 그 외 서버 응답 오류
             setError(`An API error occurred: ${err.response.status} ${err.response.statusText}`);
           }
         } else {
-          // Axios 오류가 아닌 경우
           setError("An unexpected error occurred. Please check the console.");
         }
       } finally {
         setIsLoading(false);
       }
     };
-    fetchPrompts();
+    
+    loadPrompts();
   }, []);
 
   const filteredPrompts = useMemo(() => {
@@ -115,28 +84,20 @@ const Prompts: React.FC = () => {
     return num;
   };
 
-  // 삭제 아이콘 클릭 핸들러
   const handleDeleteClick = (prompt: DisplayPrompt) => {
-    // 이미 열려있는 팝업을 다시 클릭하면 닫고, 아니면 새로 엶
     setPromptToDelete(prev => (prev?.id === prompt.id ? null : prompt));
   };
 
-  // 실제 삭제를 처리하는 함수
   const confirmDelete = () => {
     if (!promptToDelete) return;
-
-    // 실제 API 호출 대신 상태에서만 제거
     setPrompts(currentPrompts => currentPrompts.filter(p => p.id !== promptToDelete.id));
-    
     console.log(`프롬프트 "${promptToDelete.name}"가 삭제되었습니다.`);
-    
-    // 확인 팝업 닫기
     setPromptToDelete(null);
   };
 
   return (
     <div className={styles.container}>
-      {/* 1. 페이지 헤더 */}
+      {/* ... (이하 JSX 코드는 변경 없음) ... */}
       <div className={styles.header}>
         <div className={styles.title}>
           <h1>Prompts</h1>
@@ -150,7 +111,6 @@ const Prompts: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. 툴바 (검색, 필터) */}
       <div className={styles.toolbar}>
         <div className={styles.searchBox}>
           <Search size={18} className={styles.searchIcon} />
@@ -164,7 +124,6 @@ const Prompts: React.FC = () => {
         <button className={styles.filterButton}>Filters</button>
       </div>
 
-      {/* 3. 프롬프트 테이블 */}
       <div className={styles.tableContainer}>
         <table className={styles.table}>
           <thead>
@@ -212,7 +171,6 @@ const Prompts: React.FC = () => {
                       </div>
                     </td>
                   </tr>
-                  {/* 삭제 확인 팝업을 위한 행 */}
                   {promptToDelete && promptToDelete.id === prompt.id && (
                     <tr className={styles.confirmationRow}>
                       <td colSpan={7}>
@@ -238,7 +196,6 @@ const Prompts: React.FC = () => {
         </table>
       </div>
 
-      {/* 4. 페이지네이션 */}
       <div className={styles.pagination}>
         <div className={styles.rowsPerPage}>
           <span>Rows per page</span>
