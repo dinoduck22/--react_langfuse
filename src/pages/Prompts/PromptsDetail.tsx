@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import styles from './PromptsDetail.module.css';
 import {
@@ -15,7 +15,8 @@ import {
 } from 'lucide-react';
 import DuplicatePromptModal from './DuplicatePromptModal';
 // 새로 만든 API 파일과 타입들을 import 합니다.
-import { fetchPromptDetails, type Version } from './promptsApi';
+import { fetchPromptVersions, createNewPromptVersion } from './promptsApi';
+import { type Version } from './promptTypes'
 
 // --- 메인 컴포넌트 ---
 export default function PromptsDetail() {
@@ -30,30 +31,49 @@ export default function PromptsDetail() {
   const [allPromptNames, setAllPromptNames] = useState<string[]>([]);
   const [isDuplicateModalOpen, setDuplicateModalOpen] = useState(false);
 
-  useEffect(() => {
+    // 데이터 로딩 로직을 useCallback으로 감싸 재사용 가능하도록 함
+  const loadPromptData = useCallback(async () => {
     if (!id) return;
-
-    const loadPromptData = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        // 분리된 API 함수를 호출합니다.
-        const { promptDetails, allPromptNames } = await fetchPromptDetails(id);
-
-        setVersions([promptDetails]); // API 결과로 버전 목록 상태 설정
-        setSelectedVersion(promptDetails); // 선택된 버전 상태 설정
-        setAllPromptNames(allPromptNames); // 전체 프롬프트 이름 목록 상태 설정
-
-      } catch (err) {
-        console.error("Failed to fetch prompt details:", err);
-        setError(`"${id}" 프롬프트를 불러오는 데 실패했습니다.`);
-      } finally {
-        setIsLoading(false);
+    setIsLoading(true);
+    setError(null);
+    try {
+      const fetchedVersions = await fetchPromptVersions(id);
+      setVersions(fetchedVersions);
+      if (fetchedVersions.length > 0) {
+        setSelectedVersion(fetchedVersions[0]); // 최신 버전을 기본으로 선택
       }
-    };
-
-    loadPromptData();
+    } catch (err) {
+      console.error("Failed to fetch prompt details:", err);
+      setError(`"${id}" 프롬프트를 불러오는 데 실패했습니다.`);
+    } finally {
+      setIsLoading(false);
+    }
   }, [id]);
+
+  useEffect(() => {
+    loadPromptData();
+  }, [loadPromptData]);
+
+    // "New" 버튼 클릭 핸들러: 새 버전 생성
+  const handleNewVersion = async () => {
+    if (!id || !selectedVersion) return;
+
+    if (!window.confirm(`현재 선택된 버전(v${selectedVersion.id})을 기반으로 새 버전을 생성하시겠습니까?`)) {
+      return;
+    }
+    
+    setIsLoading(true);
+    try {
+      const newVersion = await createNewPromptVersion(id, selectedVersion);
+      await loadPromptData(); // 데이터 새로고침
+      alert(`새로운 버전(v${newVersion.version})이 성공적으로 생성되었습니다.`);
+    } catch (err) {
+      console.error("Failed to create new version:", err);
+      setError("새 버전을 생성하는 데 실패했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const { currentPromptIndex, handlePrev, handleNext } = useMemo(() => {
     const currentIndex = id ? allPromptNames.findIndex(name => name === id) : -1;
@@ -152,8 +172,8 @@ export default function PromptsDetail() {
               <Search size={14} className={styles.searchIcon} />
               <input type="text" placeholder="Search versions" />
             </div>
-            <button className={styles.newButton} onClick={() => navigate('/prompts/new')}>
-              <Plus size={16} /> New
+            <button className={styles.newButton} onClick={handleNewVersion}>
+              <Plus size={16} /> New Version
             </button>
           </div>
           <ul className={styles.versionList}>

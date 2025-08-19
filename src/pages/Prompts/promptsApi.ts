@@ -1,71 +1,24 @@
 import { langfuse } from 'lib/langfuse';
-
-// --- 타입 정의 ---
-
-// UI 목록에서 사용할 데이터 타입
-export interface DisplayPrompt {
-  id: string;
-  name: string;
-  versions: number;
-  type: 'chat' | 'text';
-  latestVersionCreatedAt: string;
-  observations: number;
-  tags: string[];
-}
-
-// API 응답 원시 데이터 타입 (상세 조회)
-export interface FetchedPrompt {
-  name: string;
-  prompt: PromptContentType;
-  type: 'chat' | 'text';
-  version: number;
-  config: ConfigContent;
-  tags: string[];
-  createdBy: string;
-  createdAt: string;
-  updatedAt: string;
-  labels: string[];
-  commitMessage: string | null;
-}
-
-// UI 상세 페이지에서 사용할 데이터 타입
-export interface Version {
-  id: number;
-  label: string;
-  labels: string[];
-  details: string;
-  author: string;
-  prompt: {
-    system?: string;
-    user: string;
-  };
-  config: ConfigContent;
-  useprompts: UseContent;
-  tags: string[];
-  commitMessage: string | null;
-}
-
-// 공통 타입
-export type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
-export type PromptContentType = string | ChatMessage[];
-export type ConfigContent = Record<string, unknown> | null;
-export interface UseContent { python: string; jsTs: string }
+// promptsTypes.ts 파일에서 모든 타입을 가져옵니다.
+import {
+  type ChatMessage,
+  type DisplayPrompt,
+  type FetchedPrompt,
+  type PromptContentType,
+  type Version
+} from './promptTypes';
 
 // --- API 함수 ---
 
 /**
- * Langfuse 서버에서 프롬프트 목록을 가져옵니다.
- * @returns {Promise<DisplayPrompt[]>} UI 목록에 표시될 프롬프트 객체의 배열
+ * 프롬프트 목록 전체를 가져옵니다.
  */
 export const fetchPrompts = async (): Promise<DisplayPrompt[]> => {
   const response = await langfuse.api.promptsList({});
-  
   return response.data.map((prompt): DisplayPrompt => ({
     id: prompt.name,
     name: prompt.name,
-    // 참고: promptsList API는 version, type, observations 정보를 반환하지 않습니다.
-    // 따라서 UI 표시를 위해 임시 기본값을 사용합니다. 정확한 정보는 상세 페이지에서 확인됩니다.
-    versions: 1, 
+    versions: 1,
     type: 'text',
     observations: 0,
     latestVersionCreatedAt: '-',
@@ -74,40 +27,91 @@ export const fetchPrompts = async (): Promise<DisplayPrompt[]> => {
 };
 
 /**
- * 특정 프롬프트의 상세 정보를 가져옵니다.
- * @param promptName - 조회할 프롬프트의 이름
- * @returns {Promise<{ promptDetails: Version; allPromptNames: string[] }>}
+ * 특정 프롬프트의 최신 버전을 가져옵니다.
  */
-export const fetchPromptDetails = async (promptName: string): Promise<{ promptDetails: Version; allPromptNames: string[] }> => {
-  const isChatPrompt = (prompt: PromptContentType): prompt is ChatMessage[] => Array.isArray(prompt);
+export const fetchPromptVersions = async (promptName: string): Promise<Version[]> => {
+    // [수정] API 호출 시 인자 객체의 속성 이름을 'name'에서 'promptName'으로 변경합니다.
+    const response = await langfuse.api.promptsGet({ promptName }) as unknown as FetchedPrompt;
+    
+    const versionsResponse: FetchedPrompt[] = [response];
+    const isChatPrompt = (prompt: PromptContentType): prompt is ChatMessage[] => Array.isArray(prompt);
 
-  const [latestPrompt, promptListResponse] = await Promise.all([
-    langfuse.getPrompt(promptName) as unknown as FetchedPrompt,
-    langfuse.api.promptsList({})
-  ]);
+    return versionsResponse.map((v): Version => {
+      const pythonCode = `from langfuse import Langfuse
 
-  const allPromptNames = promptListResponse.data.map(p => p.name);
+    # Initialize langfuse client
+    langfuse = Langfuse()
 
-  // 코드 스니펫 생성
-  const pythonCode = `from langfuse import Langfuse\n\nlangfuse = Langfuse()\nprompt = langfuse.get_prompt("${promptName}", version=${latestPrompt.version})`;
-  const jsTsCode = `import { Langfuse } from "langfuse";\n\nconst langfuse = new Langfuse();\nconst prompt = await langfuse.getPrompt("${promptName}", { version: ${latestPrompt.version} });`;
+    # Get production prompt
+    prompt = langfuse.get_prompt("${v.name}")
 
-  // API 응답을 UI에 맞는 형태로 가공
-  const promptDetails: Version = {
-    id: latestPrompt.version,
-    label: latestPrompt.commitMessage || `Version ${latestPrompt.version}`,
-    labels: latestPrompt.labels,
-    details: latestPrompt.createdAt ? new Date(latestPrompt.createdAt).toLocaleString() : 'N/A',
-    author: latestPrompt.createdBy,
-    prompt: {
-      user: isChatPrompt(latestPrompt.prompt) ? latestPrompt.prompt.find(p => p.role === 'user')?.content ?? '' : latestPrompt.prompt,
-      system: isChatPrompt(latestPrompt.prompt) ? latestPrompt.prompt.find(p => p.role === 'system')?.content : undefined,
-    },
-    config: latestPrompt.config,
-    useprompts: { python: pythonCode, jsTs: jsTsCode },
-    tags: latestPrompt.tags, // tags 정보 추가
-    commitMessage: latestPrompt.commitMessage, // commitMessage 정보 추가
-  };
+    # Get by Label
+    # You can use as many labels as you'd like to identify different deployment targets
+    prompt = langfuse.get_prompt("${v.name}", label="latest")
+
+    # Get by version number, usually not recommended as it requires code changes to deploy new prompt versions
+    langfuse.get_prompt("${v.name}", version=${v.version})`;
+      const jsTsCode = `import { Langfuse } from "langfuse";
+
+    // Initialize the langfuse client
+    const langfuse = new Langfuse();
+
+    // Get production prompt
+    const prompt = await langfuse.getPrompt("${v.name}");
+
+    // Get by Label
+    // You can use as many labels as you'd like to identify different deployment targets
+    const prompt = await langfuse.getPrompt("${v.name}", { label: "latest" });
+
+    // Get by version number, usually not recommended as it requires code changes to deploy new prompt versions
+    langfuse.getPrompt("${v.name}", { version: ${v.version} });`;
+
+        return {
+            id: v.version,
+            label: v.commitMessage || `Version ${v.version}`,
+            labels: v.labels,
+            details: v.updatedAt ? new Date(v.updatedAt).toLocaleString() : 'N/A',
+            author: v.createdBy,
+            prompt: {
+                user: isChatPrompt(v.prompt) ? v.prompt.find(p => p.role === 'user')?.content ?? '' : v.prompt,
+                system: isChatPrompt(v.prompt) ? v.prompt.find(p => p.role === 'system')?.content : undefined,
+            },
+            config: v.config,
+            useprompts: { python: pythonCode, jsTs: jsTsCode },
+            tags: v.tags,
+            commitMessage: v.commitMessage,
+        };
+    }).sort((a, b) => b.id - a.id);
+};
+
+/**
+ * 기존 프롬프트를 기반으로 새 버전을 생성합니다.
+ */
+export const createNewPromptVersion = async (
+  name: string,
+  versionData: Version
+): Promise<FetchedPrompt> => {
+  const { prompt, config, commitMessage: versionCommitMessage } = versionData;
+  const isChat = !!prompt.system;
+  const commitMessage = versionCommitMessage ? `${versionCommitMessage} (copy)` : `Forked from v${versionData.id}`;
   
-  return { promptDetails, allPromptNames };
+  const commonPayload = {
+      name: name,
+      config: config,
+      labels: [],
+      commitMessage: commitMessage,
+  };
+
+  if (isChat) {
+      // [수정] chatPromptPayload의 각 메시지 객체에 type: 'chatmessage'를 추가합니다.
+      const chatPromptPayload = [
+          { type: 'chatmessage' as const, role: 'system' as const, content: prompt.system! },
+          { type: 'chatmessage' as const, role: 'user' as const, content: prompt.user },
+      ];
+      const response = await langfuse.api.promptsCreate({ ...commonPayload, type: 'chat', prompt: chatPromptPayload });
+      return response as unknown as FetchedPrompt;
+  } else {
+      const response = await langfuse.api.promptsCreate({ ...commonPayload, type: 'text', prompt: prompt.user });
+      return response as unknown as FetchedPrompt;
+  }
 };
