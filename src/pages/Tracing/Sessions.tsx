@@ -1,3 +1,4 @@
+// src/pages/Tracing/Sessions.tsx
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import styles from './Sessions.module.css';
@@ -11,27 +12,17 @@ import {
     ChevronRight,
     ChevronsRight
 } from 'lucide-react';
-import { DUMMY_SESSIONS, Session as SessionData } from '../../data/dummySessionsData';
+import { DUMMY_SESSIONS } from '../../data/dummySessionsData';
 import ColumnVisibilityModal from './ColumnVisibilityModal';
-import { Column } from './types';
+import { Column, SessionData } from './types';
+import { sessionTableColumns } from './sessionColumns'; // 분리된 컬럼 정의를 가져옵니다.
 
-// 초기 컬럼 상태 정의
-const initialColumns: Column[] = [
-    { key: 'id', header: 'ID', visible: true },
-    { key: 'createdAt', header: 'Created At', visible: true },
-    { key: 'duration', header: 'Duration', visible: true },
-    { key: 'environment', header: 'Environment', visible: true },
-    { key: 'userIds', header: 'User IDs', visible: true },
-    { key: 'traces', header: 'Traces', visible: true },
-    { key: 'totalCost', header: 'Total Cost', visible: true },
-    { key: 'usage', header: 'Usage', visible: true },
-    // 필요에 따라 다른 컬럼들도 여기에 추가할 수 있습니다.
-];
 
 const Sessions: React.FC = () => {
     const [sessions, setSessions] = useState(DUMMY_SESSIONS);
     const [isColumnVisibleModalOpen, setIsColumnVisibleModalOpen] = useState(false);
-    const [columns, setColumns] = useState<Column[]>(initialColumns);
+    // initialColumns 대신 sessionTableColumns를 초기 상태로 사용합니다.
+    const [columns, setColumns] = useState<Column[]>(sessionTableColumns);
 
     const toggleFavorite = (id: string) => {
         setSessions(prevSessions =>
@@ -45,6 +36,14 @@ const Sessions: React.FC = () => {
         setColumns(prevColumns =>
             prevColumns.map(col =>
                 col.key === key ? { ...col, visible: !col.visible } : col
+            )
+        );
+    };
+
+    const setAllColumnsVisible = (visible: boolean) => {
+        setColumns(prevColumns =>
+            prevColumns.map(col =>
+                col.key === 'id' ? col : { ...col, visible }
             )
         );
     };
@@ -104,7 +103,7 @@ const Sessions: React.FC = () => {
                                     />
                                 </td>
                                 {visibleColumns.map(col => {
-                                    const value = session[col.key];
+                                    const value = (session as unknown as SessionData)[col.key];
                                     let content;
                                     switch (col.key) {
                                         case 'id':
@@ -148,8 +147,9 @@ const Sessions: React.FC = () => {
             <ColumnVisibilityModal
                 isOpen={isColumnVisibleModalOpen}
                 onClose={() => setIsColumnVisibleModalOpen(false)}
-                columns={columns}
+                columns={columns.filter(c => c.key !== 'id')}
                 toggleColumnVisibility={toggleColumnVisibility}
+                setAllColumnsVisible={setAllColumnsVisible}
             />
         </div>
     );

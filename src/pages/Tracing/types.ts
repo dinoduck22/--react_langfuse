@@ -1,12 +1,19 @@
-// src/Tracing/types.ts
+// src/pages/Tracing/types.ts
 import { Session } from 'data/dummySessionsData';
 
-// Session 데이터 타입을 SessionData로 다시 export하여 명확하게 사용합니다.
-export type { Session as SessionData };
+export interface SessionData extends Session {
+  inputCost: number;
+  outputCost: number;
+  inputTokens: number;
+  outputTokens: number;
+  totalTokens: number;
+  traceTags: string[];
+  // Scores 컬럼들을 위한 인덱스 시그니처의 any 타입을 명시적인 타입으로 수정
+  [key: string]: string | number | boolean | { input: number; output: number } | string[] | undefined;
+}
 
-// 컬럼의 구조를 정의하는 인터페이스입니다.
 export interface Column {
-  key: keyof Session; // Session 데이터의 키 중 하나여야 합니다.
+  key: keyof SessionData;
   header: string;
   visible: boolean;
 }
