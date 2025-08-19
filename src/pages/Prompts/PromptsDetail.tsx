@@ -11,10 +11,11 @@ import {
   GitCommitHorizontal,
   ChevronLeft,
   ChevronRight,
+  Tag,
 } from 'lucide-react';
 import DuplicatePromptModal from './DuplicatePromptModal';
 // 새로 만든 API 파일과 타입들을 import 합니다.
-import { fetchPromptDetails, type Version } from './promptsDetailApi';
+import { fetchPromptDetails, type Version } from './promptsApi';
 
 // --- 메인 컴포넌트 ---
 export default function PromptsDetail() {
@@ -164,8 +165,15 @@ export default function PromptsDetail() {
               >
                 <div className={styles.versionTitle}>
                   <span className={styles.versionLabel}>#{version.id}</span>
-                  {version.labels.includes('latest') && <span className={styles.statusTagLatest}><GitCommitHorizontal size={12}/> latest</span>}
-                  {version.labels.includes('production') && <span className={styles.statusTagProd}><GitCommitHorizontal size={12}/> production</span>}
+                </div>
+                {/* Labels와 Tags를 함께 보여주는 부분 */}
+                <div className={styles.tagsContainer}>
+                  {version.labels.map(label => (
+                    <span key={label} className={styles.statusTagProd}><GitCommitHorizontal size={12}/> {label}</span>
+                  ))}
+                  {version.tags.map(tag => (
+                     <span key={tag} className={styles.tagItem}><Tag size={12}/> {tag}</span>
+                  ))}
                 </div>
                 <div className={styles.versionMeta}>
                     <p>{version.details}</p>

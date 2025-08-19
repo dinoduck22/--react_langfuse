@@ -7,8 +7,9 @@ import ChatBox, { ChatMessage } from 'components/ChatBox/ChatBox';
 import LineNumberedTextarea from 'components/LineNumberedTextarea/LineNumberedTextarea';
 import FormPageLayout from 'components/Layouts/FormPageLayout';
 import FormGroup from 'components/Form/FormGroup';
-import { langfuse } from 'lib/langfuse';
 import { AxiosError } from 'axios';
+// 새로 만든 API 파일을 import 합니다.
+import { createNewPrompt } from './PromptsNewApi';
 
 const PromptsNew: React.FC = () => {
     const navigate = useNavigate();
@@ -57,41 +58,18 @@ const PromptsNew: React.FC = () => {
         }
     };
     
-    // Save 버튼 클릭 시 API 호출 로직
+    // handleSave 함수가 API 모듈을 호출하도록 수정합니다.
     const handleSave = async () => {
         try {
-            const activeLabels = Object.entries(labels)
-              .filter(([, isActive]) => isActive)
-              .map(([label]) => label);
-            
-            const commonPayload = {
-                name: promptName,
-                config: JSON.parse(config),
-                labels: activeLabels,
-                commitMessage: commitMessage || null,
-            };
-
-            if (promptType === 'Chat') {
-                const chatPromptData = chatContent
-                    .filter(msg => msg.role !== 'Placeholder')
-                    .map(({ role, content }) => ({ 
-                        type: 'chatmessage' as const,
-                        role: role.toLowerCase() as 'system' | 'user' | 'assistant',
-                        content 
-                    }));
-
-                await langfuse.api.promptsCreate({
-                    ...commonPayload,
-                    type: 'chat',
-                    prompt: chatPromptData,
-                });
-            } else { // 'Text'
-                await langfuse.api.promptsCreate({
-                    ...commonPayload,
-                    type: 'text',
-                    prompt: textContent,
-                });
-            }
+            await createNewPrompt({
+                promptName,
+                promptType,
+                chatContent,
+                textContent,
+                config,
+                labels,
+                commitMessage,
+            });
 
             alert('새 프롬프트가 성공적으로 저장되었습니다.');
             navigate('/prompts');
@@ -121,6 +99,7 @@ const PromptsNew: React.FC = () => {
             onCancel={() => navigate('/prompts')}
             isSaveDisabled={!promptName.trim()}
         >
+            {/* ... (이하 JSX 코드는 변경 없음) ... */}
             <FormGroup
                 htmlFor="prompt-name"
                 label="Name"

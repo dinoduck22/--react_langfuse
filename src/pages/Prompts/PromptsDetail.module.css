@@ -177,6 +177,14 @@
   font-size: 13px;
   font-weight: 500;
 }
+.versionName {
+  flex-shrink: 1; /* 공간이 부족할 때 줄어들도록 설정 */
+  white-space: nowrap; /* 줄바꿈 방지 */
+  overflow: hidden; /* 넘치는 텍스트 숨김 */
+  text-overflow: ellipsis; /* 넘치는 텍스트를 ...으로 표시 */
+  color: #e2e8f0; /* 기본 텍스트 색상 */
+  font-weight: 500;
+}
 .versionLabel {
   color: #a78bfa;
 }
@@ -196,6 +204,26 @@
   background-color: #166534;
   color: #4ade80;
 }
+
+.tagsContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+  padding-left: 8px;
+}
+
+.tagItem {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #374151; /* 회색 계열 */
+  color: #d1d5db;
+}
+
 .versionMeta {
   font-size: 11px; /* 글자 크기를 줄입니다. */
   color: #94a3b8;
@@ -210,6 +238,7 @@
   text-overflow: ellipsis; /* 내용이 길면 말줄임표로 표시합니다. */
   overflow: hidden;
 }
+
 
 /* 3b. 우측 패널 */
 .rightPanel {

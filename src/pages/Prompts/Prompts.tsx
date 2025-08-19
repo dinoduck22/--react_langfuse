@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { AxiosError } from 'axios';
 // 새로 만든 API 파일에서 fetchPrompts 함수와 DisplayPrompt 타입을 가져옵니다.
-import { fetchPrompts, type DisplayPrompt } from './PromptsApi';
+import { fetchPrompts, type DisplayPrompt } from './promptsApi';
 
 const Prompts: React.FC = () => {
   const [prompts, setPrompts] = useState<DisplayPrompt[]>([]);
