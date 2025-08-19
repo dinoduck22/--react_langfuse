@@ -1,5 +1,5 @@
 import React, { useState, ChangeEvent, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import styles from './PromptsNew.module.css';
 import { Book } from 'lucide-react';
 import PromptsReference from './PromptsReference';
@@ -9,21 +9,27 @@ import FormPageLayout from 'components/Layouts/FormPageLayout';
 import FormGroup from 'components/Form/FormGroup';
 import { AxiosError } from 'axios';
 // 새로 만든 API 파일을 import 합니다.
-import { createNewPrompt } from './PromptsNewApi';
+import { createPromptOrVersion } from './PromptsNewApi';
 
 const PromptsNew: React.FC = () => {
     const navigate = useNavigate();
-    const [promptName, setPromptName] = useState('');
-    const [promptType, setPromptType] = useState<'Chat' | 'Text'>('Chat');
-    const [chatContent, setChatContent] = useState<ChatMessage[]>([
+    const location = useLocation(); // location 객체 사용
+
+    // location.state에서 전달받은 데이터로 초기 상태 설정
+    const initialState = location.state || {};
+    const [promptName, setPromptName] = useState(initialState.promptName || '');
+    const [promptType, setPromptType] = useState<'Chat' | 'Text'>(initialState.promptType || 'Chat');
+    const [chatContent, setChatContent] = useState<ChatMessage[]>(initialState.chatContent || [
         { id: Date.now(), role: 'System', content: 'You are a helpful assistant.' },
     ]);
-    const [textContent, setTextContent] = useState('');
-    const [config, setConfig] = useState('{\n  "temperature": 1\n}');
+    const [textContent, setTextContent] = useState(initialState.textContent || '');
+    const [config, setConfig] = useState(initialState.config || '{\n  "temperature": 1\n}');
     const [labels, setLabels] = useState({ production: false });
     const [commitMessage, setCommitMessage] = useState('');
     const [isReferenceModalOpen, setIsReferenceModalOpen] = useState(false);
     const [variables, setVariables] = useState<string[]>([]);
+    const isNewVersionMode = initialState.isNewVersion || false; // 새 버전 모드 플래그
+
 
     useEffect(() => {
         const extractVariables = (text: string): string[] => {
@@ -46,13 +52,13 @@ const PromptsNew: React.FC = () => {
 
     const handleLabelChange = (e: ChangeEvent<HTMLInputElement>) => {
         const { name, checked } = e.target;
-        setLabels(prev => ({ ...prev, [name]: checked }));
+        setLabels((prev: { production: boolean }) => ({ ...prev, [name]: checked }));
     };
 
     const handleInsertReference = (promptId: string) => {
         const referenceText = `{{@ ${promptId} }}`;
         if (promptType === 'Text') {
-            setTextContent(prev => prev + referenceText);
+            setTextContent((prev: string) => prev + referenceText);
         } else {
             alert(`Please manually insert ${referenceText} into the desired message.`);
         }
@@ -61,7 +67,7 @@ const PromptsNew: React.FC = () => {
     // handleSave 함수가 API 모듈을 호출하도록 수정합니다.
     const handleSave = async () => {
         try {
-            await createNewPrompt({
+            await createPromptOrVersion({
                 promptName,
                 promptType,
                 chatContent,
@@ -71,8 +77,8 @@ const PromptsNew: React.FC = () => {
                 commitMessage,
             });
 
-            alert('새 프롬프트가 성공적으로 저장되었습니다.');
-            navigate('/prompts');
+            alert(`'${promptName}' 프롬프트의 새 버전이 성공적으로 저장되었습니다.`);
+            navigate(`/prompts/${promptName}`);
         } catch (err) {
             console.error("Failed to save prompt:", err);
             if (err instanceof AxiosError) {
@@ -88,7 +94,15 @@ const PromptsNew: React.FC = () => {
           <Book size={16} />
           <Link to="/prompts">Prompts</Link>
           <span>/</span>
-          <span className="active">New prompt</span>
+           {isNewVersionMode ? (
+            <>
+              <Link to={`/prompts/${promptName}`}>{promptName}</Link>
+              <span>/</span>
+              <span className="active">New Version</span>
+            </>
+          ) : (
+            <span className="active">New prompt</span>
+          )}
         </>
     );
 
@@ -96,16 +110,23 @@ const PromptsNew: React.FC = () => {
         <FormPageLayout
             breadcrumbs={breadcrumbs}
             onSave={handleSave}
-            onCancel={() => navigate('/prompts')}
+            onCancel={() => navigate(isNewVersionMode ? `/prompts/${promptName}` : '/prompts')}
             isSaveDisabled={!promptName.trim()}
         >
-            {/* ... (이하 JSX 코드는 변경 없음) ... */}
             <FormGroup
                 htmlFor="prompt-name"
                 label="Name"
                 subLabel="Unique identifier for this prompt."
             >
-                <input id="prompt-name" type="text" className="form-input" placeholder="e.g. summarize-short-text" value={promptName} onChange={(e) => setPromptName(e.target.value)} />
+                <input 
+                  id="prompt-name" 
+                  type="text" 
+                  className="form-input" 
+                  placeholder="e.g. summarize-short-text" 
+                  value={promptName} 
+                  onChange={(e) => setPromptName(e.target.value)} 
+                  disabled={isNewVersionMode}
+                />
             </FormGroup>
             
             <FormGroup

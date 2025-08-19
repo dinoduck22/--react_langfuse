@@ -15,11 +15,12 @@ import {
  */
 export const fetchPrompts = async (): Promise<DisplayPrompt[]> => {
   const response = await langfuse.api.promptsList({});
+  // 참고: 현재 API 응답만으로는 정확한 버전 수를 알 수 없어 1로 표시합니다.
   return response.data.map((prompt): DisplayPrompt => ({
     id: prompt.name,
     name: prompt.name,
     versions: 1,
-    type: 'text',
+    type: 'text', 
     observations: 0,
     latestVersionCreatedAt: '-',
     tags: prompt.tags || [],
@@ -28,11 +29,13 @@ export const fetchPrompts = async (): Promise<DisplayPrompt[]> => {
 
 /**
  * 특정 프롬프트의 최신 버전을 가져옵니다.
+ * Langfuse API가 단일 버전 객체를 반환하므로, 이를 배열로 감싸서 UI와 호환되도록 합니다.
  */
 export const fetchPromptVersions = async (promptName: string): Promise<Version[]> => {
-    // [수정] API 호출 시 인자 객체의 속성 이름을 'name'에서 'promptName'으로 변경합니다.
+    // API가 단일 FetchedPrompt 객체를 반환한다고 가정하고 타입 캐스팅합니다.
     const response = await langfuse.api.promptsGet({ promptName }) as unknown as FetchedPrompt;
     
+    // 단일 응답 객체를 배열로 감싸서 처리합니다.
     const versionsResponse: FetchedPrompt[] = [response];
     const isChatPrompt = (prompt: PromptContentType): prompt is ChatMessage[] => Array.isArray(prompt);
 
@@ -73,7 +76,7 @@ export const fetchPromptVersions = async (promptName: string): Promise<Version[]
             details: v.updatedAt ? new Date(v.updatedAt).toLocaleString() : 'N/A',
             author: v.createdBy,
             prompt: {
-                user: isChatPrompt(v.prompt) ? v.prompt.find(p => p.role === 'user')?.content ?? '' : v.prompt,
+                user: isChatPrompt(v.prompt) ? v.prompt.find(p => p.role === 'user')?.content ?? '' : v.prompt as string,
                 system: isChatPrompt(v.prompt) ? v.prompt.find(p => p.role === 'system')?.content : undefined,
             },
             config: v.config,
@@ -103,7 +106,6 @@ export const createNewPromptVersion = async (
   };
 
   if (isChat) {
-      // [수정] chatPromptPayload의 각 메시지 객체에 type: 'chatmessage'를 추가합니다.
       const chatPromptPayload = [
           { type: 'chatmessage' as const, role: 'system' as const, content: prompt.system! },
           { type: 'chatmessage' as const, role: 'user' as const, content: prompt.user },

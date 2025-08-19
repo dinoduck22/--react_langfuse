@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import DuplicatePromptModal from './DuplicatePromptModal';
 // 새로 만든 API 파일과 타입들을 import 합니다.
-import { fetchPromptVersions, createNewPromptVersion } from './promptsApi';
+import { fetchPromptVersions } from './promptsApi';
 import { type Version } from './promptTypes'
 
 // --- 메인 컴포넌트 ---
@@ -54,26 +54,29 @@ export default function PromptsDetail() {
     loadPromptData();
   }, [loadPromptData]);
 
-    // "New" 버튼 클릭 핸들러: 새 버전 생성
-  const handleNewVersion = async () => {
+  // "New" 버튼 클릭 핸들러: 새 버전 생성을 위해 New 페이지로 이동
+  const handleNewVersion = () => {
     if (!id || !selectedVersion) return;
 
-    if (!window.confirm(`현재 선택된 버전(v${selectedVersion.id})을 기반으로 새 버전을 생성하시겠습니까?`)) {
-      return;
-    }
-    
-    setIsLoading(true);
-    try {
-      const newVersion = await createNewPromptVersion(id, selectedVersion);
-      await loadPromptData(); // 데이터 새로고침
-      alert(`새로운 버전(v${newVersion.version})이 성공적으로 생성되었습니다.`);
-    } catch (err) {
-      console.error("Failed to create new version:", err);
-      setError("새 버전을 생성하는 데 실패했습니다.");
-    } finally {
-      setIsLoading(false);
-    }
+    // 현재 프롬프트의 데이터를 PromptsNew 페이지로 전달
+    navigate(`/prompts/new`, {
+      state: {
+        promptName: id,
+        promptType: selectedVersion.prompt.system ? 'Chat' : 'Text',
+        chatContent: selectedVersion.prompt.system
+          ? [
+              { id: 1, role: 'System', content: selectedVersion.prompt.system },
+              { id: 2, role: 'User', content: selectedVersion.prompt.user },
+            ]
+          : [{ id: 1, role: 'System', content: 'You are a helpful assistant.' }],
+        textContent: selectedVersion.prompt.system ? '' : selectedVersion.prompt.user,
+        config: JSON.stringify(selectedVersion.config, null, 2),
+        isNewVersion: true, // 새 버전 생성 모드임을 알리는 플래그
+        version: selectedVersion.id // 현재 버전 번호 전달
+      },
+    });
   };
+
 
   const { currentPromptIndex, handlePrev, handleNext } = useMemo(() => {
     const currentIndex = id ? allPromptNames.findIndex(name => name === id) : -1;

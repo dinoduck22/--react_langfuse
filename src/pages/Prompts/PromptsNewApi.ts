@@ -13,10 +13,10 @@ export interface NewPromptParams {
 }
 
 /**
- * 새로운 프롬프트를 생성하는 API를 호출합니다.
+ * 새로운 프롬프트를 생성하거나 기존 프롬프트의 새 버전을 생성합니다.
  * @param params - 프롬프트 생성에 필요한 데이터
  */
-export const createNewPrompt = async (params: NewPromptParams): Promise<void> => {
+export const createPromptOrVersion = async (params: NewPromptParams): Promise<void> => {
   const {
     promptName,
     promptType,
