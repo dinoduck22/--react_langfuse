@@ -5,22 +5,25 @@ import { Book } from 'lucide-react';
 import PromptsReference from './PromptsReference';
 import ChatBox, { ChatMessage } from 'components/ChatBox/ChatBox';
 import LineNumberedTextarea from 'components/LineNumberedTextarea/LineNumberedTextarea';
+import FormPageLayout from 'components/Layouts/FormPageLayout';
+import FormGroup from 'components/Form/FormGroup';
+import { langfuse } from 'lib/langfuse';
+import { AxiosError } from 'axios';
 
 const PromptsNew: React.FC = () => {
     const navigate = useNavigate();
     const [promptName, setPromptName] = useState('');
     const [promptType, setPromptType] = useState<'Chat' | 'Text'>('Chat');
     const [chatContent, setChatContent] = useState<ChatMessage[]>([
-        { id: 1, role: 'System', content: 'You are a helpful assistant.' },
+        { id: Date.now(), role: 'System', content: 'You are a helpful assistant.' },
     ]);
     const [textContent, setTextContent] = useState('');
-    const [config, setConfig] = useState('{\n  \n}');
-    const [labels, setLabels] = useState({ latest: false, production: false });
+    const [config, setConfig] = useState('{\n  "temperature": 1\n}');
+    const [labels, setLabels] = useState({ production: false });
     const [commitMessage, setCommitMessage] = useState('');
     const [isReferenceModalOpen, setIsReferenceModalOpen] = useState(false);
     const [variables, setVariables] = useState<string[]>([]);
 
-    // 텍스트 내용이 변경될 때마다 {{...}} 구문을 파싱하여 변수 추출
     useEffect(() => {
         const extractVariables = (text: string): string[] => {
             const regex = /{{\s*(\w+)\s*}}/g;
@@ -36,7 +39,6 @@ const PromptsNew: React.FC = () => {
             allVars = [...chatVars];
         }
 
-        // 중복 제거 후 상태 업데이트
         setVariables([...new Set(allVars)]);
     }, [textContent, chatContent, promptType]);
 
@@ -55,102 +57,145 @@ const PromptsNew: React.FC = () => {
         }
     };
     
-    const handleSave = () => {
-        const finalPromptContent = promptType === 'Chat'
-            ? JSON.stringify(chatContent.map(({ role, content }) => ({ role: role.toLowerCase(), content })), null, 2)
-            : textContent;
+    // Save 버튼 클릭 시 API 호출 로직
+    const handleSave = async () => {
+        try {
+            const activeLabels = Object.entries(labels)
+              .filter(([, isActive]) => isActive)
+              .map(([label]) => label);
+            
+            const commonPayload = {
+                name: promptName,
+                config: JSON.parse(config),
+                labels: activeLabels,
+                commitMessage: commitMessage || null,
+            };
 
-        console.log({
-            name: promptName,
-            type: promptType,
-            content: finalPromptContent,
-            config,
-            labels: Object.keys(labels).filter(key => labels[key as keyof typeof labels]),
-            commitMessage,
-        });
-        alert('새 프롬프트가 저장되었습니다. (콘솔 로그 확인)');
-        navigate('/prompts');
+            if (promptType === 'Chat') {
+                const chatPromptData = chatContent
+                    .filter(msg => msg.role !== 'Placeholder')
+                    .map(({ role, content }) => ({ 
+                        type: 'chatmessage' as const,
+                        role: role.toLowerCase() as 'system' | 'user' | 'assistant',
+                        content 
+                    }));
+
+                await langfuse.api.promptsCreate({
+                    ...commonPayload,
+                    type: 'chat',
+                    prompt: chatPromptData,
+                });
+            } else { // 'Text'
+                await langfuse.api.promptsCreate({
+                    ...commonPayload,
+                    type: 'text',
+                    prompt: textContent,
+                });
+            }
+
+            alert('새 프롬프트가 성공적으로 저장되었습니다.');
+            navigate('/prompts');
+        } catch (err) {
+            console.error("Failed to save prompt:", err);
+            if (err instanceof AxiosError) {
+                alert(`프롬프트 저장에 실패했습니다: ${err.response?.data?.message || err.message}`);
+            } else {
+                alert(`프롬프트 저장에 실패했습니다: ${String(err)}`);
+            }
+        }
     };
+    
+    const breadcrumbs = (
+        <>
+          <Book size={16} />
+          <Link to="/prompts">Prompts</Link>
+          <span>/</span>
+          <span className="active">New prompt</span>
+        </>
+    );
 
     return (
-        <div className={styles.container}>
-            <div className={styles.header}>
-                <Book size={16} />
-                <Link to="/prompts" className={styles.breadcrumbLink}>Prompts</Link>
-                <span>/</span>
-                <span className={styles.breadcrumbActive}>New prompt</span>
-            </div>
-
-            <div className={styles.form}>
-                <div className={styles.formGroup}>
-                    <label htmlFor="prompt-name" className={styles.label}>Name</label>
-                    <p className={styles.subLabel}>Unique identifier for this prompt.</p>
-                    <input id="prompt-name" type="text" className={styles.input} placeholder="e.g. summarize-short-text" value={promptName} onChange={(e) => setPromptName(e.target.value)} />
-                </div>
-                <div className={styles.formGroup}>
-                    <label htmlFor="prompt-content" className={styles.label}>Prompt</label>
-                    <div className={styles.promptHeader}>
-                        <div className={styles.typeSelector}>
-                            <button className={`${styles.typeButton} ${promptType === 'Chat' ? styles.active : ''}`} onClick={() => setPromptType('Chat')}>Chat</button>
-                            <button className={`${styles.typeButton} ${promptType === 'Text' ? styles.active : ''}`} onClick={() => setPromptType('Text')}>Text</button>
-                        </div>
-                        {promptType === 'Chat' && (
-                            <button className={styles.addReferenceButton} onClick={() => setIsReferenceModalOpen(true)}>+ AddPromptReferenct</button>
-                        )}
+        <FormPageLayout
+            breadcrumbs={breadcrumbs}
+            onSave={handleSave}
+            onCancel={() => navigate('/prompts')}
+            isSaveDisabled={!promptName.trim()}
+        >
+            <FormGroup
+                htmlFor="prompt-name"
+                label="Name"
+                subLabel="Unique identifier for this prompt."
+            >
+                <input id="prompt-name" type="text" className="form-input" placeholder="e.g. summarize-short-text" value={promptName} onChange={(e) => setPromptName(e.target.value)} />
+            </FormGroup>
+            
+            <FormGroup
+                htmlFor="prompt-content"
+                label="Prompt"
+                subLabel="Define your prompt template."
+            >
+                 <div className={styles.promptHeader}>
+                    <div className={styles.typeSelector}>
+                        <button className={`${styles.typeButton} ${promptType === 'Chat' ? styles.active : ''}`} onClick={() => setPromptType('Chat')}>Chat</button>
+                        <button className={`${styles.typeButton} ${promptType === 'Text' ? styles.active : ''}`} onClick={() => setPromptType('Text')}>Text</button>
                     </div>
-                    {promptType === 'Chat' ? (
-                        <ChatBox messages={chatContent} setMessages={setChatContent} />
-                    ) : (
-                        <LineNumberedTextarea
-                            id="prompt-content"
-                            value={textContent}
-                            onChange={(e) => setTextContent(e.target.value)}
-                            placeholder='Enter your text prompt here, e.g. "Summarize this: {{text}}"'
-                            minHeight={200}
-                        >
-                            <button className={styles.addReferenceButtonInEditor} onClick={() => setIsReferenceModalOpen(true)}>+ AddPromptReferenct</button>
-                        </LineNumberedTextarea>
-                    )}
-                    {/* 변수 태그 표시 */}
-                    {variables.length > 0 && (
-                        <div className={styles.variablesContainer}>
-                            <span className={styles.variablesLabel}>VARIABLES:</span>
-                            {variables.map((variable, index) => (
-                                <span key={index} className={styles.variableTag}>
-                                    {variable}
-                                </span>
-                            ))}
-                        </div>
+                    {promptType === 'Text' && (
+                        <button className={styles.addReferenceButton} onClick={() => setIsReferenceModalOpen(true)}>+ Add prompt reference</button>
                     )}
                 </div>
-                <div className={styles.formGroup}>
-                    <label htmlFor="prompt-config" className={styles.label}>Config</label>
-                    <p className={styles.subLabel}>Arbitrary JSON configuration that is available on the prompt...</p>
-                    <LineNumberedTextarea id="prompt-config" value={config} onChange={(e) => setConfig(e.target.value)} />
-                </div>
-
-                <div className={styles.formGroup}>
-                    <label className={styles.label}>Labels</label>
-                    <p className={styles.subLabel}>Apply labels to the new version to organize your prompts.</p>
-                    <div className={styles.labelsContainer}>
-                        <label className={styles.checkboxWrapper}>
-                            <input type="checkbox" name="production" checked={labels.production} onChange={handleLabelChange} />
-                            <span>Set the "Production" label</span>
-                        </label>
+                {promptType === 'Chat' ? (
+                    <ChatBox messages={chatContent} setMessages={setChatContent} />
+                ) : (
+                    <LineNumberedTextarea
+                        id="prompt-content"
+                        value={textContent}
+                        onChange={(e) => setTextContent(e.target.value)}
+                        placeholder='Enter your text prompt here, e.g. "Summarize this: {{text}}"'
+                        minHeight={200}
+                    >
+                         <button className={styles.addReferenceButtonInEditor} onClick={() => setIsReferenceModalOpen(true)}>+ Add prompt reference</button>
+                    </LineNumberedTextarea>
+                )}
+                {variables.length > 0 && (
+                    <div className={styles.variablesContainer}>
+                        <span className={styles.variablesLabel}>VARIABLES:</span>
+                        {variables.map((variable, index) => (
+                            <span key={index} className={styles.variableTag}>
+                                {variable}
+                            </span>
+                        ))}
                     </div>
-                </div>
+                )}
+            </FormGroup>
 
-                <div className={styles.formGroup}>
-                    <label htmlFor="prompt-commit-message" className={styles.label}>Commit Message</label>
-                    <p className={styles.subLabel}>Optional message to describe the changes in this version.</p>
-                    <input id="prompt-commit-message" type="text" className={styles.input} placeholder="e.g. fix typo in system prompt" value={commitMessage} onChange={(e) => setCommitMessage(e.target.value)} />
-                </div>
-            </div>
+            <FormGroup
+                htmlFor="prompt-config"
+                label="Config"
+                subLabel="Arbitrary JSON configuration that is available on the prompt."
+            >
+                <LineNumberedTextarea id="prompt-config" value={config} onChange={(e) => setConfig(e.target.value)} />
+            </FormGroup>
 
-            <div className={styles.actions}>
-                <button className={styles.cancelButton} onClick={() => navigate('/prompts')}>Cancel</button>
-                <button className={styles.saveButton} onClick={handleSave}>Save</button>
-            </div>
+            <FormGroup
+                htmlFor="labels"
+                label="Labels"
+                subLabel="Apply labels to the new version to organize your prompts."
+            >
+                <div className={styles.labelsContainer}>
+                    <label className={styles.checkboxWrapper}>
+                        <input type="checkbox" name="production" checked={labels.production} onChange={handleLabelChange} />
+                        <span>Set the "Production" label</span>
+                    </label>
+                </div>
+            </FormGroup>
+
+            <FormGroup
+                htmlFor="prompt-commit-message"
+                label="Commit Message"
+                subLabel="Optional message to describe the changes in this version."
+            >
+                <input id="prompt-commit-message" type="text" className="form-input" placeholder="e.g. fix typo in system prompt" value={commitMessage} onChange={(e) => setCommitMessage(e.target.value)} />
+            </FormGroup>
 
             {isReferenceModalOpen && (
                 <PromptsReference
@@ -158,7 +203,7 @@ const PromptsNew: React.FC = () => {
                     onInsert={handleInsertReference}
                 />
             )}
-        </div>
+        </FormPageLayout>
     );
 };
 
