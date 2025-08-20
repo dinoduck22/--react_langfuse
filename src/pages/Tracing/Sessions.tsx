@@ -1,31 +1,63 @@
 // src/pages/Tracing/Sessions.tsx
-import { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
 import styles from './Sessions.module.css';
 import {
     RefreshCw,
     ChevronDown,
-    Columns,
     Star,
-    ChevronsLeft,
-    ChevronLeft,
-    ChevronRight,
-    ChevronsRight
+    Filter,
+    Columns
 } from 'lucide-react';
-import { DUMMY_SESSIONS, Session } from '../../data/dummySessionsData';
+import { Session } from '../../data/dummySessionsData';
 import ColumnVisibilityModal from './ColumnVisibilityModal';
-import { Column, SessionData } from './types';
-import { DataTable } from '../../components/DataTable/DataTable'; // DataTable import
-import { sessionTableColumns } from './sessionColumns'; // 분리된 컬럼 정의를 가져옵니다.
-import { sessionTableColumn } from './sessionColumn'; // 분리된 컬럼 정의 import
-
+import { Column } from './types';
+import { DataTable } from '../../components/DataTable/DataTable'; 
+import { sessionTableColumns } from './sessionColumns'; 
+import FilterButton from '../../components/FilterButton/FilterButton';
+import DateRangePicker from '../../components/DateRange/DateRangePicker';
+import { fetchSessions } from './SessionApi'; // 새로 만든 API 함수 import
 
 const Sessions: React.FC = () => {
-    const [sessions, setSessions] = useState(DUMMY_SESSIONS);
+    const [sessions, setSessions] = useState<Session[]>([]); // API로부터 받을 데이터 (초기값 빈 배열)
+    const [isLoading, setIsLoading] = useState(true); // 로딩 상태
+    const [error, setError] = useState<string | null>(null); // 에러 상태
+
     const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+    const [isColumnVisibleModalOpen, setIsColumnVisibleModalOpen] = useState(false);
+
+    // 컬럼 보이기/숨기기 상태 관리
+    const [columns, setColumns] = useState<Column<Session>[]>(
+        sessionTableColumns.map(c => ({ ...c, visible: c.visible }))
+    );
+
+    // 날짜 범위 상태 관리
+    const [startDate, setStartDate] = useState(new Date(Date.now() - 24 * 60 * 60 * 1000));
+    const [endDate, setEndDate] = useState(new Date());
+
+    // 컴포넌트 마운트 시 API 호출
+    useEffect(() => {
+        const loadSessions = async () => {
+            try {
+                setIsLoading(true);
+                setError(null);
+                const fetchedSessions = await fetchSessions();
+                setSessions(fetchedSessions);
+            } catch (err) {
+                if (err instanceof Error) {
+                    setError(err.message);
+                } else {
+                    setError("An unknown error occurred.");
+                }
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadSessions();
+    }, []); // 빈 의존성 배열로 최초 1회만 실행
 
     const toggleFavorite = (id: string, e: React.MouseEvent) => {
-        e.stopPropagation(); // 행 클릭 이벤트 전파 방지
+        e.stopPropagation(); 
         setSessions(prevSessions =>
             prevSessions.map(session =>
                 session.id === id ? { ...session, isFavorited: !session.isFavorited } : session
@@ -33,13 +65,27 @@ const Sessions: React.FC = () => {
         );
     };
 
-    // 체크박스와 별 아이콘을 포함한 컬럼 정의를 동적으로 생성
-    const columnsWithActions = [
+    const toggleColumnVisibility = (key: string) => {
+        setColumns(prev =>
+            prev.map(col => (col.key === key ? { ...col, visible: !col.visible } : col))
+        );
+    };
+
+    const setAllColumnsVisible = (visible: boolean) => {
+        setColumns(prev => prev.map(col => ({ ...col, visible })));
+    };
+
+    const visibleColumns = useMemo(() => columns.filter(c => c.visible), [columns]);
+
+    const columnsWithActions = useMemo(() => [
         {
+            key: 'checkbox',
             header: <input type="checkbox" />,
-            accessor: (row: Session) => <input type="checkbox" />,
+            accessor: () => <input type="checkbox" />,
+            visible: true
         },
         {
+            key: 'favorite',
             header: '',
             accessor: (row: Session) => (
                 <Star
@@ -48,9 +94,31 @@ const Sessions: React.FC = () => {
                     onClick={(e) => toggleFavorite(row.id, e)}
                 />
             ),
+            visible: true
         },
-        ...sessionTableColumn
-    ];
+        ...visibleColumns,
+    ], [visibleColumns, sessions]); // sessions가 변경될 때도 재생성되도록 추가
+
+    // 로딩 및 에러 상태에 따른 테이블 컨텐츠 렌더링 함수
+    const renderTableContent = () => {
+        if (isLoading) {
+            return <div>Loading sessions...</div>;
+        }
+        if (error) {
+            return <div style={{ color: 'red' }}>Error: {error}</div>;
+        }
+        return (
+            <DataTable<Session>
+                columns={columnsWithActions}
+                data={sessions}
+                keyField="id"
+                renderEmptyState={() => <>No sessions found.</>}
+                selectedRowKey={selectedSessionId}
+                onRowClick={(row) => setSelectedSessionId(row.id)}
+                showActions={false}
+            />
+        );
+    };
     
     return (
         <div className={styles.container}>
@@ -63,27 +131,37 @@ const Sessions: React.FC = () => {
             </div>
 
             {/* Filter Bar */}
+            <div className={styles.filterBar}>
+                <div className={styles.filterLeft}>
+                    <DateRangePicker 
+                        startDate={startDate}
+                        endDate={endDate}
+                        setStartDate={setStartDate}
+                        setEndDate={setEndDate}
+                    />
+                    <FilterButton>Env <ChevronDown size={16} /></FilterButton>
+                    <FilterButton><Filter size={14} /> Filters</FilterButton>
+                </div>
+                <div className={styles.filterRight}>
+                    <FilterButton>Table View <ChevronDown size={16} /></FilterButton>
+                    <FilterButton onClick={() => setIsColumnVisibleModalOpen(true)}>
+                        <Columns size={16} /> Columns ({visibleColumns.length}/{columns.length})
+                    </FilterButton>
+                </div>
+            </div>
 
             {/* Table */}
             <div className={styles.tableContainer}>
-                <DataTable<Session>
-                    columns={columnsWithActions}
-                    data={sessions}
-                    keyField="id"
-                    renderEmptyState={() => <>No sessions found.</>}
-                    selectedRowKey={selectedSessionId}
-                    onRowClick={(row) => setSelectedSessionId(row.id)}
-                    showActions={false}
-                />
+                {renderTableContent()}
             </div>
 
-            {/* <ColumnVisibilityModal
+            <ColumnVisibilityModal<Session>
                 isOpen={isColumnVisibleModalOpen}
                 onClose={() => setIsColumnVisibleModalOpen(false)}
-                columns={columns.filter(c => c.key !== 'id')}
+                columns={columns}
                 toggleColumnVisibility={toggleColumnVisibility}
                 setAllColumnsVisible={setAllColumnsVisible}
-            /> */}
+            />
         </div>
     );
 };
