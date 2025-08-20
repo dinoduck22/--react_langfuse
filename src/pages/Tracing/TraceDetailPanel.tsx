@@ -1,7 +1,7 @@
 // src/pages/Tracing/TraceDetailPanel.tsx
 import React, { useState, useEffect } from 'react';
 import { X, Tag, Copy, Download, MessageSquare, ExternalLink } from 'lucide-react';
-import { Trace, TraceWithFullDetails, Observation, Score } from './types'; // 필요한 타입 import
+import { Trace, TraceWithFullDetails } from './types'; // 필요한 타입 import
 import { fetchTraceDetails } from './TraceDetailApi'; // API 함수 import
 import styles from './TraceDetailPanel.module.css';
 

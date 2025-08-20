@@ -1,16 +1,18 @@
+// src/pages/Tracing/traceColumns.tsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Star, Triangle } from 'lucide-react';
+import { Star } from 'lucide-react';
+import { Trace } from './types'; // types.ts에서 직접 Trace 타입을 가져옵니다.
 import styles from './Tracing.module.css';
-import { Column, Trace } from './types';
+import { Column } from './types';
+
+// 비용 포맷팅 헬퍼 함수
+const formatCost = (cost: number | null) => {
+    if (cost === null || cost === 0) return '-';
+    return `$${cost.toFixed(6)}`;
+};
 
 export const traceTableColumns: Column<Trace>[] = [
-    {
-      key: 'select',
-      header: <input type="checkbox" />,
-      accessor: (row: Trace) => <input type="checkbox" checked={row.isFavorited} readOnly />,
-      visible: true,
-    },
     {
       key: 'favorite',
       header: <Star size={16} />,
@@ -30,6 +32,12 @@ export const traceTableColumns: Column<Trace>[] = [
       visible: true,
     },
     {
+        key: 'userId',
+        header: 'User ID',
+        accessor: (row: Trace) => row.userId || 'N/A',
+        visible: true,
+    },
+    {
       key: 'input',
       header: 'Input',
       accessor: (row: Trace) => <div className={styles.cellText}>{row.input}</div>,
@@ -42,67 +50,51 @@ export const traceTableColumns: Column<Trace>[] = [
       visible: true,
     },
     {
+        key: 'cost',
+        header: 'Cost (USD)',
+        accessor: (row: Trace) => formatCost(row.cost),
+        visible: true,
+    },
+    {
+        key: 'latency',
+        header: 'Latency',
+        accessor: (row: Trace) => `${row.latency} ms`,
+        visible: true,
+    },
+    {
       key: 'observations',
       header: 'Observations',
-      accessor: (row: Trace) => (
-        <div className={styles.observationCell}>
-          {row.observations}
-          <Triangle size={12} />
-        </div>
-      ),
-      visible: true,
-    },
-    // ✅ 아래부터 새로 추가된 컬럼들
-    {
-      key: 'latency',
-      header: 'Latency',
-      accessor: (row: Trace) => `${(row.latency / 1000).toFixed(2)}s`,
+      accessor: (row: Trace) => row.observations,
       visible: true,
     },
     {
-      key: 'tokens',
-      header: 'Tokens',
-      accessor: (row: Trace) => row.tokens.total.toLocaleString(),
-      visible: true,
+        key: 'sessionId',
+        header: 'Session ID',
+        accessor: (row: Trace) => row.sessionId || 'N/A',
+        visible: false, // 기본 숨김
     },
     {
-      key: 'cost',
-      header: 'Total Cost',
-      accessor: (row: Trace) => row.cost ? `$${row.cost.toFixed(6)}` : 'N/A',
-      visible: true,
+        key: 'tags',
+        header: 'Tags',
+        accessor: (row: Trace) => row.tags?.join(', ') || 'N/A',
+        visible: false, // 기본 숨김
     },
     {
-      key: 'environment',
-      header: 'Environment',
-      accessor: (row: Trace) => row.env || 'N/A',
-      visible: false, // 기본 숨김
+        key: 'version',
+        header: 'Version',
+        accessor: (row: Trace) => row.version || 'N/A',
+        visible: false, // 기본 숨김
     },
     {
-      key: 'tags',
-      header: 'Tags',
-      accessor: (row: Trace) => (
-        <div className={styles.tagsCell}>
-          {row.tags.map(tag => <span key={tag} className={styles.tagPill}>{tag}</span>)}
-        </div>
-      ),
-      visible: false, // 기본 숨김
+        key: 'release',
+        header: 'Release',
+        accessor: (row: Trace) => row.release || 'N/A',
+        visible: false, // 기본 숨김
     },
     {
-      key: 'metadata',
-      header: 'Metadata',
-      accessor: (row: Trace) => row.metadata ? JSON.stringify(row.metadata) : '{}',
-      visible: false, // 기본 숨김
-    },
-    {
-      key: 'session',
-      header: 'Session',
-      accessor: (row: Trace) => row.sessionId,
-      visible: false, // 기본 숨김
-    },
-    {
-      key: 'user',
-      header: 'User',
-      accessor: (row: Trace) => row.userId,
-      visible: false, // 기본 숨김
+        key: 'environment',
+        header: 'Environment',
+        accessor: (row: Trace) => row.environment || 'N/A',
+        visible: false, // 기본 숨김
     },
 ];
