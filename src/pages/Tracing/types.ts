@@ -1,8 +1,7 @@
-// src/pages/Tracing/types.ts
+import { ReactNode } from 'react';
 import { Session } from 'data/dummySessionsData';
-import { Trace } from 'data/dummyTraces'; // Trace 타입 import
+import { Trace } from 'data/dummyTraces';
 
-// SessionData는 기존과 동일
 export interface SessionData extends Session {
   inputCost: number;
   outputCost: number;
@@ -13,12 +12,12 @@ export interface SessionData extends Session {
   [key: string]: string | number | boolean | { input: number; output: number } | string[] | undefined;
 }
 
-// TraceData 추가
-export interface TraceData extends Trace {}
+// ✅ interface 대신 type 별칭을 사용하여 TraceData 타입을 정의합니다.
+export type TraceData = Trace;
 
-// Column 타입은 TraceData도 받을 수 있도록 제네릭으로 수정 고려 가능
-export interface Column {
-  key: keyof SessionData | keyof TraceData; // 두 타입을 모두 지원
-  header: string;
+export interface Column<T> {
+  key: string;
+  header: ReactNode;
   visible: boolean;
+  accessor?: (row: T) => ReactNode;
 }

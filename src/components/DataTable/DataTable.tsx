@@ -9,11 +9,7 @@ import {
   ChevronRight,
   ChevronsRight,
 } from 'lucide-react';
-
-interface Column<T> {
-  header: React.ReactNode;
-  accessor: (row: T) => React.ReactNode;
-}
+import { Column } from '../../pages/Tracing/types';
 
 interface DataTableProps<T> {
   columns: Column<T>[];
@@ -60,7 +56,10 @@ export function DataTable<T>({
                     className={`${onRowClick ? styles.clickableRow : ''} ${isSelected ? styles.selectedRow : ''}`}
                   >
                     {columns.map((col, index) => (
-                      <td key={index}>{col.accessor(row)}</td>
+                      <td key={index}>
+                        {/* ✅ accessor가 존재할 때만 함수를 호출하도록 수정합니다. */}
+                        {col.accessor ? col.accessor(row) : null}
+                      </td>
                     ))}
                     {/* 🔽 showActions가 true일 때만 Actions 셀을 렌더링 */}
                     {showActions && (
