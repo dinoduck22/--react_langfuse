@@ -1,8 +1,9 @@
+// src/hooks/useSearch.ts
 import { useState, useMemo } from 'react';
 
-// ✅ T는 'name' 속성을 가진 객체이기만 하면 되도록 제약 조건을 수정합니다.
+// The hook now uses a generic T that extends an object with a 'name' property.
 type Searchable = {
-  name: string;
+  name: string | null; // Allow name to be string or null to match the Trace type
 };
 
 export function useSearch<T extends Searchable>(initialData: T[]) {
@@ -13,15 +14,15 @@ export function useSearch<T extends Searchable>(initialData: T[]) {
     if (!query) {
       return initialData;
     }
-    // 'T extends Searchable' 제약 조건 덕분에 item.name을 안전하게 사용할 수 있습니다.
+    // The filter function now correctly returns the full object of type T.
     return initialData.filter(item =>
-      item.name.toLowerCase().includes(query)
+      item.name ? item.name.toLowerCase().includes(query) : false
     );
   }, [initialData, searchQuery]);
 
   return {
     searchQuery,
     setSearchQuery,
-    filteredData,
+    filteredData, // This will now be of type T[]
   };
 }

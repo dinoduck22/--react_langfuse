@@ -1,3 +1,4 @@
+/* src/pages/Tracing/TraceDetailPanel.module.css */
 .panel {
   background-color: #0f172a;
   border-left: 1px solid #1e293b;
@@ -25,6 +26,7 @@
   background: transparent; border: 1px solid #334155; color: #cbd5e1;
   padding: 6px 10px; border-radius: 6px; display: flex;
   align-items: center; gap: 6px; font-size: 13px; cursor: pointer;
+  text-decoration: none; /* a 태그 스타일 초기화 */
 }
 .iconButton { padding: 6px; }
 .actionButton:hover, .iconButton:hover { background-color: #1e293b; }
@@ -43,7 +45,7 @@
   padding: 12px;
   font-size: 13px;
 }
-.metadataGrid > div { display: flex; justify-content: space-between; }
+.metadataGrid > div { display: flex; justify-content: space-between; align-items: center; }
 .metadataGrid > div > span:first-child { color: #94a3b8; }
 
 .ioSection {
@@ -57,5 +59,57 @@
   padding: 8px; cursor: pointer; font-size: 13px;
 }
 .tabs button.active { background: #1e293b; color: #f1f5f9; }
-.tabContent { padding: 12px; font-size: 13px; }
+.tabContent { padding: 12px; font-size: 13px; max-height: 200px; overflow-y: auto; }
 .tabContent pre { white-space: pre-wrap; word-wrap: break-word; margin: 0; }
+
+.link {
+  color: #93c5fd;
+  text-decoration: none;
+}
+.link:hover {
+  text-decoration: underline;
+}
+
+/* --- 추가된 스타일 --- */
+.tableSection {
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  padding: 10px 12px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.detailsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.detailsTable th, .detailsTable td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid #1e293b;
+}
+.detailsTable tr:last-child td {
+  border-bottom: none;
+}
+.detailsTable th {
+  color: #94a3b8;
+  font-weight: 500;
+}
+.valueCell {
+  font-family: monospace;
+}
+.badge {
+  background-color: #334155;
+  color: #e2e8f0;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
