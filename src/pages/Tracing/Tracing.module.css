@@ -97,3 +97,18 @@
   color: #facc15;
   fill: #facc15;
 }
+.tagsCell {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.tagPill {
+  background-color: #312e81; 
+  color: #e0e7ff;            
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}

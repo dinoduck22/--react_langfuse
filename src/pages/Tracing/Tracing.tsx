@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import styles from './Tracing.module.css';
 import { DataTable } from '../../components/DataTable/DataTable';
-import { dummyTraces, Trace } from '../../data/dummyTraces';
+import { Trace } from './types'; // dummyTraces 대신 types에서 Trace 가져오기
 import { traceTableColumns } from './traceColumns';
 import SearchInput from '../../components/SearchInput/SearchInput';
 import FilterControls from '../../components/FilterControls/FilterControls';
@@ -9,17 +9,43 @@ import TraceDetailPanel from './TraceDetailPanel';
 import { useSearch } from '../../hooks/useSearch';
 import ColumnVisibilityModal from './ColumnVisibilityModal'; // ✅ 모달 import
 import { Column } from './types'; // ✅ Column 타입 import
+import { fetchTraces } from './TracingApi'; // API 함수 import
 
 const Tracing: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'Traces' | 'Observations'>('Traces');
   const [selectedTrace, setSelectedTrace] = useState<Trace | null>(null);
-  const { searchQuery, setSearchQuery, filteredData: filteredTraces } = useSearch(dummyTraces);
+  const [traces, setTraces] = useState<Trace[]>([]); // 초기값을 빈 배열로 설정
+  const [isLoading, setIsLoading] = useState(true); // 로딩 상태 추가
+  const [error, setError] = useState<string | null>(null); // 에러 상태 추가
+
+  const { searchQuery, setSearchQuery, filteredData: filteredTraces } = useSearch(traces); // useSearch에 traces 상태 전달
   
-  // ✅ 모달 상태 및 컬럼 상태 추가
   const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
   const [columns, setColumns] = useState<Column<Trace>[]>(
     traceTableColumns.map(c => ({ ...c, visible: true }))
   );
+
+  // 컴포넌트 마운트 시 API 호출
+  useEffect(() => {
+    const loadTraces = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const fetchedTraces = await fetchTraces();
+        setTraces(fetchedTraces);
+      } catch (err) {
+        if (err instanceof Error) {
+            setError(err.message);
+        } else {
+            setError("알 수 없는 오류가 발생했습니다.");
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTraces();
+  }, []);
   
   const handleRowClick = (trace: Trace) => {
     setSelectedTrace(prev => (prev?.id === trace.id ? null : trace));
@@ -44,8 +70,14 @@ const Tracing: React.FC = () => {
 
   return (
     <div className={`${styles.container} ${selectedTrace ? styles.containerWithDetail : ''}`}>
+        {/* 1. 왼쪽 리스트 영역 */}
       <div className={styles.listSection}>
-        {/* ... (헤더, 탭) ... */}
+        <div className={styles.header}><h1>Tracing</h1></div>
+        
+        <div className={styles.tabs}>
+          <button className={`${styles.tabButton} ${activeTab === 'Traces' ? styles.active : ''}`} onClick={() => setActiveTab('Traces')}>Traces</button>
+          <button className={`${styles.tabButton} ${activeTab === 'Observations' ? styles.active : ''}`} onClick={() => setActiveTab('Observations')}>Observations</button>
+        </div>
         
         <div className={styles.filterBar}>
           <SearchInput placeholder="Search... IDs / Names" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
@@ -59,15 +91,21 @@ const Tracing: React.FC = () => {
         
         <div className={styles.contentArea}>
           {activeTab === 'Traces' ? (
-            <DataTable<Trace>
-              columns={visibleColumns} // ✅ 보이는 컬럼만 DataTable에 전달
-              data={filteredTraces}
-              keyField="id"
-              renderEmptyState={() => <div>No traces found.</div>}
-              showActions={false}
-              selectedRowKey={selectedTrace?.id || null}
-              onRowClick={handleRowClick}
-            />
+            isLoading ? (
+                <div>Loading traces...</div>
+            ) : error ? (
+                <div style={{ color: 'red' }}>Error: {error}</div>
+            ) : (
+                <DataTable<Trace>
+                columns={visibleColumns}
+                data={filteredTraces}
+                keyField="id"
+                renderEmptyState={() => <div>No traces found.</div>}
+                showActions={false}
+                selectedRowKey={selectedTrace?.id || null}
+                onRowClick={handleRowClick}
+                />
+            )
           ) : ( <div>Observations View</div> )}
         </div>
       </div>
