@@ -4,7 +4,6 @@ import styles from './Prompts.module.css';
 import {
   Info,
   Plus,
-  Search,
   ChevronDown,
   FileText,
   Trash2,
@@ -18,15 +17,21 @@ import { AxiosError } from 'axios';
 // 새로 만든 API 파일에서 fetchPrompts 함수와 DisplayPrompt 타입을 가져옵니다.
 import { fetchPrompts } from './promptsApi';
 import {type DisplayPrompt } from './promptTypes'
+import SearchInput from '../../components/SearchInput/SearchInput'; // ✅ SearchInput 컴포넌트 import
+import { useSearch } from '../../hooks/useSearch'; // ✅ useSearch 훅 import
+
 
 const Prompts: React.FC = () => {
   const [prompts, setPrompts] = useState<DisplayPrompt[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
   const navigate = useNavigate();
   const [promptToDelete, setPromptToDelete] = useState<DisplayPrompt | null>(null);
   
+  // ✅ useSearch 훅을 사용하여 검색 로직 적용
+  const { searchQuery, setSearchQuery, filteredData: filteredPrompts } = useSearch(prompts);
+
+
   useEffect(() => {
     const loadPrompts = async () => {
       try {
@@ -34,7 +39,6 @@ const Prompts: React.FC = () => {
         setError(null);
         
         const formattedPrompts = await fetchPrompts();
-        
         setPrompts(formattedPrompts);
       } catch (err) {
         console.error("Failed to fetch prompts:", err);
@@ -110,18 +114,14 @@ const Prompts: React.FC = () => {
       </div>
 
       <div className={styles.toolbar}>
-        <div className={styles.searchBox}>
-          <Search size={18} className={styles.searchIcon} />
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+        {/* ✅ 기존 div를 SearchInput 컴포넌트로 교체 */}
+        <SearchInput
+          placeholder="Search..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
         <button className={styles.filterButton}>Filters</button>
       </div>
-
       <div className={styles.tableContainer}>
         <table className={styles.table}>
           <thead>

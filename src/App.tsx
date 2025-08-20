@@ -4,6 +4,7 @@ import Layout from './layouts/Layout';
 
 import Home from './pages/Home/Home';
 
+import Tracing from './pages/Tracing/Tracing'; 
 import Sessions from './pages/Tracing/Sessions'; 
 
 import Prompts from './pages/Prompts/Prompts';
@@ -63,6 +64,7 @@ export default function App() {
         <Route path="users" element={<Users />} />
 
         {/* Tracing */}
+        <Route path="trace" element={<Tracing />} />
         <Route path="sessions" element={<Sessions />} />
 
         {/* Prompts */}

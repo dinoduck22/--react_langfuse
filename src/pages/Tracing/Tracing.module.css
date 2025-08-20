@@ -1,0 +1,87 @@
+/* src/pages/Tracing/Tracing.module.css */
+.container {
+  color: #f8fafc;
+  background-color: #020817;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: calc(100vh - 48px);
+}
+
+.header h1 {
+  font-size: 24px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.tabs {
+  border-bottom: 1px solid #1e293b;
+  display: flex;
+}
+
+.tabButton {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tabButton.active {
+  color: #f1f5f9;
+  border-bottom-color: #f1f5f9;
+}
+
+.filterBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.contentArea {
+  flex-grow: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* DataTable 내부 스타일 오버라이딩 */
+.contentArea :global(th),
+.contentArea :global(td) {
+  white-space: nowrap;
+}
+
+.cellText {
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.traceLink {
+  color: #93c5fd;
+  text-decoration: none;
+}
+.traceLink:hover {
+  text-decoration: underline;
+}
+
+.observationCell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.starIcon, .favorited {
+  color: #64748b;
+  cursor: pointer;
+}
+.favorited {
+  color: #facc15;
+  fill: #facc15;
+}

@@ -68,31 +68,6 @@
   gap: 12px;
 }
 
-.searchBox {
-  display: flex;
-  align-items: center;
-  background-color: #0f172a; /* 검색창 배경색 변경 */
-  border: 1px solid #334155;
-  border-radius: 6px;
-  padding: 0 10px;
-  flex-grow: 1;
-  max-width: 400px;
-}
-
-.searchIcon {
-  color: #64748b;
-}
-
-.searchBox input {
-  background: none;
-  border: none;
-  outline: none;
-  color: white;
-  padding: 8px;
-  font-size: 14px;
-  width: 100%;
-}
-
 .filterButton {
   padding: 8px 14px;
   border-radius: 6px;

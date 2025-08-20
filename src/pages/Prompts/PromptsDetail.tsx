@@ -11,6 +11,7 @@ import {
   GitCommitHorizontal,
   ChevronLeft,
   ChevronRight,
+  MessageCircle,
   Tag,
 } from 'lucide-react';
 import DuplicatePromptModal from './DuplicatePromptModal';
@@ -218,7 +219,7 @@ export default function PromptsDetail() {
             <div className={styles.detailActions}>
               <button className={styles.playgroundButton}><Play size={14} /> Playground</button>
               <button className={styles.playgroundButton}>Experiment</button>
-              <button className={styles.iconButton}><Clipboard size={16} /></button>
+              <button className={styles.iconButton}><MessageCircle size={16} /></button>
               <button className={styles.iconButton}><MoreVertical size={18} /></button>
             </div>
           </div>

@@ -98,19 +98,30 @@
   align-items: center;
   gap: 8px;
 }
+
 .clickableRow {
   cursor: pointer;
 }
 
+/* 🔽 마우스를 올렸을 때의 스타일 수정 */
 .clickableRow:hover {
-  background-color: #1e293b;
+  background-color: #f1f5f9; /* 밝은 회색 배경 */
+  color: #1e293b; /* 어두운 텍스트 색상 */
 }
 
+/* 🔽 하위 요소들도 색상이 적용되도록 수정 */
+.clickableRow:hover td,
+.clickableRow:hover a,
+.clickableRow:hover svg {
+  color: #1e293b !important;
+}
+
+/* 🔽 선택된 행의 스타일 수정 */
 .selectedRow {
-  background-color: #2563eb !important; /* 선택 시 파란색 배경 */
-  color: white;
+  background-color: #e2e8f0 !important; /* 선택 시 밝은 회색 배경 */
+  color: #1e293b; /* 어두운 텍스트 색상 */
 }
 
-.selectedRow a { /* 선택된 행의 링크 색상도 흰색으로 */
-  color: white;
+.selectedRow a {
+  color: #1e293b !important; /* 선택된 행의 링크 색상도 어둡게 */
 }
