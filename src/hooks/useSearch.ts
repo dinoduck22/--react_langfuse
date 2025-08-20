@@ -1,9 +1,8 @@
 import { useState, useMemo } from 'react';
 
-// 제네릭 타입 T는 'name' 속성을 가진 객체여야 함을 명시
+// ✅ T는 'name' 속성을 가진 객체이기만 하면 되도록 제약 조건을 수정합니다.
 type Searchable = {
   name: string;
-  [key: string]: any;
 };
 
 export function useSearch<T extends Searchable>(initialData: T[]) {
@@ -14,6 +13,7 @@ export function useSearch<T extends Searchable>(initialData: T[]) {
     if (!query) {
       return initialData;
     }
+    // 'T extends Searchable' 제약 조건 덕분에 item.name을 안전하게 사용할 수 있습니다.
     return initialData.filter(item =>
       item.name.toLowerCase().includes(query)
     );

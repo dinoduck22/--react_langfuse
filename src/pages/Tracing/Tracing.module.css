@@ -1,12 +1,24 @@
 /* src/pages/Tracing/Tracing.module.css */
 .container {
-  color: #f8fafc;
-  background-color: #020817;
-  padding: 24px;
+  display: grid; /* 기본 레이아웃을 grid로 변경 */
+  grid-template-columns: 1fr; /* 기본은 1단 컬럼 */
+  padding: 0; /* 내부 섹션에서 패딩을 관리하도록 변경 */
+  height: calc(100vh - 48px);
+  gap: 0;
+}
+
+/* ✅ 상세 패널이 열렸을 때 2단 컬럼 레이아웃으로 변경 */
+.containerWithDetail {
+  grid-template-columns: minmax(600px, 2fr) 1fr;
+}
+
+/* ✅ 왼쪽 리스트 섹션 스타일 */
+.listSection {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  height: calc(100vh - 48px);
+  padding: 24px;
+  overflow: hidden; /* 내부 contentArea에서 스크롤 관리 */
 }
 
 .header h1 {
@@ -33,7 +45,7 @@
 
 .tabButton.active {
   color: #f1f5f9;
-  border-bottom-color: #f1f5f9;
+  border-bottom-color: rgba(241, 245, 249, 0.85); /* 투명도 85% 적용 */
 }
 
 .filterBar {

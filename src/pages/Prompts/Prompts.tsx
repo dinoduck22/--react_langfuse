@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styles from './Prompts.module.css';
 import {
@@ -30,7 +30,6 @@ const Prompts: React.FC = () => {
   
   // ✅ useSearch 훅을 사용하여 검색 로직 적용
   const { searchQuery, setSearchQuery, filteredData: filteredPrompts } = useSearch(prompts);
-
 
   useEffect(() => {
     const loadPrompts = async () => {
@@ -66,15 +65,6 @@ const Prompts: React.FC = () => {
     
     loadPrompts();
   }, []);
-
-  const filteredPrompts = useMemo(() => {
-    if (!searchQuery) {
-      return prompts;
-    }
-    return prompts.filter(prompt =>
-      prompt.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [prompts, searchQuery]);
 
   const navigateToNewPrompts = () => {
     navigate("/prompts/new");
