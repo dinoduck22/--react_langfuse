@@ -1,15 +1,15 @@
 // src/pages/Tracing/Tracing.jsx
 import { useState, useMemo, useEffect } from 'react';
 import styles from './Tracing.module.css';
-import { DataTable } from '../../components/DataTable/DataTable';
+import { DataTable } from 'components/DataTable/DataTable';
 import { traceTableColumns } from './traceColumns.jsx'; // .jsx로 확장자 변경
-import SearchInput from '../../components/SearchInput/SearchInput';
-import FilterControls from '../../components/FilterControls/FilterControls';
+import SearchInput from 'components/SearchInput/SearchInput';
+import FilterControls from 'components/FilterControls/FilterControls';
 import TraceDetailPanel from './TraceDetailPanel.jsx'; // .jsx로 확장자 변경
-import { useSearch } from '../../hooks/useSearch';
+import { useSearch } from '../../hooks/useSearch.js';
 import ColumnVisibilityModal from './ColumnVisibilityModal.jsx'; // .jsx로 확장자 변경
 import { fetchTraces } from './TracingApi';
-import FilterButton from '../../components/FilterButton/FilterButton';
+import FilterButton from 'components/FilterButton/FilterButton';
 import { Columns } from 'lucide-react';
 
 const Tracing = () => {
