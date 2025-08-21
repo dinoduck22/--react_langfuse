@@ -1,5 +1,5 @@
-import { useState } from "react";
-import {Outlet, NavLink, matchPath} from "react-router-dom";
+import { useState, useMemo } from "react";
+import { Outlet, NavLink, matchPath, useLocation, useNavigate } from "react-router-dom";
 import {
     Home,
     LayoutDashboard,
@@ -14,14 +14,25 @@ import {
 } from "lucide-react";
 
 import styles from "./Layout.module.css";
-import ProjectHeader from "./ProjectHeader";
+import PageHeader from "../components/PageHeader/PageHeader";
 
 // 타입 선언
 type MenuItem = { label: string; icon: JSX.Element; path: string };
 type MenuSection = { title: string | null; items: MenuItem[] };
 
+/* 자식 라우트가 헤더를 덮어쓸 때 사용하는 타입 */
+type HeaderConfig = {
+  title?: React.ReactNode;
+  rightActions?: React.ReactNode;
+};
+
 export default function Layout() {
   const [collapsed, setCollapsed] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // ★ 자식이 setHeader로 덮어쓸 전역 헤더 상태
+  const [headerConfig, setHeaderConfig] = useState<HeaderConfig>({});
 
   const mainMenuSections: MenuSection[] = [
     {
@@ -73,6 +84,40 @@ export default function Layout() {
       !!matchPath({ path, end: path === "/" }, location.pathname) ||
       (path !== "/" && location.pathname.startsWith(path))
     );
+
+  const pageTitle = useMemo(() => {
+    const p = location.pathname;
+    if (p === "/") return "Home";
+    if (p.startsWith("/llm-as-a-judge")) return "LLM-as-a-Judge Evaluators";
+    if (p.startsWith("/datasets")) return "Datasets";
+    if (p.startsWith("/scores")) return "Evaluators";
+    if (p.startsWith("/dashboards/llm")) return "LLM Dashboard";
+    if (p.startsWith("/prompts")) return "Prompts";
+    if (p.startsWith("/playground")) return "Playground";
+    if (p.startsWith("/trace")) return "Trace";
+    if (p.startsWith("/span")) return "Span";
+    if (p.startsWith("/sessions")) return "Sessions";
+    if (p.startsWith("/settings")) return "Settings";
+    return "Langfuse";
+  }, [location.pathname]);
+
+  // 기본 헤더 오른쪽 액션 (자식이 덮어쓰지 않을 때만 사용)
+  const headerRightActionsDefault = useMemo(() => {
+    const p = location.pathname;
+    if (p.startsWith("/datasets")) {
+      return (
+        <button
+          type="button"
+          className={`${styles.headerActionPrimary ?? ""}`.trim()}
+          style={{ cursor: "pointer" }}
+          onClick={() => navigate("/datasets?new=1")}
+        >
+          + New dataset
+        </button>
+      );
+    }
+    return null;
+  }, [location.pathname, navigate]);
 
   return (
     <div className={styles.layout}>
@@ -161,8 +206,19 @@ export default function Layout() {
       </aside>
 
       <main className={styles.mainContainer}>
-          <ProjectHeader onToggleSidebar = { () => setCollapsed(prev => !prev) } />
-        <Outlet />
+          <PageHeader
+          orgName="Organization"
+          projectName="Project"
+          envBadge="Hobby"
+          title={headerConfig.title ?? pageTitle}
+          onToggleSidebar={() => setCollapsed((prev) => !prev)}
+          flushLeft
+          rightActions={headerConfig.rightActions ?? headerRightActionsDefault}
+        />
+        <div className={styles.pageBody}>
+          {/* ★ 자식 라우트에 전역 헤더 세터 제공 */}
+          <Outlet context={{ setHeader: setHeaderConfig }} />
+        </div>
       </main>
     </div>
   );

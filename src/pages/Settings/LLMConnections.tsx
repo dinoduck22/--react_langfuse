@@ -1,57 +1,103 @@
-import React from 'react';
-import styles from "./ApiKeys.module.css";
+import React, { useState } from 'react';
+import Modal from '../../components/Modal/Modal'
+import NewLLMConnectionForm from "./form/NewLLMConnectionsForm";
+import styles from "./layout/SettingsCommon.module.css";
+import llmstyles from './layout/LLMConnections.module.css';
+import { Plus, Pencil, Trash2 } from "lucide-react";
 
-const DUMMY_LLM_DATA = [
-    {
-        id: '1',
-        provider: 'gemini',
-        adapter: 'google-ai-studio',
-        baseUrl: 'default',
-        apiKey: '...-7IM',
-    },
-    {
-        id: '2',
-        provider: 'chatgpt',
-        adapter: 'openai',
-        baseUrl: 'default',
-        apiKey: '...-7IM',
-    },
-    {
-        id: '3',
-        provider: 'claude',
-        adapter: 'anthropic',
-        baseUrl: 'default',
-        apiKey: '...-7IM',
-    },
-];
+interface Connection {
+    id: string;
+    provider: string;
+    adapter: string;
+    baseUrl: string;
+    apiKey: string;
+}
 
-const LLMConnections: React.FC = () => {
+const LLMConnections = () => {
+
+    const [connections, setConnections] = useState<Connection[]>([
+        {
+            id: '1',
+            provider: 'gemini',
+            adapter: 'google-ai-studio',
+            baseUrl: 'default',
+            apiKey: '...-7IM',
+        },
+        {
+            id: '2',
+            provider: 'chatgpt',
+            adapter: 'openai',
+            baseUrl: 'default',
+            apiKey: '...-7IM',
+        },
+        {
+            id: '3',
+            provider: 'claude',
+            adapter: 'anthropic',
+            baseUrl: 'default',
+            apiKey: '...-7IM',
+        },
+    ]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleSaveConnection = (newConnectionData: {
+        adapter: string;
+        provider: string;
+        apiKey: string;
+        baseUrl?: string;
+    }) => {
+        const connectionWithId = {
+            id: crypto.randomUUID(),
+            provider: newConnectionData.provider,
+            adapter: newConnectionData.adapter,
+            baseUrl: newConnectionData.baseUrl || 'default',
+            apiKey: `...${ newConnectionData.apiKey.slice(-3) }`,
+        };
+        setConnections([...connections, connectionWithId]);
+        setIsModalOpen(false);
+    }
+
     return (
         <div className = { styles.container }>
             { /* Host Name Section */ }
-            <h3 className = { styles.h3 }>LLM Connections </h3>
-            <h5>Connect your LLM services to enable evaluations and playground features. Your provider will charge based on usage.</h5>
+            <h3 className = { styles.title }>LLM Connections </h3>
+            <p>Connect your LLM services to enable evaluations and playground features. Your provider will charge based on usage.</p>
 
             <div className = { styles.keyList }>
                 <div className = { `${ styles.keyRow } ${ styles.keyHeader }` }>
-                    <div>Provider</div>
-                    <div>Adapter</div>
-                    <div>Base URL</div>
-                    <div>API Key</div>
+                    <span>Provider</span>
+                    <span>Adapter</span>
+                    <span>Base URL</span>
+                    <span>API Key</span>
+                    <span style = {{ textAlign: 'center' }}>Actions</span>
                 </div>
-
-                { DUMMY_LLM_DATA.map(llmData => (
-                    <div key = { llmData.id } className = { styles.keyRow }>
-                        <div>{ llmData.provider }</div>
-                        <div>{ llmData.adapter }</div>
-                        <div>{ llmData.baseUrl }</div>
-                        <div>{ llmData.apiKey }</div>
+                { connections.map((conn) => (
+                    <div key = { conn.id } className = { styles.keyRow }>
+                        <span>{ conn.provider }</span>
+                        <span>{ conn.adapter }</span>
+                        <span>{ conn.baseUrl }</span>
+                        <span>{ conn.apiKey }</span>
+                        <div className = { llmstyles.actions }>
+                            <button title = "Edit"><Pencil size = { 16 } />️</button>
+                            <button title = "Delete"><Trash2 size = { 16 } /></button>
+                        </div>
                     </div>
                 ))}
             </div>
-            <button className = { styles.addbutton }>
-                Add LLM Connection
+
+            <button onClick = { () => setIsModalOpen(true) } className = { styles.createButton }>
+                <Plus size = { 16 } /> Add LLM Connection
             </button>
+
+            <Modal
+                title = "New LLM Connection"
+                isOpen = { isModalOpen }
+                onClose = { () => setIsModalOpen(false) }
+            >
+                <NewLLMConnectionForm
+                    onSave = { handleSaveConnection }
+                />
+            </Modal>
         </div>
     );
 };
