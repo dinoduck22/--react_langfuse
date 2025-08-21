@@ -28,17 +28,19 @@
   gap: 12px;
 }
 
+/* ▼▼▼ 이 부분 수정 ▼▼▼ */
 .filterRow {
-  display: grid;
-  grid-template-columns: 50px 1fr 1fr 1.5fr auto;
+  display: flex; /* grid 대신 flex 사용 */
   gap: 8px;
-  align-items: center;
+  align-items: center; /* flexbox의 수직 중앙 정렬 */
 }
 
 .conjunction {
   font-size: 13px;
   color: #94a3b8;
   text-align: right;
+  flex-basis: 50px; /* 고정 너비 설정 */
+  flex-shrink: 0;
   padding-right: 8px;
 }
 
@@ -51,7 +53,18 @@
   padding: 6px 8px;
   height: 32px;
   box-sizing: border-box;
+  margin: 0;
 }
+
+/* flex-grow를 이용해 너비 비율 설정 */
+.select {
+  flex: 1 1 0%;
+}
+.input {
+  flex: 1.5 1 0%;
+}
+/* ▲▲▲ 이 부분 수정 ▲▲▲ */
+
 
 .select:focus, .input:focus {
   outline: none;
@@ -75,7 +88,7 @@
 
 .addButton {
   background-color: transparent;
-  border: 1px #4b5563;
+  border: 1px solid #4b5563;
   color: #94a3b8;
   padding: 6px 12px;
   border-radius: 6px;

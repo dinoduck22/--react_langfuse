@@ -1,11 +1,9 @@
-// src/pages/Tracing/Sessions.tsx
+// src/pages/Tracing/Sessions/Sessions.tsx
 import { useState, useMemo, useEffect } from 'react';
 import styles from './Sessions.module.css';
 import {
     RefreshCw,
-    ChevronDown,
     Star,
-    Filter,
     Columns
 } from 'lucide-react';
 import { Session } from 'data/dummySessionsData';
@@ -16,6 +14,10 @@ import { sessionTableColumns } from './sessionColumns';
 import FilterButton from 'components/FilterButton/FilterButton';
 import DateRangePicker from 'components/DateRange/DateRangePicker';
 import { fetchSessions } from './SessionApi'; // 새로 만든 API 함수 import
+
+// 필터 컴포넌트 import
+import EnvironmentFilter from '../../../components/FilterControls/EnvironmentFilter';
+import FilterBuilder from '../../../components/FilterControls/FilterBuilder';
 
 const Sessions: React.FC = () => {
     const [sessions, setSessions] = useState<Session[]>([]); // API로부터 받을 데이터 (초기값 빈 배열)
@@ -130,7 +132,7 @@ const Sessions: React.FC = () => {
                 </div>
             </div>
 
-            {/* Filter Bar */}
+            {/* Filter Bar - Tracing 페이지와 동일한 구조로 수정 */}
             <div className={styles.filterBar}>
                 <div className={styles.filterLeft}>
                     <DateRangePicker 
@@ -139,11 +141,10 @@ const Sessions: React.FC = () => {
                         setStartDate={setStartDate}
                         setEndDate={setEndDate}
                     />
-                    <FilterButton>Env <ChevronDown size={16} /></FilterButton>
-                    <FilterButton><Filter size={14} /> Filters</FilterButton>
+                    <EnvironmentFilter />
+                    <FilterBuilder />
                 </div>
                 <div className={styles.filterRight}>
-                    <FilterButton>Table View <ChevronDown size={16} /></FilterButton>
                     <FilterButton onClick={() => setIsColumnVisibleModalOpen(true)}>
                         <Columns size={16} /> Columns ({visibleColumns.length}/{columns.length})
                     </FilterButton>
