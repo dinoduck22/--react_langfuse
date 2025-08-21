@@ -1,3 +1,4 @@
+// src/pages/Prompts/Prompts.tsx
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styles from './Prompts.module.css';
@@ -11,14 +12,13 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronsRight,
-  Tag, // ✅ Tag 아이콘 import 추가
+  Tag,
 } from 'lucide-react';
 import { AxiosError } from 'axios';
-// 새로 만든 API 파일에서 fetchPrompts 함수와 DisplayPrompt 타입을 가져옵니다.
 import { fetchPrompts } from './promptsApi';
 import {type DisplayPrompt } from './promptTypes'
-import SearchInput from '../../components/SearchInput/SearchInput'; // ✅ SearchInput 컴포넌트 import
-import { useSearch } from '../../hooks/useSearch'; // ✅ useSearch 훅 import
+import SearchInput from '../../components/SearchInput/SearchInput';
+import { useSearch } from '../../hooks/useSearch';
 
 
 const Prompts: React.FC = () => {
@@ -28,8 +28,9 @@ const Prompts: React.FC = () => {
   const navigate = useNavigate();
   const [promptToDelete, setPromptToDelete] = useState<DisplayPrompt | null>(null);
   
-  // ✅ useSearch 훅을 사용하여 검색 로직 적용
-  const { searchQuery, setSearchQuery, filteredData: filteredPrompts } = useSearch(prompts);
+  // ✅ Prompts 페이지에 맞는 검색 타입 상태와 훅 설정
+  const [searchType, setSearchType] = useState<string>('Names, Tags');
+  const { searchQuery, setSearchQuery, filteredData: filteredPrompts } = useSearch(prompts, searchType);
 
   useEffect(() => {
     const loadPrompts = async () => {
@@ -104,11 +105,14 @@ const Prompts: React.FC = () => {
       </div>
 
       <div className={styles.toolbar}>
-        {/* ✅ 기존 div를 SearchInput 컴포넌트로 교체 */}
+        {/* ✅ SearchInput에 Prompts 페이지에 맞는 props 전달 */}
         <SearchInput
           placeholder="Search..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          searchType={searchType}
+          setSearchType={setSearchType}
+          searchTypes={['Names, Tags', 'Full Text']}
         />
         <button className={styles.filterButton}>Filters</button>
       </div>
@@ -146,7 +150,6 @@ const Prompts: React.FC = () => {
                     <td>{prompt.type}</td>
                     <td>{prompt.latestVersionCreatedAt}</td>
                     <td><div className={styles.observationCell}>{formatObservations(prompt.observations)}</div></td>
-                    {/* ✅ 이 부분을 수정하여 태그가 없을 때 아이콘 버튼을 표시합니다. */}
                     <td>
                       <div className={styles.tagsCell}>
                         {prompt.tags && prompt.tags.length > 0 ? (

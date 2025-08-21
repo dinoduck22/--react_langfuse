@@ -1,16 +1,46 @@
-import React from 'react';
-import { Search } from 'lucide-react';
+// src/components/SearchInput/SearchInput.tsx
+import React, { useState, useRef, useEffect } from 'react';
+import { Search, Info, ChevronDown } from 'lucide-react';
 import styles from './SearchInput.module.css';
 
 interface SearchInputProps {
   placeholder: string;
-  value: string; // value prop 추가
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; // onChange prop 추가
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  searchType: string;
+  setSearchType: (type: string) => void;
+  searchTypes: string[]; // 부모로부터 검색 옵션 목록을 받음
 }
 
-const SearchInput: React.FC<SearchInputProps> = ({ placeholder, value, onChange }) => {
+const SearchInput: React.FC<SearchInputProps> = ({
+  placeholder,
+  value,
+  onChange,
+  searchType,
+  setSearchType,
+  searchTypes
+}) => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // 드롭다운 외부 클릭 시 닫기
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleTypeSelect = (type: string) => {
+    setSearchType(type);
+    setIsDropdownOpen(false);
+  };
+
   return (
-    <div className={styles.searchBox}>
+    <div className={styles.searchBox} ref={dropdownRef}>
       <Search size={18} className={styles.searchIcon} />
       <input
         type="text"
@@ -18,6 +48,26 @@ const SearchInput: React.FC<SearchInputProps> = ({ placeholder, value, onChange 
         value={value}
         onChange={onChange}
       />
+      <div className={styles.searchTypeSelector} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
+        <span>{searchType}</span>
+        <Info size={14} className={styles.infoIcon} />
+        <ChevronDown size={16} />
+      </div>
+
+      {isDropdownOpen && (
+        <div className={styles.dropdownMenu}>
+          {/* searchTypes prop을 기반으로 동적으로 메뉴 아이템 생성 */}
+          {searchTypes.map((type) => (
+            <div
+              key={type}
+              className={`${styles.dropdownItem} ${searchType === type ? styles.active : ''}`}
+              onClick={() => handleTypeSelect(type)}
+            >
+              <span className={styles.dot}>●</span> {type}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

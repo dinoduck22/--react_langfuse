@@ -1,31 +1,34 @@
+// src/pages/Tracing/Tracing.tsx
 import { useState, useMemo, useEffect } from 'react';
 import styles from './Tracing.module.css';
 import { DataTable } from '../../components/DataTable/DataTable';
-import { Trace } from './types'; // dummyTraces 대신 types에서 Trace 가져오기
+import { Trace } from './types';
 import { traceTableColumns } from './traceColumns';
 import SearchInput from '../../components/SearchInput/SearchInput';
 import FilterControls from '../../components/FilterControls/FilterControls';
 import TraceDetailPanel from './TraceDetailPanel';
 import { useSearch } from '../../hooks/useSearch';
-import ColumnVisibilityModal from './ColumnVisibilityModal'; // ✅ 모달 import
-import { Column } from './types'; // ✅ Column 타입 import
-import { fetchTraces } from './TracingApi'; // API 함수 import
+import ColumnVisibilityModal from './ColumnVisibilityModal';
+import { Column } from './types';
+import { fetchTraces } from './TracingApi';
+import FilterButton from '../../components/FilterButton/FilterButton'; // FilterButton import
+import { Columns } from 'lucide-react'; // Columns icon import
 
 const Tracing: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'Traces' | 'Observations'>('Traces');
   const [selectedTrace, setSelectedTrace] = useState<Trace | null>(null);
-  const [traces, setTraces] = useState<Trace[]>([]); // 초기값을 빈 배열로 설정
-  const [isLoading, setIsLoading] = useState(true); // 로딩 상태 추가
-  const [error, setError] = useState<string | null>(null); // 에러 상태 추가
+  const [traces, setTraces] = useState<Trace[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const { searchQuery, setSearchQuery, filteredData: filteredTraces } = useSearch(traces); // useSearch에 traces 상태 전달
+  const [searchType, setSearchType] = useState<string>('IDs / Names');
+  const { searchQuery, setSearchQuery, filteredData: filteredTraces } = useSearch(traces, searchType);
   
   const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
   const [columns, setColumns] = useState<Column<Trace>[]>(
     traceTableColumns.map(c => ({ ...c, visible: true }))
   );
 
-  // 컴포넌트 마운트 시 API 호출
   useEffect(() => {
     const loadTraces = async () => {
       try {
@@ -43,7 +46,6 @@ const Tracing: React.FC = () => {
         setIsLoading(false);
       }
     };
-
     loadTraces();
   }, []);
   
@@ -51,12 +53,10 @@ const Tracing: React.FC = () => {
     setSelectedTrace(prev => (prev?.id === trace.id ? null : trace));
   };
   
-  // ✅ 모든 컬럼 보이기/숨기기 함수
   const setAllColumnsVisible = (visible: boolean) => {
     setColumns(prev => prev.map(col => ({ ...col, visible })));
   };
 
-  // ✅ toggleColumnVisibility 함수의 key 타입을 명확히 합니다.
   const toggleColumnVisibility = (key: string) => {
     setColumns(prev =>
       prev.map(col =>
@@ -65,12 +65,10 @@ const Tracing: React.FC = () => {
     );
   };
 
-  // ✅ 현재 보이는 컬럼만 필터링
   const visibleColumns = useMemo(() => columns.filter(c => c.visible), [columns]);
 
   return (
     <div className={`${styles.container} ${selectedTrace ? styles.containerWithDetail : ''}`}>
-        {/* 1. 왼쪽 리스트 영역 */}
       <div className={styles.listSection}>
         
         <div className={styles.tabs}>
@@ -78,15 +76,24 @@ const Tracing: React.FC = () => {
           <button className={`${styles.tabButton} ${activeTab === 'Observations' ? styles.active : ''}`} onClick={() => setActiveTab('Observations')}>Observations</button>
         </div>
         
+        {/* ▼▼▼ filterBar 레이아웃 수정 ▼▼▼ */}
         <div className={styles.filterBar}>
-          <SearchInput placeholder="Search... IDs / Names" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
-          {/* ✅ FilterControls에 props 전달 */}
-          <FilterControls 
-            onColumnsClick={() => setIsColumnModalOpen(true)}
-            visibleColumnsCount={visibleColumns.length}
-            totalColumnsCount={columns.length}
-          />
+          <div className={styles.filterLeftGroup}>
+            <SearchInput
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              searchType={searchType}
+              setSearchType={setSearchType}
+              searchTypes={['IDs / Names', 'Full Text']}
+            />
+            <FilterControls />
+          </div>
+          <FilterButton onClick={() => setIsColumnModalOpen(true)}>
+            <Columns size={16} /> Columns ({visibleColumns.length}/{columns.length})
+          </FilterButton>
         </div>
+        {/* ▲▲▲ filterBar 레이아웃 수정 ▲▲▲ */}
         
         <div className={styles.contentArea}>
           {activeTab === 'Traces' ? (
@@ -116,7 +123,6 @@ const Tracing: React.FC = () => {
         />
       )}
 
-      {/* ✅ 제네릭 타입을 명시하여 모달 호출 */}
       <ColumnVisibilityModal<Trace>
         isOpen={isColumnModalOpen}
         onClose={() => setIsColumnModalOpen(false)}

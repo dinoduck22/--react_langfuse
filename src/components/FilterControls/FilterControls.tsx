@@ -1,30 +1,19 @@
+// src/components/FilterControls/FilterControls.tsx
 import React from 'react';
-import { ChevronDown, Filter, Columns } from 'lucide-react';
-import FilterButton from '../FilterButton/FilterButton';
 import styles from './FilterControls.module.css';
 
-// ✅ Props 타입 정의
-interface FilterControlsProps {
-  onColumnsClick: () => void;
-  visibleColumnsCount: number;
-  totalColumnsCount: number;
-}
+// 분리된 컴포넌트들을 import
+import TimeRangeFilter from './TimeRangeFilter';
+import EnvironmentFilter from './EnvironmentFilter';
+import FilterBuilder from './FilterBuilder';
 
-const FilterControls: React.FC<FilterControlsProps> = ({ 
-  onColumnsClick, 
-  visibleColumnsCount, 
-  totalColumnsCount 
-}) => {
+// Columns 버튼 관련 props 제거
+const FilterControls: React.FC = () => {
   return (
     <div className={styles.filterControls}>
-      <FilterButton>Timestamp: Past 24 hours <ChevronDown size={16} /></FilterButton>
-      <FilterButton>Env: default <ChevronDown size={16} /></FilterButton>
-      <FilterButton><Filter size={14} /> Filters</FilterButton>
-      <FilterButton>Table View <ChevronDown size={16} /></FilterButton>
-      {/* ✅ onClick 핸들러와 동적 텍스트 추가 */}
-      <FilterButton onClick={onColumnsClick}>
-        <Columns size={16} /> Columns ({visibleColumnsCount}/{totalColumnsCount})
-      </FilterButton>
+      <TimeRangeFilter />
+      <EnvironmentFilter />
+      <FilterBuilder />
     </div>
   );
 };
