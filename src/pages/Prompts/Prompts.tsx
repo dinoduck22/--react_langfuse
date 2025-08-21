@@ -97,8 +97,7 @@ const Prompts: React.FC = () => {
           <Info size={16} className={styles.infoIcon} />
         </div>
         <div className={styles.actions}>
-          <button className={styles.secondaryButton}>Automations 1</button>
-          <button className={styles.primaryButton} onClick={navigateToNewPrompts}>
+          <button className={styles.secondaryButton} onClick={navigateToNewPrompts}>
             <Plus size={16} /> New prompt
           </button>
         </div>
