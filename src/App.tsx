@@ -5,7 +5,7 @@ import Layout from './layouts/Layout';
 import Home from './pages/Home/Home';
 
 import Tracing from './pages/Tracing/Tracing'; 
-import Sessions from './pages/Tracing/Sessions'; 
+import Sessions from './pages/Tracing/Sessions/Sessions'; 
 
 import Prompts from './pages/Prompts/Prompts';
 import PromptsDetail from './pages/Prompts/PromptsDetail';

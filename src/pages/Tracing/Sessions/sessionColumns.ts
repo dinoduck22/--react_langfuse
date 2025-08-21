@@ -1,5 +1,5 @@
 // src/pages/Tracing/sessionColumns.ts
-import { Column, SessionData } from './types';
+import { Column, SessionData } from '../types';
 
 // 테이블과 모달에서 사용할 컬럼 목록을 정의합니다.
 export const sessionTableColumns: Column[] = [

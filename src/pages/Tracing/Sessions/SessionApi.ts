@@ -1,6 +1,6 @@
 // src/pages/Tracing/SessionApi.ts
-import { langfuse } from '../../lib/langfuse';
-import { Session } from '../../data/dummySessionsData';
+import { langfuse } from 'lib/langfuse';
+import { Session } from 'data/dummySessionsData';
 
 // Langfuse API 응답 데이터에 대한 타입 정의
 interface LangfuseSession {

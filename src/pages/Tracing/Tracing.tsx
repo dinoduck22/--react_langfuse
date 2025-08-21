@@ -72,7 +72,6 @@ const Tracing: React.FC = () => {
     <div className={`${styles.container} ${selectedTrace ? styles.containerWithDetail : ''}`}>
         {/* 1. 왼쪽 리스트 영역 */}
       <div className={styles.listSection}>
-        <div className={styles.header}><h1>Tracing</h1></div>
         
         <div className={styles.tabs}>
           <button className={`${styles.tabButton} ${activeTab === 'Traces' ? styles.active : ''}`} onClick={() => setActiveTab('Traces')}>Traces</button>

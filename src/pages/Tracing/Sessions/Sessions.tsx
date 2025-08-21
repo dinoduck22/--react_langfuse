@@ -8,13 +8,13 @@ import {
     Filter,
     Columns
 } from 'lucide-react';
-import { Session } from '../../data/dummySessionsData';
-import ColumnVisibilityModal from './ColumnVisibilityModal';
-import { Column } from './types';
-import { DataTable } from '../../components/DataTable/DataTable'; 
+import { Session } from 'data/dummySessionsData';
+import ColumnVisibilityModal from '../ColumnVisibilityModal';
+import { Column } from '../types';
+import { DataTable } from 'components/DataTable/DataTable'; 
 import { sessionTableColumns } from './sessionColumns'; 
-import FilterButton from '../../components/FilterButton/FilterButton';
-import DateRangePicker from '../../components/DateRange/DateRangePicker';
+import FilterButton from 'components/FilterButton/FilterButton';
+import DateRangePicker from 'components/DateRange/DateRangePicker';
 import { fetchSessions } from './SessionApi'; // 새로 만든 API 함수 import
 
 const Sessions: React.FC = () => {
