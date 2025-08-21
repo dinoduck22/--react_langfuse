@@ -6,11 +6,13 @@ export interface Score {
 
 export interface TraceItem {
     id: string;
-    name: string;
-    timestamp: Date;
-    duration: string;
-    input: { test: string };
+    status: 'positive' | 'neutral' | 'negative';
+    // any 타입을 Record<string, string>으로 수정하여
+    // 문자열 키와 문자열 값을 갖는 객체임을 명시합니다.
+    input: Record<string, string>;
     output: string;
+    summary: string;
+    timestamp: Date;
     scores: Score[];
 }
 
@@ -22,44 +24,52 @@ export interface SessionDetailData {
     traces: TraceItem[];
 }
 
-export const DUMMY_SESSION_DETAIL: SessionDetailData = {
-    id: 'if.docs.conversation.rM0hdVk',
+// 데이터의 input 필드 타입에 맞게 수정합니다.
+export const DUMMY_SESSION_DETAILS: SessionDetailData = {
+    id: 'if.docs.conversation.O0MPX3B',
     userId: 'u-8XBcMbnE',
-    traceCount: 1,
+    traceCount: 2,
     totalCost: 0.000158,
     traces: [
         {
-            id: 'qn:ff4ac2d4-993c-40fc-8069-0e12ed7f9764',
-            name: 'LLM-based evaluation',
-            timestamp: new Date('2025-08-20T05:57:47Z'),
-            duration: '2.09s',
-            input: { "test": "test" },
-            output: `
-### Purpose
-
-The LLM Playground is designed for you to test, iterate, and compare different prompts and models. It's a great space to enhance your understanding and effectiveness in working with Large Language Models (LLMs).
-
-### Security
-
-Additionally, security is a top priority for us, which is why we conduct tests with independent, third-party security experts. Their goals include:
-
-- Identifying potential security vulnerabilities in our infrastructure and application.
-- Simulating real-world attack scenarios to understand our defenses.
-- Validating the effectiveness of existing security controls.
-- Ensuring ongoing resilience against emerging threats.
-
-If you have questions or run into any problems while using Langfuse, please don't hesitate to reach out to our founders directly via the chat widget or contact us on GitHub. We're here to help! 😊
-            `,
+            id: '6c51dc57-bda7-4011-9363-d083d1d237a2',
+            status: 'positive',
+            input: { "Hi": "" },
+            output: "Hello! how can I assist you today? If you have any questions about Langfuse, I'm here to help!",
+            summary: "Hello! how can I assist you today? If you have...",
+            timestamp: new Date('2025-08-21T12:37:46Z'),
             scores: [
-                { name: 'conciseness...', value: 0.90 },
-                { name: 'conta-ns-pii', value: 0.00 },
-                { name: 'context-rele...', value: 0.80 },
-                { name: 'hal-ucination', value: 0.00 },
-                { name: 'helpfulness', value: 0.90 },
-                { name: 'is exclamation', value: 0.00 },
+                { name: 'conciseness-v1', value: 0.90 },
+                { name: 'contains-pii', value: 0.00 },
+                { name: 'context-relevance', value: 0.80 },
+                { name: 'hallucination', value: 0.00 },
+                { name: 'helpfulness', value: 1.00 },
+                { name: 'is-exclamation', value: 0.00 },
                 { name: 'is_question', value: 0.00 },
-                { name: 'language-d...', value: 1.00 },
+                { name: 'language-detection', value: 1.00 },
                 { name: 'toxicity-v2', value: 0.00 },
+                { name: 'user-feedback', value: 1.00 },
+            ]
+        },
+        {
+            id: 'b6aaaa4d-b3d4-4f70-8c91-b680b45af6ad',
+            status: 'neutral',
+            // input이 비어있는 경우를 위해 빈 객체로 수정합니다.
+            input: {},
+            output: "Sorry, I don't know how to help with that.",
+            summary: "Sorry, I don't know how to help with that.",
+            timestamp: new Date('2025-08-21T12:38:55Z'),
+            scores: [
+                { name: 'conciseness-v1', value: 0.00 },
+                { name: 'contains-pii', value: 0.00 },
+                { name: 'context-relevance', value: 0.00 },
+                { name: 'hallucination', value: 0.10 },
+                { name: 'helpfulness', value: 1.00 },
+                { name: 'is-exclamation', value: 0.00 },
+                { name: 'is_question', value: 1.00 },
+                { name: 'language-detection', value: 0.00 },
+                { name: 'toxicity-v2', value: 0.00 },
+                { name: 'user-feedback', value: 0.00 },
             ]
         }
     ]

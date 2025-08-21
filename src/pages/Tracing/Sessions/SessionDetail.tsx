@@ -2,127 +2,141 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import styles from './SessionDetail.module.css';
-import { Star, ChevronsUpDown, Copy } from 'lucide-react';
-import { DUMMY_SESSION_DETAIL, SessionDetailData, TraceItem } from 'data/dummySessionDetailData';
+import { Star } from 'lucide-react';
+import { DUMMY_SESSION_DETAILS, SessionDetailData, TraceItem } from 'data/dummySessionDetailData';
+
+// 보기 모드 타입을 정의합니다.
+type ViewMode = 'Formatted' | 'JSON';
+
+// 단일 트레이스 카드를 렌더링하는 내부 컴포넌트
+// viewMode와 setViewMode를 props로 전달받습니다.
+const TraceCard: React.FC<{ trace: TraceItem; viewMode: ViewMode; setViewMode: (mode: ViewMode) => void }> = ({ trace, viewMode, setViewMode }) => {
+    const statusClass = trace.status === 'positive' ? styles.positiveBar : styles.neutralBar;
+
+    // Input과 Output 컨텐츠를 viewMode에 따라 동적으로 렌더링하는 함수
+    const renderContent = () => {
+        if (viewMode === 'JSON') {
+            return (
+                <>
+                    <div className={styles.contentBox}>
+                        <h4>Input</h4>
+                        <pre>{JSON.stringify(trace.input, null, 2)}</pre>
+                    </div>
+                    <div className={styles.contentBox}>
+                        <h4>Output</h4>
+                        {/* Output은 문자열이므로 JSON 객체로 감싸서 표시합니다. */}
+                        <pre>{JSON.stringify({ output: trace.output }, null, 2)}</pre>
+                    </div>
+                </>
+            );
+        }
+
+        // Formatted (기본) 뷰
+        return (
+            <>
+                <div className={styles.contentBox}>
+                    <h4>Input</h4>
+                    <pre>{Object.keys(trace.input).length > 0 ? JSON.stringify(trace.input, null, 2) : 'No Input'}</pre>
+                </div>
+                <div className={styles.contentBox}>
+                    <h4>Output</h4>
+                    <p className={styles.outputText}>
+                       <span className={styles.highlight}>{trace.output.split(' ')[0]}</span> {trace.output.substring(trace.output.indexOf(' ') + 1)}
+                    </p>
+                </div>
+            </>
+        );
+    };
+
+    return (
+        <div className={styles.traceCard}>
+            <div className={`${styles.summaryBar} ${statusClass}`}>
+                <p className={styles.summaryText}>{trace.summary}</p>
+                <div className={styles.summaryScores}>
+                    {trace.scores.slice(0, 5).map(score => (
+                        <div key={score.name} className={styles.scorePill}>
+                            {score.name.substring(0, 10)}...: {score.value.toFixed(2)}
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            <div className={styles.traceBody}>
+                <div className={styles.ioSection}>
+                    <div className={styles.ioTabs}>
+                        <button 
+                          className={`${styles.ioTab} ${viewMode === 'Formatted' ? styles.active : ''}`}
+                          onClick={() => setViewMode('Formatted')}
+                        >
+                          Formatted
+                        </button>
+                        <button 
+                          className={`${styles.ioTab} ${viewMode === 'JSON' ? styles.active : ''}`}
+                          onClick={() => setViewMode('JSON')}
+                        >
+                          JSON
+                        </button>
+                    </div>
+                    {renderContent()}
+                </div>
+                <div className={styles.metadataSection}>
+                    <div className={styles.metaHeader}>
+                        <span>Trace: {trace.id}</span>
+                        <span>{trace.timestamp.toLocaleString()}</span>
+                    </div>
+                     <div className={styles.scoresGrid}>
+                        <h4 className={styles.scoresTitle}>Scores</h4>
+                        {trace.scores.map(score => (
+                            <div key={score.name} className={styles.scoreItem}>
+                                <span>{score.name}</span>
+                                <span className={styles.scoreValue}>{score.value.toFixed(2)}</span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const SessionDetail: React.FC = () => {
-  const { sessionId } = useParams<{ sessionId: string }>();
-  const [session, setSession] = useState<SessionDetailData | null>(null);
-  const [selectedTrace, setSelectedTrace] = useState<TraceItem | null>(null);
+    const { sessionId } = useParams<{ sessionId: string }>();
+    const [session, setSession] = useState<SessionDetailData | null>(null);
+    // 보기 모드 상태를 부모 컴포넌트에서 관리합니다.
+    const [viewMode, setViewMode] = useState<ViewMode>('Formatted');
 
-  useEffect(() => {
-    // 실제 앱에서는 API를 통해 sessionId에 해당하는 데이터를 가져옵니다.
-    // 여기서는 임시 데이터를 사용합니다.
-    if (sessionId === DUMMY_SESSION_DETAIL.id) {
-      setSession(DUMMY_SESSION_DETAIL);
-      setSelectedTrace(DUMMY_SESSION_DETAIL.traces[0]);
+    useEffect(() => {
+        if (sessionId === DUMMY_SESSION_DETAILS.id) {
+            setSession(DUMMY_SESSION_DETAILS);
+        }
+    }, [sessionId]);
+
+    if (!session) {
+        return <div className={styles.container}>Loading or session not found...</div>;
     }
-  }, [sessionId]);
 
-  if (!session || !selectedTrace) {
-    return <div className={styles.container}>Loading session details or session not found...</div>;
-  }
-
-  return (
-    <div className={styles.container}>
-      {/* --- 헤더 --- */}
-      <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <span className={styles.sessionLabel}>Session</span>
-          <h1 className={styles.sessionId}>{session.id}</h1>
-          <Star size={18} className={styles.starIcon} />
-        </div>
-        <div className={styles.headerRight}>
-          <button className={styles.actionButton}>Annotate</button>
-        </div>
-      </div>
-
-      {/* --- 메타 정보 --- */}
-      <div className={styles.metaBar}>
-        <div className={styles.metaItem}>
-          <span className={styles.metaLabel}>User ID:</span>
-          <span className={styles.metaValue}>{session.userId}</span>
-        </div>
-        <div className={styles.metaItem}>
-          <span className={styles.metaLabel}>Traces:</span>
-          <span className={styles.metaValue}>{session.traceCount}</span>
-        </div>
-        <div className={styles.metaItem}>
-          <span className={styles.metaLabel}>Total cost:</span>
-          <span className={styles.metaValue}>${session.totalCost.toFixed(6)}</span>
-        </div>
-      </div>
-
-      {/* --- 메인 컨텐츠 --- */}
-      <div className={styles.mainContent}>
-        {/* 왼쪽: 트레이스 목록 */}
-        <div className={styles.traceList}>
-          <div className={styles.listHeader}>
-            <span>Traces</span>
-            <ChevronsUpDown size={16} />
-          </div>
-          {session.traces.map((trace) => (
-            <div
-              key={trace.id}
-              className={`${styles.traceItem} ${trace.id === selectedTrace.id ? styles.selected : ''}`}
-              onClick={() => setSelectedTrace(trace)}
-            >
-              <div className={styles.traceItemInfo}>
-                <span className={styles.traceName}>{trace.name}</span>
-                <span className={styles.traceTime}>{trace.timestamp.toLocaleTimeString()}</span>
-              </div>
-              <span className={styles.traceDuration}>{trace.duration}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* 오른쪽: 상세 정보 */}
-        <div className={styles.detailView}>
-          <div className={styles.ioPanels}>
-            <div className={styles.panel}>
-              <div className={styles.panelHeader}>
-                <div className={styles.tabs}>
-                  <button className={`${styles.tab} ${styles.active}`}>Formatted</button>
-                  <button className={styles.tab}>JSON</button>
+    return (
+        <div className={styles.container}>
+            <div className={styles.header}>
+                <h1 className={styles.sessionId}>{session.id}</h1>
+                <div className={styles.headerActions}>
+                    <Star size={18} className={styles.starIcon} />
+                    <button className={styles.actionButton}>Annotate</button>
                 </div>
-              </div>
-              <div className={styles.panelBody}>
-                <div className={styles.ioSection}>
-                  <h3 className={styles.ioTitle}>Input</h3>
-                  <pre>{JSON.stringify(selectedTrace.input, null, 2)}</pre>
-                </div>
-                <div className={styles.ioSection}>
-                  <h3 className={styles.ioTitle}>Output</h3>
-                  <div className={styles.outputContent} dangerouslySetInnerHTML={{ __html: selectedTrace.output.replace(/\n/g, '<br />') }} />
-                </div>
-              </div>
             </div>
-          </div>
-
-          <div className={styles.scoresPanel}>
-            <div className={styles.panelHeader}>
-              <div className={styles.traceInfo}>
-                Trace: {selectedTrace.id}
-                <Copy size={14} className={styles.copyIcon} />
-              </div>
-              <span className={styles.timestamp}>{selectedTrace.timestamp.toLocaleString()}</span>
-            </div>
-            <div className={styles.panelBody}>
-              <h3 className={styles.scoresTitle}>Scores</h3>
-              <div className={styles.scoresGrid}>
-                {selectedTrace.scores.map(score => (
-                  <div key={score.name} className={styles.scoreItem}>
-                    <span>{score.name}</span>
-                    <span className={styles.scoreValue}>{score.value.toFixed(2)}</span>
-                  </div>
+            
+            <div className={styles.timeline}>
+                {session.traces.map(trace => (
+                    <TraceCard 
+                      key={trace.id} 
+                      trace={trace} 
+                      viewMode={viewMode}
+                      setViewMode={setViewMode}
+                    />
                 ))}
-              </div>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
 export default SessionDetail;

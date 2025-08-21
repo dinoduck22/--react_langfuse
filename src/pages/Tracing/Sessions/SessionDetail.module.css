@@ -6,7 +6,7 @@
   padding: 16px 24px;
   background-color: #020817;
   color: #e2e8f0;
-  gap: 16px;
+  overflow-y: auto;
 }
 
 .header {
@@ -14,23 +14,20 @@
   justify-content: space-between;
   align-items: center;
   flex-shrink: 0;
-}
-
-.headerLeft {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.sessionLabel {
-  font-size: 18px;
-  color: #94a3b8;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #1e293b;
 }
 
 .sessionId {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
   margin: 0;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .starIcon {
@@ -54,227 +51,147 @@
   background-color: #1e293b;
 }
 
-.metaBar {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  font-size: 13px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #1e293b;
-  flex-shrink: 0;
-}
-
-.metaItem {
-  display: flex;
-  gap: 8px;
-}
-
-.metaLabel {
-  color: #94a3b8;
-}
-
-.metaValue {
-  color: #f1f5f9;
-  font-weight: 500;
-}
-
-.mainContent {
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 16px;
-  flex-grow: 1;
-  overflow: hidden;
-}
-
-.traceList {
+.timeline {
+  padding-top: 16px;
   display: flex;
   flex-direction: column;
+  gap: 16px;
+}
+
+.traceCard {
   background-color: #0f172a;
   border: 1px solid #1e293b;
   border-radius: 8px;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
-.listHeader {
+.summaryBar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px;
+  padding: 10px 16px;
   border-bottom: 1px solid #1e293b;
-  font-size: 13px;
+}
+
+.positiveBar {
+  border-left: 4px solid #16a34a; /* Green */
+}
+.neutralBar {
+  border-left: 4px solid #64748b; /* Gray */
+}
+
+.summaryText {
+  margin: 0;
+  font-size: 14px;
   font-weight: 500;
-  color: #94a3b8;
-  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.traceItem {
-  padding: 12px;
-  border-bottom: 1px solid #1e293b;
-  cursor: pointer;
-}
-.traceItem:last-child {
-  border-bottom: none;
-}
-.traceItem:hover {
-  background-color: #1e293b;
-}
-.traceItem.selected {
-  background-color: #334155;
-}
-
-.traceItemInfo {
+.summaryScores {
   display: flex;
-  justify-content: space-between;
-  font-size: 13px;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: 16px;
 }
 
-.traceName {
-  font-weight: 500;
-  color: #f1f5f9;
-}
-
-.traceTime {
+.scorePill {
+  background-color: #1e293b;
   color: #94a3b8;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
 
-.traceDuration {
-  font-size: 12px;
-  color: #64748b;
-  margin-top: 4px;
-}
-
-.detailView {
+.traceBody {
   display: grid;
   grid-template-columns: 2fr 1fr;
-  gap: 16px;
-  overflow: hidden;
-}
-
-.ioPanels, .scoresPanel {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.panel {
-  background-color: #0f172a;
-  border: 1px solid #1e293b;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  overflow: hidden;
-}
-
-.panelHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  border-bottom: 1px solid #1e293b;
-  flex-shrink: 0;
-}
-
-.tabs {
-  display: flex;
-  gap: 4px;
-}
-
-.tab {
-  background: none;
-  border: none;
-  color: #94a3b8;
-  padding: 4px 8px;
-  font-size: 13px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.tab.active {
-  background-color: #334155;
-  color: #f1f5f9;
-}
-
-.panelBody {
-  padding: 12px;
-  overflow-y: auto;
-  flex-grow: 1;
 }
 
 .ioSection {
+  padding: 16px;
+  border-right: 1px solid #1e293b;
+}
+
+.ioTabs {
+  display: flex;
+  gap: 4px;
   margin-bottom: 16px;
 }
-.ioSection:last-child {
-  margin-bottom: 0;
-}
-
-.ioTitle {
-  font-size: 14px;
-  font-weight: 500;
+.ioTab {
+  background: none;
+  border: 1px solid #334155;
   color: #94a3b8;
-  margin: 0 0 8px 0;
-}
-
-.ioSection pre {
-  margin: 0;
-  font-family: monospace;
-  white-space: pre-wrap;
-  word-break: break-word;
-  background-color: #020817;
-  padding: 8px;
-  border-radius: 4px;
-}
-
-.outputContent {
-  font-family: sans-serif;
-  line-height: 1.6;
-}
-
-.outputContent h3 {
-  margin-top: 0;
-  font-size: 1.1em;
-  font-weight: bold;
-}
-
-.traceInfo {
-  font-family: monospace;
-  font-size: 12px;
-  color: #94a3b8;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.copyIcon {
+  padding: 4px 10px;
+  font-size: 13px;
+  border-radius: 6px;
   cursor: pointer;
 }
-
-.timestamp {
-  font-size: 12px;
-  color: #94a3b8;
+.ioTab.active {
+  background-color: #334155;
+  color: #f1f5f9;
 }
 
-.scoresTitle {
+.contentBox {
+  margin-bottom: 16px;
+}
+.contentBox:last-child {
+  margin-bottom: 0;
+}
+.contentBox h4 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 400;
+}
+.contentBox pre, .contentBox p {
+  margin: 0;
   font-size: 14px;
-  font-weight: 500;
-  margin: 0 0 12px 0;
+  font-family: monospace;
+}
+.outputText {
+  font-family: inherit;
+}
+
+.highlight {
+  background-color: rgba(250, 204, 21, 0.2);
+  padding: 2px 0;
+}
+
+.metadataSection {
+  padding: 16px;
+  font-size: 12px;
+}
+
+.metaHeader {
+  display: flex;
+  justify-content: space-between;
+  color: #64748b;
+  margin-bottom: 16px;
 }
 
 .scoresGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
+}
+
+.scoresTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e2e8f0;
+  margin: 0 0 4px 0;
 }
 
 .scoreItem {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
-  padding: 4px;
-  background-color: #1e293b;
-  border-radius: 4px;
+  font-size: 12px;
+  color: #94a3b8;
 }
 
 .scoreValue {
   font-weight: 500;
-  font-family: monospace;
+  color: #e2e8f0;
 }
