@@ -1,10 +1,22 @@
 // src/pages/Tracing/sessionColumns.ts
+import React from 'react';
+import { Link } from 'react-router-dom';
 import { Column, SessionData } from '../types';
+import styles from './Sessions.module.css';
 
 // 테이블과 모달에서 사용할 컬럼 목록을 정의합니다.
 // Column 타입을 사용할 때 어떤 데이터 타입에 대한 컬럼인지 명시해줍니다. (Column -> Column<SessionData>)
 export const sessionTableColumns: Column<SessionData>[] = [
-    { key: 'id', header: 'ID', visible: true },
+    { 
+      key: 'id', 
+      header: 'ID', 
+      visible: true, 
+      accessor: (row) => (
+        <Link to={`/sessions/${row.id}`} className={styles.idLink}>
+          {row.id}
+        </Link>
+      ) 
+    },
     { key: 'createdAt', header: 'Created At', visible: true },
     { key: 'duration', header: 'Duration', visible: true },
     { key: 'environment', header: 'Environment', visible: true },

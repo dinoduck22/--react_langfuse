@@ -6,6 +6,7 @@ import Home from './pages/Home/Home';
 
 import Tracing from './pages/Tracing/Tracing'; 
 import Sessions from './pages/Tracing/Sessions/Sessions'; 
+import SessionDetail from './pages/Tracing/Sessions/SessionDetail';
 
 import Prompts from './pages/Prompts/Prompts';
 import PromptsDetail from './pages/Prompts/PromptsDetail';
@@ -43,6 +44,7 @@ export default function App() {
         {/* Tracing */}
         <Route path="trace" element={<Tracing />} />
         <Route path="sessions" element={<Sessions />} />
+        <Route path="sessions/:sessionId" element={<SessionDetail />} />
 
         {/* Prompts */}
         <Route path="prompts" element={<Prompts />} />
