@@ -2,7 +2,8 @@
 import { Column, SessionData } from '../types';
 
 // 테이블과 모달에서 사용할 컬럼 목록을 정의합니다.
-export const sessionTableColumns: Column[] = [
+// Column 타입을 사용할 때 어떤 데이터 타입에 대한 컬럼인지 명시해줍니다. (Column -> Column<SessionData>)
+export const sessionTableColumns: Column<SessionData>[] = [
     { key: 'id', header: 'ID', visible: true },
     { key: 'createdAt', header: 'Created At', visible: true },
     { key: 'duration', header: 'Duration', visible: true },
