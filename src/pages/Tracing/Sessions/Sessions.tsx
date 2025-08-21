@@ -6,37 +6,35 @@ import {
     Star,
     Columns
 } from 'lucide-react';
-import { Session } from 'data/dummySessionsData';
+import { SessionData } from '../types'; // Session -> SessionData
 import ColumnVisibilityModal from '../ColumnVisibilityModal';
 import { Column } from '../types';
 import { DataTable } from 'components/DataTable/DataTable'; 
 import { sessionTableColumns } from './sessionColumns'; 
 import FilterButton from 'components/FilterButton/FilterButton';
 import DateRangePicker from 'components/DateRange/DateRangePicker';
-import { fetchSessions } from './SessionApi'; // 새로 만든 API 함수 import
+import { fetchSessions } from './SessionApi';
 
-// 필터 컴포넌트 import
 import EnvironmentFilter from '../../../components/FilterControls/EnvironmentFilter';
 import FilterBuilder from '../../../components/FilterControls/FilterBuilder';
 
 const Sessions: React.FC = () => {
-    const [sessions, setSessions] = useState<Session[]>([]); // API로부터 받을 데이터 (초기값 빈 배열)
-    const [isLoading, setIsLoading] = useState(true); // 로딩 상태
-    const [error, setError] = useState<string | null>(null); // 에러 상태
+    // 상태 타입을 SessionData[]로 수정
+    const [sessions, setSessions] = useState<SessionData[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
     const [isColumnVisibleModalOpen, setIsColumnVisibleModalOpen] = useState(false);
 
-    // 컬럼 보이기/숨기기 상태 관리
-    const [columns, setColumns] = useState<Column<Session>[]>(
+    // 컬럼 상태 타입을 Column<SessionData>[]로 수정
+    const [columns, setColumns] = useState<Column<SessionData>[]>(
         sessionTableColumns.map(c => ({ ...c, visible: c.visible }))
     );
 
-    // 날짜 범위 상태 관리
     const [startDate, setStartDate] = useState(new Date(Date.now() - 24 * 60 * 60 * 1000));
     const [endDate, setEndDate] = useState(new Date());
 
-    // 컴포넌트 마운트 시 API 호출
     useEffect(() => {
         const loadSessions = async () => {
             try {
@@ -56,7 +54,7 @@ const Sessions: React.FC = () => {
         };
 
         loadSessions();
-    }, []); // 빈 의존성 배열로 최초 1회만 실행
+    }, []);
 
     const toggleFavorite = (id: string, e: React.MouseEvent) => {
         e.stopPropagation(); 
@@ -89,7 +87,7 @@ const Sessions: React.FC = () => {
         {
             key: 'favorite',
             header: '',
-            accessor: (row: Session) => (
+            accessor: (row: SessionData) => ( // row 타입을 SessionData로 수정
                 <Star
                     size={16}
                     className={`${styles.starIcon} ${row.isFavorited ? styles.favorited : ''}`}
@@ -99,9 +97,8 @@ const Sessions: React.FC = () => {
             visible: true
         },
         ...visibleColumns,
-    ], [visibleColumns, sessions]); // sessions가 변경될 때도 재생성되도록 추가
+    ], [visibleColumns, sessions]);
 
-    // 로딩 및 에러 상태에 따른 테이블 컨텐츠 렌더링 함수
     const renderTableContent = () => {
         if (isLoading) {
             return <div>Loading sessions...</div>;
@@ -109,8 +106,9 @@ const Sessions: React.FC = () => {
         if (error) {
             return <div style={{ color: 'red' }}>Error: {error}</div>;
         }
+        // DataTable 타입을 DataTable<SessionData>로 수정
         return (
-            <DataTable<Session>
+            <DataTable<SessionData>
                 columns={columnsWithActions}
                 data={sessions}
                 keyField="id"
@@ -124,7 +122,6 @@ const Sessions: React.FC = () => {
     
     return (
         <div className={styles.container}>
-            {/* Header */}
             <div className={styles.header}>
                 <div className={styles.titleGroup}>
                     <h1>Sessions</h1>
@@ -132,7 +129,6 @@ const Sessions: React.FC = () => {
                 </div>
             </div>
 
-            {/* Filter Bar - Tracing 페이지와 동일한 구조로 수정 */}
             <div className={styles.filterBar}>
                 <div className={styles.filterLeft}>
                     <DateRangePicker 
@@ -151,12 +147,12 @@ const Sessions: React.FC = () => {
                 </div>
             </div>
 
-            {/* Table */}
             <div className={styles.tableContainer}>
                 {renderTableContent()}
             </div>
 
-            <ColumnVisibilityModal<Session>
+            {/* ColumnVisibilityModal 타입을 <SessionData>로 수정 */}
+            <ColumnVisibilityModal<SessionData>
                 isOpen={isColumnVisibleModalOpen}
                 onClose={() => setIsColumnVisibleModalOpen(false)}
                 columns={columns}
