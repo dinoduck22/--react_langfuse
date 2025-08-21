@@ -3,40 +3,43 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import styles from './SessionDetail.module.css';
 import { Star } from 'lucide-react';
-import { DUMMY_SESSION_DETAILS, SessionDetailData, TraceItem } from 'data/dummySessionDetailData';
+import { fetchSessionDetails } from './SessionDetailApi';
+import { UiSessionData, UiTrace } from './sessionDetailTypes';
 
-// 보기 모드 타입을 정의합니다.
 type ViewMode = 'Formatted' | 'JSON';
 
-// 단일 트레이스 카드를 렌더링하는 내부 컴포넌트
-// viewMode와 setViewMode를 props로 전달받습니다.
-const TraceCard: React.FC<{ trace: TraceItem; viewMode: ViewMode; setViewMode: (mode: ViewMode) => void }> = ({ trace, viewMode, setViewMode }) => {
+const TraceCard: React.FC<{ trace: UiTrace; viewMode: ViewMode; setViewMode: (mode: ViewMode) => void }> = ({ trace, viewMode, setViewMode }) => {
     const statusClass = trace.status === 'positive' ? styles.positiveBar : styles.neutralBar;
 
-    // Input과 Output 컨텐츠를 viewMode에 따라 동적으로 렌더링하는 함수
     const renderContent = () => {
+        // ▼▼▼ 오류 수정 ▼▼▼
+        // trace.input이 null이 아니고, 배열이 아닌 객체이며, 비어있지 않은지 확인합니다.
+        const hasInput = trace.input && typeof trace.input === 'object' && !Array.isArray(trace.input) && Object.keys(trace.input).length > 0;
+        
+        const inputJson = JSON.stringify(trace.input, null, 2);
+        const outputJson = JSON.stringify({ output: trace.output }, null, 2);
+
         if (viewMode === 'JSON') {
             return (
                 <>
                     <div className={styles.contentBox}>
                         <h4>Input</h4>
-                        <pre>{JSON.stringify(trace.input, null, 2)}</pre>
+                        <pre>{inputJson}</pre>
                     </div>
                     <div className={styles.contentBox}>
                         <h4>Output</h4>
-                        {/* Output은 문자열이므로 JSON 객체로 감싸서 표시합니다. */}
-                        <pre>{JSON.stringify({ output: trace.output }, null, 2)}</pre>
+                        <pre>{outputJson}</pre>
                     </div>
                 </>
             );
         }
 
-        // Formatted (기본) 뷰
         return (
             <>
                 <div className={styles.contentBox}>
                     <h4>Input</h4>
-                    <pre>{Object.keys(trace.input).length > 0 ? JSON.stringify(trace.input, null, 2) : 'No Input'}</pre>
+                    {/* 수정된 확인 로직을 적용합니다. */}
+                    <pre>{hasInput ? inputJson : 'No Input'}</pre>
                 </div>
                 <div className={styles.contentBox}>
                     <h4>Output</h4>
@@ -101,24 +104,44 @@ const TraceCard: React.FC<{ trace: TraceItem; viewMode: ViewMode; setViewMode: (
 
 const SessionDetail: React.FC = () => {
     const { sessionId } = useParams<{ sessionId: string }>();
-    const [session, setSession] = useState<SessionDetailData | null>(null);
-    // 보기 모드 상태를 부모 컴포넌트에서 관리합니다.
+    const [session, setSession] = useState<UiSessionData | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<ViewMode>('Formatted');
 
     useEffect(() => {
-        if (sessionId === DUMMY_SESSION_DETAILS.id) {
-            setSession(DUMMY_SESSION_DETAILS);
-        }
+        if (!sessionId) return;
+        
+        const loadSessionDetails = async () => {
+            try {
+                setIsLoading(true);
+                setError(null);
+                const data = await fetchSessionDetails(sessionId);
+                setSession(data);
+            } catch (err) {
+                setError(err instanceof Error ? err.message : "An unknown error occurred.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadSessionDetails();
     }, [sessionId]);
 
+    if (isLoading) {
+        return <div className={styles.container}>Loading session details...</div>;
+    }
+    if (error) {
+        return <div className={styles.container} style={{ color: 'red' }}>Error: {error}</div>;
+    }
     if (!session) {
-        return <div className={styles.container}>Loading or session not found...</div>;
+        return <div className={styles.container}>Session not found.</div>;
     }
 
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <h1 className={styles.sessionId}>{session.id}</h1>
+                <h1 className={styles.sessionId}>Session {session.id}</h1>
                 <div className={styles.headerActions}>
                     <Star size={18} className={styles.starIcon} />
                     <button className={styles.actionButton}>Annotate</button>
