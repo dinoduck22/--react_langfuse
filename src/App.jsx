@@ -21,7 +21,7 @@ import SessionDetail from './Pages/Tracing/Sessions/SessionDetail';
 // import DashboardDetail from './pages/Dashboards/DashboardDetail';
 // import WidgetNew from './pages/Dashboards/WidgetNew';
 
-// import SettingsPage from './pages/Settings/SettingsPage';
+import SettingsPage from './Pages/Settings/SettingsPage';
 // import General from './pages/Settings/General';
 // // import ApiKeys from './pages/Settings/ApiKeys';
 // import LLMConnections from "./pages/Settings/LLMConnections";
@@ -58,16 +58,16 @@ export default function App() {
         <Route path="dashboards" element={<Dashboards />} />
         <Route path="dashboards/new" element={<DashboardNew />} />
         <Route path="dashboards/widgets/new" element={<WidgetNew />} />
-        <Route path="dashboards/:dashboardId" element={<DashboardDetail />} />
+        <Route path="dashboards/:dashboardId" element={<DashboardDetail />} /> */}
 
         <Route path="settings" element={<SettingsPage/>}>
-          <Route index element={<General/>}/>
+          {/* <Route index element={<General/>}/>
           <Route path="llm-connections" element={<LLMConnections/>}/>
           <Route path="models" element={<Models/>}/>
           <Route path="scores" element={<Scores/>}/>
-          <Route path="members" element={<Members/>}/>
+          <Route path="members" element={<Members/>}/> */}
         </Route>
-        */}
+       
       </Route>
     </Routes>
   );
