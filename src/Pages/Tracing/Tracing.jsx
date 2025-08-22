@@ -1,11 +1,12 @@
 // src/pages/Tracing/Tracing.jsx
 import { useState, useMemo, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import styles from './Tracing.module.css';
 import { DataTable } from 'components/DataTable/DataTable';
 import { traceTableColumns } from './traceColumns.jsx';
 import SearchInput from 'components/SearchInput/SearchInput';
 import FilterControls from 'components/FilterControls/FilterControls';
-// import TraceDetailPanel from './TraceDetailPanel.jsx'; // 1. TraceDetailPanel import 제거
+import TraceDetailPanel from './TraceDetailPanel.jsx';
 import { useSearch } from '../../hooks/useSearch.js';
 import ColumnVisibilityModal from './ColumnVisibilityModal.jsx';
 import { fetchTraces } from './TracingApi';
@@ -15,19 +16,19 @@ import { handleCreateTrace } from './CreateTrace.jsx';
 
 const Tracing = () => {
   const [activeTab, setActiveTab] = useState('Traces');
-  // const [selectedTrace, setSelectedTrace] = useState(null); // 2. selectedTrace 상태 제거
+  const [selectedTrace, setSelectedTrace] = useState(null);
   const [traces, setTraces] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const [searchType, setSearchType] = useState('IDs / Names');
   const { searchQuery, setSearchQuery, filteredData: filteredTraces } = useSearch(traces, searchType);
-  
   const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
   const [columns, setColumns] = useState(
     traceTableColumns.map(c => ({ ...c, visible: true }))
   );
 
+  // ▼▼▼ 이 함수의 내용을 수정합니다. ▼▼▼
   const loadTraces = async () => {
     try {
       setIsLoading(true);
@@ -44,29 +45,15 @@ const Tracing = () => {
       setIsLoading(false);
     }
   };
+  // ▲▲▲ 여기까지 수정합니다. ▲▲▲
 
-  useEffect(() => {
-    loadTraces();
-  }, []);
-  
-  // 3. handleRowClick 함수 제거 (이제 Link로 처리)
-  
-  const setAllColumnsVisible = (visible) => {
-    setColumns(prev => prev.map(col => ({ ...col, visible })));
-  };
-
-  const toggleColumnVisibility = (key) => {
-    setColumns(prev =>
-      prev.map(col =>
-        col.key === key ? { ...col, visible: !col.visible } : col
-      )
-    );
-  };
-
+  useEffect(() => { loadTraces(); }, []);
+  const handleRowClick = (trace) => { setSelectedTrace(prev => (prev?.id === trace.id ? null : trace)); };
+  const setAllColumnsVisible = (visible) => { setColumns(prev => prev.map(col => ({ ...col, visible }))); };
+  const toggleColumnVisibility = (key) => { setColumns(prev => prev.map(col => col.key === key ? { ...col, visible: !col.visible } : col)); };
   const visibleColumns = useMemo(() => columns.filter(c => c.visible), [columns]);
 
   return (
-    // 4. container 클래스에서 selectedTrace 관련 조건부 스타일 제거
     <div className={styles.container}>
       <div className={styles.listSection}>
         
@@ -87,7 +74,7 @@ const Tracing = () => {
             />
             <FilterControls />
           </div>
-          <div>
+          <div className={styles.filterRightGroup}>
             <FilterButton onClick={() => handleCreateTrace(loadTraces)}>
               <Plus size={16} /> New Trace
             </FilterButton>
@@ -99,25 +86,30 @@ const Tracing = () => {
         
         <div className={styles.contentArea}>
           {activeTab === 'Traces' ? (
-            isLoading ? (
-                <div>Loading traces...</div>
-            ) : error ? (
-                <div style={{ color: 'red' }}>Error: {error}</div>
-            ) : (
+            isLoading ? ( <div>Loading traces...</div> ) : 
+            error ? ( <div style={{ color: 'red' }}>Error: {error}</div> ) : 
+            (
                 <DataTable
                   columns={visibleColumns}
                   data={filteredTraces}
                   keyField="id"
                   renderEmptyState={() => <div>No traces found.</div>}
                   showActions={false}
-                  // 5. onRowClick 및 selectedRowKey props 제거
+                  onRowClick={handleRowClick}
+                  selectedRowKey={selectedTrace?.id || null}
                 />
             )
           ) : ( <div>Observations View</div> )}
         </div>
       </div>
 
-      {/* 6. TraceDetailPanel 컴포넌트 렌더링 코드 제거 */}
+      {selectedTrace && ReactDOM.createPortal(
+        <TraceDetailPanel
+          trace={selectedTrace}
+          onClose={() => setSelectedTrace(null)}
+        />,
+        document.body
+      )}
 
       <ColumnVisibilityModal
         isOpen={isColumnModalOpen}

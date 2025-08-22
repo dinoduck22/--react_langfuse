@@ -27,7 +27,8 @@ export const traceTableColumns = [
       key: 'name',
       header: 'Name',
       // 'to' 경로를 '/trace/'로 수정합니다.
-      accessor: (row) => <Link to={`/trace/${row.id}`} className={styles.traceLink}>{row.name}</Link>,
+      accessor: (row) => row.name,
+      // accessor: (row) => <Link to={`/trace/${row.id}`} className={styles.traceLink}>{row.name}</Link>,
       visible: true,
     },
     {
