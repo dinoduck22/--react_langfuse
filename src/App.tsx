@@ -23,7 +23,7 @@ import WidgetNew from './pages/Dashboards/WidgetNew';
 
 import SettingsPage from './pages/Settings/SettingsPage';
 import General from './pages/Settings/General';
-// import ApiKeys from './pages/Settings/ApiKeys';
+import ApiKeys from './pages/Settings/ApiKeys';
 import LLMConnections from "./pages/Settings/LLMConnections";
 import Models from './pages/Settings/Models';
 import Members from './pages/Settings/Members';
@@ -74,7 +74,7 @@ export default function App() {
         {/* Settings (상대 경로로 선언) */}
         <Route path="settings" element={<SettingsPage/>}>
           <Route index element={<General/>}/>
-          {/* <Route path="api-keys" element={<ApiKeys/>}/> */}
+          <Route path="api-keys" element={<ApiKeys/>}/>
           <Route path="llm-connections" element={<LLMConnections/>}/>
           <Route path="models" element={<Models/>}/>
           <Route path="scores" element={<Scores/>}/>
