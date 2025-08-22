@@ -5,17 +5,17 @@ import { DataTable } from 'components/DataTable/DataTable';
 import { traceTableColumns } from './traceColumns.jsx';
 import SearchInput from 'components/SearchInput/SearchInput';
 import FilterControls from 'components/FilterControls/FilterControls';
-import TraceDetailPanel from './TraceDetailPanel.jsx';
+// import TraceDetailPanel from './TraceDetailPanel.jsx'; // 1. TraceDetailPanel import 제거
 import { useSearch } from '../../hooks/useSearch.js';
 import ColumnVisibilityModal from './ColumnVisibilityModal.jsx';
 import { fetchTraces } from './TracingApi';
 import FilterButton from 'components/FilterButton/FilterButton';
 import { Columns, Plus } from 'lucide-react';
-import { handleCreateTrace } from './CreateTrace.jsx'; // 1. CreateTrace.jsx에서 함수 import
+import { handleCreateTrace } from './CreateTrace.jsx';
 
 const Tracing = () => {
   const [activeTab, setActiveTab] = useState('Traces');
-  const [selectedTrace, setSelectedTrace] = useState(null);
+  // const [selectedTrace, setSelectedTrace] = useState(null); // 2. selectedTrace 상태 제거
   const [traces, setTraces] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -44,16 +44,12 @@ const Tracing = () => {
       setIsLoading(false);
     }
   };
-  
+
   useEffect(() => {
     loadTraces();
   }, []);
   
-  // 2. 이전에 추가했던 handleCreateTrace 로직은 여기서 삭제합니다.
-
-  const handleRowClick = (trace) => {
-    setSelectedTrace(prev => (prev?.id === trace.id ? null : trace));
-  };
+  // 3. handleRowClick 함수 제거 (이제 Link로 처리)
   
   const setAllColumnsVisible = (visible) => {
     setColumns(prev => prev.map(col => ({ ...col, visible })));
@@ -70,7 +66,8 @@ const Tracing = () => {
   const visibleColumns = useMemo(() => columns.filter(c => c.visible), [columns]);
 
   return (
-    <div className={`${styles.container} ${selectedTrace ? styles.containerWithDetail : ''}`}>
+    // 4. container 클래스에서 selectedTrace 관련 조건부 스타일 제거
+    <div className={styles.container}>
       <div className={styles.listSection}>
         
         <div className={styles.tabs}>
@@ -91,7 +88,6 @@ const Tracing = () => {
             <FilterControls />
           </div>
           <div>
-            {/* 3. onClick 핸들러에서 import한 함수를 호출하고, loadTraces를 콜백으로 전달합니다. */}
             <FilterButton onClick={() => handleCreateTrace(loadTraces)}>
               <Plus size={16} /> New Trace
             </FilterButton>
@@ -114,20 +110,14 @@ const Tracing = () => {
                   keyField="id"
                   renderEmptyState={() => <div>No traces found.</div>}
                   showActions={false}
-                  selectedRowKey={selectedTrace?.id || null}
-                  onRowClick={handleRowClick}
+                  // 5. onRowClick 및 selectedRowKey props 제거
                 />
             )
           ) : ( <div>Observations View</div> )}
         </div>
       </div>
 
-      {selectedTrace && (
-        <TraceDetailPanel
-          trace={selectedTrace}
-          onClose={() => setSelectedTrace(null)}
-        />
-      )}
+      {/* 6. TraceDetailPanel 컴포넌트 렌더링 코드 제거 */}
 
       <ColumnVisibilityModal
         isOpen={isColumnModalOpen}
