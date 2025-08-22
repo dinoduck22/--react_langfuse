@@ -1,5 +1,5 @@
 // src/pages/Tracing/Sessions/Sessions.jsx
-import { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import styles from './Sessions.module.css';
 import {
     RefreshCw,
@@ -8,10 +8,10 @@ import {
 } from 'lucide-react';
 import ColumnVisibilityModal from '../ColumnVisibilityModal.jsx';
 import { DataTable } from '../../../components/DataTable/DataTable.jsx'; 
-import { sessionTableColumns } from './sessionColumns'; 
+import { sessionTableColumns } from './sessionColumns.jsx'; // .jsx 확장자 추가
 import FilterButton from '../../../components/FilterButton/FilterButton.jsx';
-import DateRangePicker from '../../../components/DateRange/DateRangePicker';
-import { fetchSessions } from './SessionApi';
+import DateRangePicker from '../../../components/DateRange/DateRangePicker.jsx';
+import { fetchSessions } from './SessionApi.js';
 
 import EnvironmentFilter from '../../../components/FilterControls/EnvironmentFilter.jsx';
 import FilterBuilder from '../../../components/FilterControls/FilterBuilder.jsx';
@@ -93,7 +93,7 @@ const Sessions = () => {
             visible: true
         },
         ...visibleColumns,
-    ], [visibleColumns, sessions]);
+    ], [visibleColumns, sessions, toggleFavorite]); // toggleFavorite을 의존성 배열에 추가
 
     const renderTableContent = () => {
         if (isLoading) {
