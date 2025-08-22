@@ -15,39 +15,46 @@ const formatTraceValue = (value) => {
 
 // API 응답을 UI에서 사용할 데이터 형태로 변환
 const transformDataForUi = (apiData) => {
+  // 스키마에 따라 모든 trace 필드를 추출
   const uiTraces = apiData.traces.map(trace => {
     const outputString = formatTraceValue(trace.output);
-    
-    // metadata가 객체인지 확인하고 error 속성에 접근합니다.
     const hasError = typeof trace.metadata === 'object' && trace.metadata !== null && 'error' in trace.metadata && trace.metadata.error === true;
-    const summary = outputString.substring(0, 100) + (outputString.length > 100 ? '...' : '');
-    const dummyScores = [
-        { name: 'helpfulness', value: Math.random() },
-        { name: 'conciseness', value: Math.random() },
-    ];
+    const summary = trace.name || outputString.substring(0, 100) + (outputString.length > 100 ? '...' : '');
 
     return {
+      // Trace의 모든 필드를 UI 모델에 매핑
       id: trace.id,
-      status: hasError ? 'negative' : 'positive',
+      timestamp: new Date(trace.timestamp),
+      name: trace.name,
       input: trace.input ?? {},
       output: outputString,
-      summary: trace.name ?? summary,
-      timestamp: new Date(trace.timestamp),
-      scores: dummyScores, 
+      sessionId: trace.sessionId,
+      release: trace.release,
+      version: trace.version,
+      userId: trace.userId,
+      metadata: trace.metadata,
+      tags: trace.tags || [],
+      public: trace.public,
+      environment: trace.environment,
+      // 기존 UI 로직 유지
+      status: hasError ? 'negative' : 'positive',
+      summary: summary,
+      scores: [], // score는 session detail api에 없으므로 빈 배열로 초기화
     };
   });
 
+  // Session의 모든 필드를 UI 모델에 매핑
   return {
     id: apiData.id,
+    createdAt: new Date(apiData.createdAt),
+    projectId: apiData.projectId,
+    environment: apiData.environment,
     traces: uiTraces,
   };
 };
 
-
 export const fetchSessionDetails = async (sessionId) => {
     try {
-        // ▼▼▼ 오류 수정 ▼▼▼
-        // { sessionId } 객체 대신 sessionId 문자열을 직접 전달합니다.
         const response = await langfuse.api.sessionsGet(sessionId);
         const apiData = response;
         return transformDataForUi(apiData);

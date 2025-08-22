@@ -195,3 +195,37 @@
   font-weight: 500;
   color: #e2e8f0;
 }
+.metaGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.metaTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e2e8f0;
+  margin: 0 0 4px 0;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.metaItem {
+  display: grid;
+  grid-template-columns: 100px 1fr; /* 라벨과 값의 너비를 고정/가변으로 설정 */
+  gap: 8px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.metaLabel {
+  font-weight: 500;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+
+.metaValue {
+  color: #e2e8f0;
+  white-space: pre-wrap; /* 긴 값은 줄바꿈되도록 설정 */
+  word-break: break-all;
+}
