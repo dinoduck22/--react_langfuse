@@ -8,9 +8,9 @@ import Tracing from './Pages/Tracing/Tracing';
 import Sessions from './Pages/Tracing/Sessions/Sessions';
 import SessionDetail from './Pages/Tracing/Sessions/SessionDetail';
 
-// import Prompts from './pages/Prompts/Prompts';
-// import PromptsDetail from './pages/Prompts/PromptsDetail';
-// import PromptsNew from './pages/Prompts/PromptsNew';
+import Prompts from './Pages/Prompts/Prompts';
+import PromptsDetail from './Pages/Prompts/PromptsDetail';
+import PromptsNew from './Pages/Prompts/PromptsNew';
 
 // import Playground from './pages/Playground/Playground';
 
@@ -42,20 +42,21 @@ export default function App() {
         <Route path="sessions" element={<Sessions />} />
         <Route path="sessions/:sessionId" element={<SessionDetail />} />
 
-        {/* <Route path="prompts" element={<Prompts />} />
+        {/* Prompts */}
+        <Route path="prompts" element={<Prompts />} />
         <Route path="prompts/:id" element={<PromptsDetail />} />
         <Route path="prompts/new" element={<PromptsNew />} />
 
-        <Route path="playground" element={<Playground />} />
+        {/* <Route path="playground" element={<Playground />} /> */}
 
-        <Route path="llm-as-a-judge" element={<JudgePage />} />
+        {/* <Route path="llm-as-a-judge" element={<JudgePage />} /> */}
        
-        <Route path="evaluation" element={<Navigate to="/scores" replace />} />
+        {/* <Route path="evaluation" element={<Navigate to="/scores" replace />} />
         <Route path="evaluation/new" element={<Navigate to="/scores/new" replace />} />
         <Route path="evaluation/:id" element={<Navigate to="/scores/:id" replace />} />
-        <Route path="evaluation/:id/edit" element={<Navigate to="/scores/:id/edit" replace />} />
+        <Route path="evaluation/:id/edit" element={<Navigate to="/scores/:id/edit" replace />} /> */}
 
-        <Route path="dashboards" element={<Dashboards />} />
+        {/* <Route path="dashboards" element={<Dashboards />} />
         <Route path="dashboards/new" element={<DashboardNew />} />
         <Route path="dashboards/widgets/new" element={<WidgetNew />} />
         <Route path="dashboards/:dashboardId" element={<DashboardDetail />} /> */}
