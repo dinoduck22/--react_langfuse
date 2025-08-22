@@ -11,8 +11,9 @@ import { useSearch } from '../../hooks/useSearch.js';
 import ColumnVisibilityModal from './ColumnVisibilityModal.jsx';
 import { fetchTraces } from './TracingApi';
 import FilterButton from 'components/FilterButton/FilterButton';
-import { Columns, Plus } from 'lucide-react';
-import { handleCreateTrace } from './CreateTrace.jsx';
+import { Columns, Plus, Edit } from 'lucide-react';
+import { createTrace, updateTrace } from './CreateTrace.jsx';
+import { langfuse } from '../../lib/langfuse';
 
 const Tracing = () => {
   const [activeTab, setActiveTab] = useState('Traces');
@@ -28,7 +29,6 @@ const Tracing = () => {
     traceTableColumns.map(c => ({ ...c, visible: true }))
   );
 
-  // ▼▼▼ 이 함수의 내용을 수정합니다. ▼▼▼
   const loadTraces = async () => {
     try {
       setIsLoading(true);
@@ -45,9 +45,34 @@ const Tracing = () => {
       setIsLoading(false);
     }
   };
-  // ▲▲▲ 여기까지 수정합니다. ▲▲▲
-
+  
   useEffect(() => { loadTraces(); }, []);
+
+  const handleCreateClick = () => {
+    createTrace(loadTraces);
+  };
+  
+  // "Update Trace" 버튼 클릭 핸들러도 async 함수로 변경
+  const handleUpdateClick = async () => {
+    const traceNameToUpdate = window.prompt("업데이트할 Trace의 Name을 입력하세요:");
+
+    if (!traceNameToUpdate || traceNameToUpdate.trim() === '') {
+      return;
+    }
+
+    const traceToUpdate = traces.find(t => t.name === traceNameToUpdate.trim());
+
+    if (!traceToUpdate) {
+      alert(`Name '${traceNameToUpdate}'에 해당하는 Trace를 찾을 수 없습니다.`);
+      return;
+    }
+
+    const langfuseTraceObject = langfuse.trace({ id: traceToUpdate.id, _dangerouslyIgnoreCorruptData: true });
+
+    // await 키워드 추가
+    await updateTrace(langfuseTraceObject, loadTraces);
+  };
+
   const handleRowClick = (trace) => { setSelectedTrace(prev => (prev?.id === trace.id ? null : trace)); };
   const setAllColumnsVisible = (visible) => { setColumns(prev => prev.map(col => ({ ...col, visible }))); };
   const toggleColumnVisibility = (key) => { setColumns(prev => prev.map(col => col.key === key ? { ...col, visible: !col.visible } : col)); };
@@ -75,9 +100,14 @@ const Tracing = () => {
             <FilterControls />
           </div>
           <div className={styles.filterRightGroup}>
-            <FilterButton onClick={() => handleCreateTrace(loadTraces)}>
+            <FilterButton onClick={handleCreateClick}>
               <Plus size={16} /> New Trace
             </FilterButton>
+
+            <FilterButton onClick={handleUpdateClick} style={{marginLeft: '8px'}}>
+              <Edit size={16} /> Update Trace
+            </FilterButton>
+
             <FilterButton onClick={() => setIsColumnModalOpen(true)} style={{marginLeft: '8px'}}>
               <Columns size={16} /> Columns ({visibleColumns.length}/{columns.length})
             </FilterButton>

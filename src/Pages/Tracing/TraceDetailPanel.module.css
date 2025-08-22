@@ -94,37 +94,148 @@
 }
 
 .body { padding: 16px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; flex-grow: 1;}
+
+/* ▼▼▼ 기존 infoBar 관련 스타일을 아래 내용으로 교체합니다. ▼▼▼ */
 .infoBar {
-  background-color: #161b22;
-  border: 1px solid #30363d;
-  border-radius: 6px;
-  padding: 12px 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
   font-size: 13px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #30363d;
 }
-.infoRow {
+
+.infoBarTop {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
+.infoBarTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #c9d1d9;
+}
+
 .traceName {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
   color: #e6edf3;
 }
-.timestamp { color: #7d8590; }
-.pills { display: flex; gap: 8px; }
-.infoPill {
+
+.idButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: #7d8590;
+  cursor: pointer;
+  font-size: 12px;
+}
+.idButton:hover {
+  color: #c9d1d9;
+}
+
+.infoBarActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.actionButton, .actionButtonSecondary {
   background-color: #21262d;
-  padding: 4px 10px;
-  border-radius: 9999px;
+  border: 1px solid #30363d;
+  color: #c9d1d9;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
 }
-.infoPill span:first-child { color: #7d8590; }
+.actionButton:hover, .actionButtonSecondary:hover {
+  border-color: #8b949e;
+}
+
+.actionButtonSecondary {
+  padding: 6px;
+}
+
+.annotateButton {
+  display: flex;
+}
+.annotateButton button {
+  background-color: #21262d;
+  border: 1px solid #30363d;
+  color: #c9d1d9;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+.annotateButton .annotateButtonChevron {
+  background-color: #21262d;
+  border: 1px solid #30363d;
+  border-left: none;
+  color: #c9d1d9;
+  padding: 6px;
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.annotateButton:hover button, .annotateButton:hover .annotateButtonChevron {
+  border-color: #8b949e;
+}
+
+
+.infoBarBottom {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.timestamp { 
+  color: #7d8590;
+  font-size: 13px;
+}
+.pills { 
+  display: flex; 
+  gap: 8px; 
+  align-items: center;
+}
+
+.pill {
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pillUser {
+  background-color: #e6edf3;
+  color: #0d1117;
+}
+
+.pillEnv {
+  background-color: #30363d;
+  color: #e6edf3;
+}
+
+/* ▲▲▲ infoBar 스타일 교체 완료 ▲▲▲ */
+
+
 .contentCard {
   background-color: #161b22;
   border: 1px solid #30363d;
@@ -133,7 +244,7 @@
 }
 
 .cardHeader {
-  position: relative; /* 복사 버튼을 위한 기준점 */
+  position: relative;
   padding: 10px 16px;
   border-bottom: 1px solid #30363d;
   display: flex;
@@ -154,7 +265,6 @@
 }
 .cardBody pre {
   margin: 0;
-  /* 개발자 친화적인 D2Coding 폰트 적용 */
   font-family: 'D2Coding', 'Courier New', monospace;
   white-space: pre-wrap;
   word-break: break-word;
@@ -177,13 +287,11 @@
   padding-right: 16px;
 }
 
-/* ▼▼▼ 아래 스타일들을 파일 하단에 추가해주세요. ▼▼▼ */
-
 /* Formatted / JSON 토글 버튼 컨테이너 */
 .formatToggle {
   display: flex;
-  justify-content: flex-end; /* 오른쪽 정렬 */
-  margin-bottom: -8px; /* 아래 카드와의 간격 조정 */
+  justify-content: flex-end;
+  margin-bottom: 8px; /* 아래 카드와의 간격 */
 }
 
 /* 토글 버튼 개별 스타일 */
@@ -204,7 +312,6 @@
   border-top-right-radius: 6px;
   border-bottom-right-radius: 6px;
 }
-/* 활성화된 버튼 스타일 */
 .toggleButton.active {
   background-color: #30363d;
   color: #e6edf3;
@@ -230,8 +337,8 @@
 
 /* 이미지와 유사한 Output 카드 스타일 */
 .outputCard .cardBody {
-  background-color: #112a20; /* 짙은 녹색 배경 */
+  background-color: #112a20;
 }
 .outputCard .cardBody pre {
-  color: #6ee7b7; /* 밝은 녹색 텍스트 */
+  color: #6ee7b7;
 }

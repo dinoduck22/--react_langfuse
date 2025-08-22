@@ -1,7 +1,7 @@
 // src/Pages/Tracing/TraceDetailView.jsx
 import React, { useState } from 'react';
 import styles from './TraceDetailPanel.module.css';
-import { Copy } from 'lucide-react';
+import { Copy, List, Clipboard, Plus, SquarePen, ChevronDown, MessageSquare } from 'lucide-react';
 import Toast from '../../components/Toast/Toast';
 
 const TraceDetailView = ({ details, isLoading, error }) => {
@@ -9,10 +9,10 @@ const TraceDetailView = ({ details, isLoading, error }) => {
   const [viewFormat, setViewFormat] = useState('Formatted');
   const [toastInfo, setToastInfo] = useState({ isVisible: false, message: '' });
 
-  const handleCopy = (text) => {
+  const handleCopy = (text, type) => {
     navigator.clipboard.writeText(text)
       .then(() => {
-        setToastInfo({ isVisible: true, message: '클립보드에 복사되었습니다.' });
+        setToastInfo({ isVisible: true, message: `${type}이(가) 클립보드에 복사되었습니다.` });
       })
       .catch(err => {
         console.error("복사에 실패했습니다.", err);
@@ -20,9 +20,7 @@ const TraceDetailView = ({ details, isLoading, error }) => {
       });
   };
 
-  // 2. viewFormat 상태에 따라 콘텐츠를 다르게 렌더링하는 함수입니다.
   const renderContent = (title, data, type = 'default') => {
-    // 'JSON' 버튼이 활성화되면 JSON.stringify를 사용해 데이터를 보기 좋게 변환합니다.
     const content = viewFormat === 'JSON'
       ? JSON.stringify(data, null, 2)
       : (data === null || data === undefined ? 'null' : String(data));
@@ -33,7 +31,7 @@ const TraceDetailView = ({ details, isLoading, error }) => {
       <div className={`${styles.contentCard} ${cardStyle}`}>
         <div className={styles.cardHeader}>
           <h3 className={styles.cardTitle}>{title}</h3>
-          <button className={styles.copyButton} onClick={() => handleCopy(content)} title="Copy content">
+          <button className={styles.copyButton} onClick={() => handleCopy(content, title)} title="Copy content">
             <Copy size={14} />
           </button>
         </div>
@@ -57,24 +55,50 @@ const TraceDetailView = ({ details, isLoading, error }) => {
         isVisible={toastInfo.isVisible}
         onClose={() => setToastInfo({ isVisible: false, message: '' })}
       />
+      {/* ▼▼▼ infoBar 영역을 새로운 구조로 변경합니다. ▼▼▼ */}
       <div className={styles.infoBar}>
-        <div className={styles.infoRow}>
-          <span className={styles.traceName}>{details.name}</span>
-          <span className={styles.timestamp}>{new Date(details.timestamp).toLocaleString()}</span>
-        </div>
-        <div className={styles.infoRow}>
-          <div className={styles.pills}>
-            <div className={styles.infoPill}>
-              <span>User ID:</span>
-              <span>{details.userId ?? 'N/A'}</span>
+        <div className={styles.infoBarTop}>
+          <div className={styles.infoBarTitle}>
+            <List size={20} />
+            <h2 className={styles.traceName}>{details.name}</h2>
+            <button 
+              className={styles.idButton} 
+              title="Copy ID" 
+              onClick={() => handleCopy(details.id, 'ID')}
+            >
+              <Clipboard size={12} /> ID
+            </button>
+          </div>
+          <div className={styles.infoBarActions}>
+            <button className={styles.actionButton}>
+              <Plus size={14} /> Add to datasets
+            </button>
+            <div className={styles.annotateButton}>
+              <button>
+                <SquarePen size={14} /> Annotate
+              </button>
+              <div className={styles.annotateButtonChevron}>
+                <ChevronDown size={16} />
+              </div>
             </div>
-            <div className={styles.infoPill}>
-              <span>Env:</span>
-              <span>{details.environment ?? 'default'}</span>
+            <button className={`${styles.iconButton} ${styles.actionButtonSecondary}`}>
+              <MessageSquare size={16} />
+            </button>
+          </div>
+        </div>
+        <div className={styles.infoBarBottom}>
+          <span className={styles.timestamp}>{new Date(details.timestamp).toISOString()}</span>
+          <div className={styles.pills}>
+            <div className={`${styles.pill} ${styles.pillUser}`}>
+              User ID: {details.userId ?? 'N/A'}
+            </div>
+            <div className={`${styles.pill} ${styles.pillEnv}`}>
+              Env: {details.environment ?? 'default'}
             </div>
           </div>
         </div>
       </div>
+      {/* ▲▲▲ infoBar 영역 수정 완료 ▲▲▲ */}
 
       {/* 3. 이 버튼들이 클릭될 때 setViewFormat이 호출되어 viewFormat 상태를 변경합니다. */}
       <div className={styles.formatToggle}>
