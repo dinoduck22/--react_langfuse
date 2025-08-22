@@ -2,15 +2,16 @@
 import { useState, useMemo, useEffect } from 'react';
 import styles from './Tracing.module.css';
 import { DataTable } from 'components/DataTable/DataTable';
-import { traceTableColumns } from './traceColumns.jsx'; // .jsx로 확장자 변경
+import { traceTableColumns } from './traceColumns.jsx';
 import SearchInput from 'components/SearchInput/SearchInput';
 import FilterControls from 'components/FilterControls/FilterControls';
-import TraceDetailPanel from './TraceDetailPanel.jsx'; // .jsx로 확장자 변경
+import TraceDetailPanel from './TraceDetailPanel.jsx';
 import { useSearch } from '../../hooks/useSearch.js';
-import ColumnVisibilityModal from './ColumnVisibilityModal.jsx'; // .jsx로 확장자 변경
+import ColumnVisibilityModal from './ColumnVisibilityModal.jsx';
 import { fetchTraces } from './TracingApi';
 import FilterButton from 'components/FilterButton/FilterButton';
-import { Columns } from 'lucide-react';
+import { Columns, Plus } from 'lucide-react';
+import { handleCreateTrace } from './CreateTrace.jsx'; // 1. CreateTrace.jsx에서 함수 import
 
 const Tracing = () => {
   const [activeTab, setActiveTab] = useState('Traces');
@@ -27,26 +28,29 @@ const Tracing = () => {
     traceTableColumns.map(c => ({ ...c, visible: true }))
   );
 
-  useEffect(() => {
-    const loadTraces = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const fetchedTraces = await fetchTraces();
-        setTraces(fetchedTraces);
-      } catch (err) {
-        if (err instanceof Error) {
-            setError(err.message);
-        } else {
-            setError("알 수 없는 오류가 발생했습니다.");
-        }
-      } finally {
-        setIsLoading(false);
+  const loadTraces = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const fetchedTraces = await fetchTraces();
+      setTraces(fetchedTraces);
+    } catch (err) {
+      if (err instanceof Error) {
+          setError(err.message);
+      } else {
+          setError("알 수 없는 오류가 발생했습니다.");
       }
-    };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  useEffect(() => {
     loadTraces();
   }, []);
   
+  // 2. 이전에 추가했던 handleCreateTrace 로직은 여기서 삭제합니다.
+
   const handleRowClick = (trace) => {
     setSelectedTrace(prev => (prev?.id === trace.id ? null : trace));
   };
@@ -86,9 +90,15 @@ const Tracing = () => {
             />
             <FilterControls />
           </div>
-          <FilterButton onClick={() => setIsColumnModalOpen(true)}>
-            <Columns size={16} /> Columns ({visibleColumns.length}/{columns.length})
-          </FilterButton>
+          <div>
+            {/* 3. onClick 핸들러에서 import한 함수를 호출하고, loadTraces를 콜백으로 전달합니다. */}
+            <FilterButton onClick={() => handleCreateTrace(loadTraces)}>
+              <Plus size={16} /> New Trace
+            </FilterButton>
+            <FilterButton onClick={() => setIsColumnModalOpen(true)} style={{marginLeft: '8px'}}>
+              <Columns size={16} /> Columns ({visibleColumns.length}/{columns.length})
+            </FilterButton>
+          </div>
         </div>
         
         <div className={styles.contentArea}>
