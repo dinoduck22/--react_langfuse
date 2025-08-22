@@ -5,7 +5,6 @@ import Layout from './layouts/Layout';
 // import Home from './pages/Home/Home';
 
 import Tracing from './Pages/Tracing/Tracing';
-import TraceDetail from './Pages/Tracing/TraceDetail';
 import Sessions from './Pages/Tracing/Sessions/Sessions';
 import SessionDetail from './Pages/Tracing/Sessions/SessionDetail';
 
@@ -40,7 +39,6 @@ export default function App() {
 
         {/* Tracing */}
         <Route path="trace" element={<Tracing />} />
-        <Route path="trace/:traceId" element={<TraceDetail />} /> 
         <Route path="sessions" element={<Sessions />} />
         <Route path="sessions/:sessionId" element={<SessionDetail />} />
 
