@@ -3,11 +3,12 @@ import React, { useState } from 'react';
 import styles from './TraceDetailView.module.css';
 import { Copy, List, Clipboard, Plus, SquarePen, ChevronDown, MessageSquare, Info } from 'lucide-react';
 import Toast from '../../components/Toast/Toast';
-import SidePanel from 'components/SidePanel/SidePanel'; // SidePanel 임포트
-import Comments from 'components/Comments/Comments'; // Comments 임포트
-import { dummyComments } from 'data/dummyComments'; // 임시 데이터 임포트
+import SidePanel from '../../components/SidePanel/SidePanel'; // SidePanel 임포트
+import Comments from '../../components/Comments/Comments'; // Comments 임포트
+import { dummyComments } from '../../data/dummyComments'; // 임시 데이터 임포트
+import AddToDatasetModal from '../../components/AddToDatasetModal/AddToDatasetModal'; // AddToDatasetModal 임포트
 
-// FormattedTable 컴포넌트는 이전과 동일
+// FormattedTable 컴포넌트
 const FormattedTable = ({ data }) => {
   if (typeof data !== 'object' || data === null || Array.isArray(data)) {
     return <pre>{data}</pre>;
@@ -38,12 +39,13 @@ const FormattedTable = ({ data }) => {
   );
 };
 
-
+// 메인 TraceDetailView 컴포넌트
 const TraceDetailView = ({ details, isLoading, error }) => {
   const [viewFormat, setViewFormat] = useState('Formatted');
   const [toastInfo, setToastInfo] = useState({ isVisible: false, message: '' });
-  const [isCommentsOpen, setIsCommentsOpen] = useState(false); // 댓글 패널 상태
-  const [comments, setComments] = useState(dummyComments); // 댓글 목록 상태
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [comments, setComments] = useState(dummyComments);
+  const [isDatasetModalOpen, setIsDatasetModalOpen] = useState(false); // AddToDatasetModal 상태 추가
 
   // 새 댓글 추가 핸들러
   const handleAddComment = (content) => {
@@ -108,10 +110,9 @@ const TraceDetailView = ({ details, isLoading, error }) => {
   const formatTimestamp = (isoString) => {
     if (!isoString) return 'N/A';
     const date = new Date(isoString);
-    return date.toISOString().replace('T', ' ').substring(0, 23); // YYYY-MM-DD HH:mm:ss.sss 형식
+    return date.toISOString().replace('T', ' ').substring(0, 23);
   };
 
-  // Observation의 usage 정보를 포맷팅하는 함수
   const formatUsage = (usage) => {
     if (!usage || (usage.input == null && usage.output == null)) return null;
     const input = usage.input ?? 0;
@@ -141,20 +142,21 @@ const TraceDetailView = ({ details, isLoading, error }) => {
             </button>
           </div>
           <div className={styles.infoBarActions}>
-             {/* Observation일 때는 Playground 버튼 추가 */}
             {isObservation ? (
                 <div className={styles.annotateButton}>
-                    <button>_ Playground</button>
+                    <button>Playground</button>
                     <div className={styles.annotateButtonChevron}>
                         <ChevronDown size={16} />
                     </div>
                 </div>
             ) : (
-                <button className={styles.actionButton}>
+                <button
+                  className={styles.actionButton}
+                  onClick={() => setIsDatasetModalOpen(true)}
+                >
                     <Plus size={14} /> Add to datasets
                 </button>
             )}
-
             {!isObservation && (
                  <div className={styles.annotateButton}>
                     <button>
@@ -165,7 +167,6 @@ const TraceDetailView = ({ details, isLoading, error }) => {
                     </div>
                 </div>
             )}
-            {/* Comments 버튼에 onClick 핸들러 추가 */}
             <button
               className={`${styles.iconButton} ${styles.actionButtonSecondary}`}
               onClick={() => setIsCommentsOpen(true)}
@@ -174,15 +175,11 @@ const TraceDetailView = ({ details, isLoading, error }) => {
             </button>
           </div>
         </div>
-
-        {/* --- infoBarBottom JSX 구조 수정 --- */}
         <div className={styles.infoBarBottom}>
           <span className={styles.timestamp}>
             {formatTimestamp(isObservation ? details.startTime : details.timestamp)}
           </span>
-
           {isObservation ? (
-            // Observation View
             <>
               <div className={styles.pills}>
                 {details.latency != null && (
@@ -218,7 +215,6 @@ const TraceDetailView = ({ details, isLoading, error }) => {
               </div>
             </>
           ) : (
-            // Trace View
             <>
               <div className={styles.pills}>
                 {details.sessionId && (
@@ -255,7 +251,6 @@ const TraceDetailView = ({ details, isLoading, error }) => {
             </>
           )}
         </div>
-        {/* --- 여기까지 --- */}
       </div>
 
       <div className={styles.formatToggle}>
@@ -290,7 +285,14 @@ const TraceDetailView = ({ details, isLoading, error }) => {
         </div>
       </div>
 
-      {/* SidePanel 및 Comments 렌더링 */}
+      <AddToDatasetModal
+        isOpen={isDatasetModalOpen}
+        onClose={() => setIsDatasetModalOpen(false)}
+        input={details?.input}
+        output={details?.output}
+        metadata={details?.metadata}
+      />
+
       <SidePanel
         title="Comments"
         isOpen={isCommentsOpen}
