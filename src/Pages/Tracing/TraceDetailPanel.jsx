@@ -1,17 +1,63 @@
 // src/pages/Tracing/TraceDetailPanel.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { X, Maximize, Minimize, HardDrive } from 'lucide-react';
 import { fetchTraceDetails } from './TraceDetailApi';
+import { fetchObservationDetails } from './ObservationDetailApi'; // Observation API import
 import styles from './TraceDetailPanel.module.css';
 import TraceDetailView from './TraceDetailView';
-import TraceTimeline from './TraceTimeline'; // Timeline 컴포넌트 import
+import TraceTimeline from './TraceTimeline';
 
 const TraceDetailPanel = ({ trace, onClose }) => {
-  const [details, setDetails] = useState(null);
+  const [traceDetails, setTraceDetails] = useState(null);
+  const [viewData, setViewData] = useState(null); // 표시될 데이터 (Trace 또는 Observation)
+  const [selectedObservationId, setSelectedObservationId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isMaximized, setIsMaximized] = useState(false);
   const panelRef = useRef(null);
+
+  // Trace 기본 정보 로드
+  useEffect(() => {
+    if (!trace.id) return;
+    const loadTrace = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const details = await fetchTraceDetails(trace.id);
+        setTraceDetails(details);
+        setViewData(details); // 처음에는 Trace 정보를 보여줌
+      } catch (err) {
+        setError("Trace 상세 정보를 불러오는 데 실패했습니다.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadTrace();
+  }, [trace.id]);
+
+  // 선택된 Observation이 변경되면 해당 상세 정보를 로드
+  useEffect(() => {
+    const loadObservation = async () => {
+      if (!selectedObservationId) {
+        setViewData(traceDetails); // Observation 선택 해제 시 Trace 정보로 복귀
+        return;
+      }
+      setIsLoading(true);
+      try {
+        const obsDetails = await fetchObservationDetails(selectedObservationId);
+        setViewData(obsDetails);
+      } catch (err) {
+        setError("Observation 상세 정보를 불러오는 데 실패했습니다.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadObservation();
+  }, [selectedObservationId, traceDetails]);
+  
+  const handleObservationSelect = useCallback((observationId) => {
+    setSelectedObservationId(observationId);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -24,23 +70,6 @@ const TraceDetailPanel = ({ trace, onClose }) => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [onClose]);
-
-  useEffect(() => {
-    if (!trace.id) return;
-    const loadDetails = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const traceDetails = await fetchTraceDetails(trace.id);
-        setDetails(traceDetails);
-      } catch (err) {
-        setError("상세 정보를 불러오는 데 실패했습니다.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadDetails();
-  }, [trace.id]);
 
   return (
     <div ref={panelRef} className={`${styles.panel} ${isMaximized ? styles.maximized : ''}`}>
@@ -65,13 +94,12 @@ const TraceDetailPanel = ({ trace, onClose }) => {
           </button>
         </div>
       </div>
-      {/* 2단 그리드 레이아웃으로 변경 */}
       <div className={styles.panelBody}>
         <div className={styles.timelineSection}>
-          <TraceTimeline details={details} isLoading={isLoading} error={error} />
+          <TraceTimeline details={traceDetails} onObservationSelect={handleObservationSelect} />
         </div>
         <div className={styles.detailSection}>
-          <TraceDetailView details={details} isLoading={isLoading} error={error} />
+          <TraceDetailView details={viewData} isLoading={isLoading} error={error} />
         </div>
       </div>
     </div>

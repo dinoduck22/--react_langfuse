@@ -8,7 +8,7 @@ import { langfuse } from '../../lib/langfuse';
 export const createTrace = async (callback) => {
   try {
     const trace = langfuse.trace({
-      name: "chat-app-session-test4",
+      name: "chat-app-session-test5",
       userId: "user_0822",
       sessionId: "session-l",
       metadata: { user: "user@wini-tech.com", from: "createTrace function" },

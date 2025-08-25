@@ -5,12 +5,12 @@ import { Copy, List, Clipboard, Plus, SquarePen, ChevronDown, MessageSquare } fr
 import Toast from '../../components/Toast/Toast';
 
 const TraceDetailView = ({ details, isLoading, error }) => {
-  // 1. 'Formatted'와 'JSON' 뷰 상태를 관리하는 State입니다.
   const [viewFormat, setViewFormat] = useState('Formatted');
   const [toastInfo, setToastInfo] = useState({ isVisible: false, message: '' });
 
   const handleCopy = (text, type) => {
-    navigator.clipboard.writeText(text)
+    const textToCopy = typeof text === 'object' ? JSON.stringify(text, null, 2) : String(text);
+    navigator.clipboard.writeText(textToCopy)
       .then(() => {
         setToastInfo({ isVisible: true, message: `${type}이(가) 클립보드에 복사되었습니다.` });
       })
@@ -23,7 +23,7 @@ const TraceDetailView = ({ details, isLoading, error }) => {
   const renderContent = (title, data, type = 'default') => {
     const content = viewFormat === 'JSON'
       ? JSON.stringify(data, null, 2)
-      : (data === null || data === undefined ? 'null' : String(data));
+      : (data === null || data === undefined ? 'null' : typeof data === 'object' ? JSON.stringify(data, null, 2) : String(data));
     
     const cardStyle = type === 'output' ? styles.outputCard : '';
 
@@ -41,12 +41,17 @@ const TraceDetailView = ({ details, isLoading, error }) => {
       </div>
     );
   };
-
+  
   if (isLoading) return <div className={styles.body}>Loading details...</div>;
   if (error) return <div className={styles.body} style={{ color: 'red' }}>{error}</div>;
   if (!details) return <div className={styles.body}>No details available.</div>;
 
+  // 데이터가 Observation인지 Trace인지 확인 (type 필드 유무로 구분)
+  const isObservation = 'type' in details && ('traceId' in details);
+
   const metadata = details.metadata ?? {};
+  const name = details.name ?? 'N/A';
+  const id = details.id;
 
   return (
     <div className={styles.body}>
@@ -55,16 +60,15 @@ const TraceDetailView = ({ details, isLoading, error }) => {
         isVisible={toastInfo.isVisible}
         onClose={() => setToastInfo({ isVisible: false, message: '' })}
       />
-      {/* ▼▼▼ infoBar 영역을 새로운 구조로 변경합니다. ▼▼▼ */}
       <div className={styles.infoBar}>
         <div className={styles.infoBarTop}>
           <div className={styles.infoBarTitle}>
             <List size={20} />
-            <h5 className={styles.traceName}>{details.name}</h5>
+            <h2 className={styles.traceName}>{name}</h2>
             <button 
               className={styles.idButton} 
               title="Copy ID" 
-              onClick={() => handleCopy(details.id, 'ID')}
+              onClick={() => handleCopy(id, 'ID')}
             >
               <Clipboard size={12} /> ID
             </button>
@@ -87,7 +91,12 @@ const TraceDetailView = ({ details, isLoading, error }) => {
           </div>
         </div>
         <div className={styles.infoBarBottom}>
-          <span className={styles.timestamp}>{new Date(details.timestamp).toISOString()}</span>
+          <span className={styles.timestamp}>
+            {isObservation 
+              ? new Date(details.startTime).toISOString()
+              : new Date(details.timestamp).toISOString()
+            }
+          </span>
           <div className={styles.pills}>
             <div className={`${styles.pill} ${styles.pillUser}`}>
               User ID: {details.userId ?? 'N/A'}
@@ -98,9 +107,7 @@ const TraceDetailView = ({ details, isLoading, error }) => {
           </div>
         </div>
       </div>
-      {/* ▲▲▲ infoBar 영역 수정 완료 ▲▲▲ */}
 
-      {/* 3. 이 버튼들이 클릭될 때 setViewFormat이 호출되어 viewFormat 상태를 변경합니다. */}
       <div className={styles.formatToggle}>
         <button
           className={`${styles.toggleButton} ${viewFormat === 'Formatted' ? styles.active : ''}`}
@@ -118,6 +125,9 @@ const TraceDetailView = ({ details, isLoading, error }) => {
 
       {renderContent("Input", details.input, 'input')}
       {renderContent("Output", details.output, 'output')}
+      
+      {/* Observation일 경우 모델 파라미터 추가 표시 */}
+      {isObservation && details.modelParameters && renderContent("Model Parameters", details.modelParameters)}
 
       <div className={styles.contentCard}>
         <div className={styles.cardHeader}>
