@@ -3,6 +3,9 @@ import React, { useState } from 'react';
 import styles from './TraceDetailView.module.css';
 import { Copy, List, Clipboard, Plus, SquarePen, ChevronDown, MessageSquare, Info } from 'lucide-react';
 import Toast from '../../components/Toast/Toast';
+import SidePanel from 'components/SidePanel/SidePanel'; // SidePanel 임포트
+import Comments from 'components/Comments/Comments'; // Comments 임포트
+import { dummyComments } from 'data/dummyComments'; // 임시 데이터 임포트
 
 // FormattedTable 컴포넌트는 이전과 동일
 const FormattedTable = ({ data }) => {
@@ -39,6 +42,20 @@ const FormattedTable = ({ data }) => {
 const TraceDetailView = ({ details, isLoading, error }) => {
   const [viewFormat, setViewFormat] = useState('Formatted');
   const [toastInfo, setToastInfo] = useState({ isVisible: false, message: '' });
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false); // 댓글 패널 상태
+  const [comments, setComments] = useState(dummyComments); // 댓글 목록 상태
+
+  // 새 댓글 추가 핸들러
+  const handleAddComment = (content) => {
+    const newComment = {
+      id: Date.now(),
+      author: 'test',
+      email: 'test@test.test',
+      timestamp: '0 minutes ago',
+      content,
+    };
+    setComments(prev => [newComment, ...prev]);
+  };
 
   const handleCopy = (text, type) => {
     const textToCopy = typeof text === 'object' ? JSON.stringify(text, null, 2) : String(text);
@@ -137,7 +154,7 @@ const TraceDetailView = ({ details, isLoading, error }) => {
                     <Plus size={14} /> Add to datasets
                 </button>
             )}
-            
+
             {!isObservation && (
                  <div className={styles.annotateButton}>
                     <button>
@@ -148,7 +165,11 @@ const TraceDetailView = ({ details, isLoading, error }) => {
                     </div>
                 </div>
             )}
-            <button className={`${styles.iconButton} ${styles.actionButtonSecondary}`}>
+            {/* Comments 버튼에 onClick 핸들러 추가 */}
+            <button
+              className={`${styles.iconButton} ${styles.actionButtonSecondary}`}
+              onClick={() => setIsCommentsOpen(true)}
+            >
               <MessageSquare size={16} />
             </button>
           </div>
@@ -159,7 +180,7 @@ const TraceDetailView = ({ details, isLoading, error }) => {
           <span className={styles.timestamp}>
             {formatTimestamp(isObservation ? details.startTime : details.timestamp)}
           </span>
-          
+
           {isObservation ? (
             // Observation View
             <>
@@ -268,6 +289,15 @@ const TraceDetailView = ({ details, isLoading, error }) => {
           }
         </div>
       </div>
+
+      {/* SidePanel 및 Comments 렌더링 */}
+      <SidePanel
+        title="Comments"
+        isOpen={isCommentsOpen}
+        onClose={() => setIsCommentsOpen(false)}
+      >
+        <Comments comments={comments} onAddComment={handleAddComment} />
+      </SidePanel>
     </div>
   );
 };

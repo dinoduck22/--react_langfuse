@@ -1,33 +1,47 @@
-import React, { useEffect } from 'react';
-import { X } from 'lucide-react'
+import React, { useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
+import { X } from 'lucide-react';
 import styles from './SidePanel.module.css';
 
-const SidePanel = ({ children, isOpen, onClose }) => {
-    useEffect(() => {
-        const handleKeyDown = (event) => {
-            if (event.key === 'Escape') {
-                onClose();
-            }
-        };
+const SidePanel = ({ title, isOpen, onClose, children }) => {
+  const panelRef = useRef(null);
 
-        document.addEventListener('keydown', handleKeyDown);
-        return () => {
-            document.removeEventListener('keydown', handleKeyDown);
-        };
-    }, [onClose]);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (panelRef.current && !panelRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
 
-    return (
-        <div className = { `${ styles.backdrop } ${ isOpen ? styles['backdrop--open'] : ''}` } onClick = { onClose }>
-            <div className = { `${ styles.panel } ${ isOpen ? styles['panel--open'] : ''}` } onClick = { (e) => e.stopPropagation() }>
-                <div className = { styles.header }>
-                    <button onClick = { onClose } className = { styles.closeButton }><X size = { 16 } /></button>
-                </div>
-                <div className = { styles.body }>
-                    { children }
-                </div>
-            </div>
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen) {
+    return null;
+  }
+
+  return ReactDOM.createPortal(
+    <div className={styles.overlay}>
+      <div ref={panelRef} className={styles.panel}>
+        <div className={styles.header}>
+          <h3 className={styles.title}>{title}</h3>
+          <button onClick={onClose} className={styles.closeButton}>
+            <X size={20} />
+          </button>
         </div>
-    );
+        <div className={styles.body}>
+          {children}
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
 };
 
 export default SidePanel;
