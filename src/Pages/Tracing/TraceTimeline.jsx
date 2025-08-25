@@ -1,8 +1,82 @@
 // src/Pages/Tracing/TraceTimeline.jsx
 import React, { useState, useEffect } from 'react';
 import styles from './TraceTimeline.module.css';
-import { MessageSquare, Loader, AlertTriangle } from 'lucide-react';
+import { 
+  MessageSquare, 
+  Loader, 
+  AlertTriangle, 
+  ArrowRightLeft, 
+  ChevronDown,
+  MessageCircle,
+  Search,
+  SlidersHorizontal,
+  Download,
+  GitBranch
+} from 'lucide-react';
 import { fetchObservationsForTrace } from './TraceTimelineApi';
+
+// 재귀적으로 노드를 렌더링하는 컴포넌트
+const ObservationNode = ({ node, allNodes, level, selectedId, onSelect }) => {
+  const children = allNodes.filter(n => n.parentObservationId === node.id);
+  const isSelected = selectedId === node.id;
+
+  // 아이콘 결정 로직
+  const getIcon = (type) => {
+    switch (type) {
+      case 'SPAN':
+        return <ArrowRightLeft size={16} />;
+      case 'GENERATION':
+        return <GitBranch size={16} className={styles.generationIcon} />;
+      default:
+        return <MessageSquare size={16} />;
+    }
+  };
+
+  return (
+    <li className={styles.nodeContainer}>
+      <div 
+        className={`${styles.timelineItem} ${isSelected ? styles.selected : ''}`}
+        style={{ paddingLeft: `${level * 24}px` }}
+        onClick={() => onSelect(node.id)}
+      >
+        <div className={styles.itemLineage}>
+          {Array.from({ length: level }).map((_, i) => <div key={i} className={styles.lineSegment}></div>)}
+        </div>
+        <div className={styles.itemIcon}>{getIcon(node.type)}</div>
+        <div className={styles.itemContent}>
+          <div className={styles.itemHeader}>
+            <span className={styles.itemName}>{node.name}</span>
+            <span className={styles.latency}>{node.latency.toFixed(2)}s</span>
+          </div>
+          {node.scores && (
+            <div className={styles.scoreTags}>
+              {node.scores.map(score => (
+                <span key={score.name} className={styles.scoreTag}>
+                  {score.name}: {score.value.toFixed(2)} <MessageCircle size={12} />
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+        <ChevronDown size={16} className={styles.chevron} />
+      </div>
+      {children.length > 0 && (
+        <ul className={styles.nodeChildren}>
+          {children.map(child => (
+            <ObservationNode 
+              key={child.id} 
+              node={child} 
+              allNodes={allNodes} 
+              level={level + 1}
+              selectedId={selectedId}
+              onSelect={onSelect}
+            />
+          ))}
+        </ul>
+      )}
+    </li>
+  );
+};
 
 const TraceTimeline = ({ details, onObservationSelect }) => {
   const [observations, setObservations] = useState([]);
