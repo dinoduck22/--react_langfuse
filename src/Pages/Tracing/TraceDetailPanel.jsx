@@ -1,22 +1,22 @@
-// src/pages/Tracing/TraceDetailPanel.jsx
+// src/Pages/Tracing/TraceDetailPanel.jsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { X, Maximize, Minimize, HardDrive } from 'lucide-react';
 import { fetchTraceDetails } from './TraceDetailApi';
-import { fetchObservationDetails } from './ObservationDetailApi'; // Observation API import
+import { fetchObservationDetails } from './ObservationDetailApi';
 import styles from './TraceDetailPanel.module.css';
 import TraceDetailView from './TraceDetailView';
 import TraceTimeline from './TraceTimeline';
 
 const TraceDetailPanel = ({ trace, onClose }) => {
   const [traceDetails, setTraceDetails] = useState(null);
-  const [viewData, setViewData] = useState(null); // 표시될 데이터 (Trace 또는 Observation)
+  const [viewData, setViewData] = useState(null);
   const [selectedObservationId, setSelectedObservationId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isMaximized, setIsMaximized] = useState(false);
   const panelRef = useRef(null);
 
-  // Trace 기본 정보 로드
+  // Trace 기본 정보 로드 (변경 없음)
   useEffect(() => {
     if (!trace.id) return;
     const loadTrace = async () => {
@@ -25,7 +25,7 @@ const TraceDetailPanel = ({ trace, onClose }) => {
       try {
         const details = await fetchTraceDetails(trace.id);
         setTraceDetails(details);
-        setViewData(details); // 처음에는 Trace 정보를 보여줌
+        setViewData(details);
       } catch (err) {
         setError("Trace 상세 정보를 불러오는 데 실패했습니다.");
       } finally {
@@ -35,11 +35,11 @@ const TraceDetailPanel = ({ trace, onClose }) => {
     loadTrace();
   }, [trace.id]);
 
-  // 선택된 Observation이 변경되면 해당 상세 정보를 로드
+  // Observation 상세 정보 로드 (변경 없음)
   useEffect(() => {
     const loadObservation = async () => {
       if (!selectedObservationId) {
-        setViewData(traceDetails); // Observation 선택 해제 시 Trace 정보로 복귀
+        setViewData(traceDetails);
         return;
       }
       setIsLoading(true);
@@ -59,9 +59,17 @@ const TraceDetailPanel = ({ trace, onClose }) => {
     setSelectedObservationId(observationId);
   }, []);
 
+  // ✅ 외부 클릭 감지 로직 수정
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (panelRef.current && !panelRef.current.contains(event.target)) {
+      // 1. 패널 DOM 요소가 존재하고,
+      // 2. 클릭된 지점이 패널 내부에 있지 않으며,
+      // 3. 클릭된 지점이 다른 모달이나 패널의 일부가 아닌 경우에만 닫기
+      if (
+        panelRef.current &&
+        !panelRef.current.contains(event.target) &&
+        !event.target.closest('[data-is-portal]') // data-is-portal 속성을 가진 부모가 없는 경우
+      ) {
         onClose();
       }
     };
