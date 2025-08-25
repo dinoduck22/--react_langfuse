@@ -155,7 +155,8 @@ const TraceTimeline = ({ details, onObservationSelect }) => {
   };
 
   const renderContent = () => {
-    if (isLoading) {
+    // isLoading 상태이거나 details 데이터가 아직 없을 때 로딩 화면을 표시합니다.
+    if (isLoading || !details) {
       return (
         <div className={styles.status}>
           <Loader size={16} className={styles.loaderIcon} />
@@ -173,6 +174,7 @@ const TraceTimeline = ({ details, onObservationSelect }) => {
     }
     return (
       <ul className={styles.timelineList}>
+        {/* Trace 자체를 루트 노드로 렌더링 */}
         <li className={styles.nodeContainer}>
            <div
               className={`${styles.timelineItem} ${selectedObservationId === null ? styles.selected : ''}`}
@@ -185,9 +187,11 @@ const TraceTimeline = ({ details, onObservationSelect }) => {
               <div className={styles.itemContent}>
                 <div className={styles.itemHeader}>
                   <span className={styles.itemName}>{details?.name ?? 'Trace'}</span>
-                  {details.latency && <span className={styles.latency}>{details.latency.toFixed(2)}s</span>}
+                  {/* ▼▼▼ 이 부분 수정 ▼▼▼ */}
+                  {details?.latency && <span className={styles.latency}>{details.latency.toFixed(2)}s</span>}
                 </div>
-                {details.scores && details.scores.length > 0 && (
+                {/* ▼▼▼ 이 부분 수정 ▼▼▼ */}
+                {details?.scores && details.scores.length > 0 && (
                   <div className={styles.scoreTags}>
                     {details.scores.map(score => (
                       <span key={score.name} className={styles.scoreTag}>
@@ -218,7 +222,6 @@ const TraceTimeline = ({ details, onObservationSelect }) => {
   return (
     <div className={styles.timelineContainer}>
       <div className={styles.header}>
-        {/* --- 검색창 JSX 간소화 --- */}
         <div className={styles.searchBar}>
           <Search size={14} />
           <input
@@ -228,7 +231,6 @@ const TraceTimeline = ({ details, onObservationSelect }) => {
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        {/* --- 여기까지 --- */}
         <div className={styles.headerControls}>
           <button className={styles.controlButton}><SlidersHorizontal size={14} /></button>
           <button className={styles.controlButton}><Download size={14} /></button>

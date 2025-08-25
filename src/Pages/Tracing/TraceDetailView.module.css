@@ -1,10 +1,10 @@
 /* src/Pages/Tracing/TraceDetailView.module.css */
-.body { 
-  padding: 16px; 
-  display: flex; 
-  flex-direction: column; 
-  gap: 16px; 
-  overflow-y: auto; 
+.body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
   flex-grow: 1;
 }
 
@@ -118,13 +118,13 @@
   gap: 10px;
 }
 
-.timestamp { 
+.timestamp {
   color: #7d8590;
   font-size: 13px;
 }
-.pills { 
-  display: flex; 
-  gap: 8px; 
+.pills {
+  display: flex;
+  gap: 8px;
   align-items: center;
 }
 
@@ -146,7 +146,7 @@
 }
 
 .contentCard {
-  background-color: #161b22;
+  background-color: #010409; /* 배경색 변경 */
   border: 1px solid #30363d;
   border-radius: 6px;
   overflow: hidden;
@@ -155,22 +155,23 @@
 .cardHeader {
   position: relative;
   padding: 10px 16px;
-  border-bottom: 1px solid #30363d;
+  /* border-bottom 제거 */
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .cardTitle {
-  font-size: 13px;
-  font-weight: 500;
-  color: #7d8590;
+  font-size: 14px; /* 폰트 크기 조정 */
+  font-weight: 400; /* 폰트 굵기 조정 */
+  color: #e6edf3; /* 폰트 색상 변경 */
 }
 .cardBody {
   padding: 16px;
   font-size: 13px;
   max-height: 250px;
   overflow-y: auto;
+  border-top: 1px solid #30363d; /* 헤더와 본문 구분선 */
 }
 .cardBody pre {
   margin: 0;
@@ -179,31 +180,22 @@
   word-break: break-word;
   color: #c9d1d9;
 }
-.metadataTable {
-  width: 100%;
-  border-collapse: collapse;
-}
-.metadataTable td {
-  padding: 8px 0;
-  border-bottom: 1px solid #30363d;
-}
-.metadataTable tr:last-child td {
-  border-bottom: none;
-}
-.metadataTable td:first-child {
+
+.noDataText {
   color: #7d8590;
-  width: 120px;
-  padding-right: 16px;
 }
 
 .formatToggle {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 8px;
+  margin-bottom: -8px; /* 카드와의 간격 조정 */
+  margin-right: 16px;
+  position: relative;
+  z-index: 2; /* 카드 위에 보이도록 */
 }
 
 .toggleButton {
-  background-color: transparent;
+  background-color: #21262d;
   border: 1px solid #30363d;
   color: #7d8590;
   padding: 4px 10px;
@@ -220,15 +212,11 @@
   border-bottom-right-radius: 6px;
 }
 .toggleButton.active {
-  background-color: #30363d;
+  background-color: #0d1117;
   color: #e6edf3;
 }
 
 .copyButton {
-  position: absolute;
-  top: 50%;
-  right: 12px;
-  transform: translateY(-50%);
   background: none;
   border: none;
   color: #7d8590;
@@ -241,9 +229,39 @@
   color: #e6edf3;
 }
 
-.outputCard .cardBody {
-  background-color: #112a20;
+.outputCard {
+  border-left: 4px solid #3fb950; /* 초록색 왼쪽 테두리 */
 }
-.outputCard .cardBody pre {
-  color: #6ee7b7;
+.outputCard .cardBody {
+  background-color: #0d1117;
+}
+
+/* --- FormattedTable 스타일 추가 --- */
+.formattedTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-family: 'D2Coding', 'Courier New', monospace;
+}
+.formattedTable th {
+  text-align: left;
+  padding: 8px 4px;
+  color: #7d8590;
+  font-weight: 500;
+  border-bottom: 1px solid #30363d;
+}
+.formattedTable td {
+  padding: 8px 4px;
+  border-bottom: 1px solid #30363d;
+}
+.formattedTable tr:last-child td {
+  border-bottom: none;
+}
+.pathCell {
+  color: #7d8590;
+  width: 150px;
+  vertical-align: top;
+}
+.valueCell {
+  color: #c9d1d9;
 }
