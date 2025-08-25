@@ -1,27 +1,32 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+// 🚫 useParams 훅을 더 이상 사용하지 않으므로 삭제합니다.
+// import { useParams } from 'react-router-dom'; 
 import { Info, Plus, Clipboard, Trash2, Copy, X } from 'lucide-react';
 import { getApiKeys, createApiKey, deleteApiKey, ApiKey } from './ApiKeysApi';
-import commonStyles from "./layout/SettingsCommon.module.css"
+import commonStyles from "./layout/SettingsCommon.module.css";
 import apiKeyStyles from "./layout/Apikeys.module.css";
-import { getCodeSnippets } from './codeSnippets'
+import { getCodeSnippets } from './codeSnippets';
 
 const ApiKeys: React.FC = () => {
-    const { projectId } = useParams<{ projectId: string }>();
+    // 🚫 useParams 훅 대신 import.meta.env에서 projectId를 직접 가져옵니다.
+    const projectId = import.meta.env.VITE_LANGFUSE_PROJECT_ID;
 
     const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
     const [newKeyDetails, setNewKeyDetails] = useState<ApiKey | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('Python');
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true); // 컴포넌트가 로드될 때 true로 시작
     const [isCreating, setIsCreating] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // env 파일에서 환경변수 가져오기
     const host = import.meta.env.VITE_LANGFUSE_BASE_URL || "http://localhost:3000";
 
     const fetchApiKeys = useCallback(async (currentProjectId: string) => {
-        if (!currentProjectId) return;
+        if (!currentProjectId) {
+            setError('Project ID가 .env 파일에 설정되지 않았습니다.');
+            setIsLoading(false);
+            return;
+        }
         try {
             setError(null);
             setIsLoading(true);
@@ -36,16 +41,12 @@ const ApiKeys: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        if (projectId) {
-            fetchApiKeys(projectId);
-        } else {
-            setError('Project ID is not available from URL.');
-            setIsLoading(false);
-        }
+        // 컴포넌트 마운트 시 projectId를 사용하여 API 키를 불러옵니다.
+        fetchApiKeys(projectId);
     }, [projectId, fetchApiKeys]);
 
     const codeSnippets = useMemo(() => {
-        if (!newKeyDetails || newKeyDetails.secretKey) {
+        if (!newKeyDetails?.secretKey) {
             return {};
         }
 
@@ -65,7 +66,7 @@ const ApiKeys: React.FC = () => {
 
     const handleCreateNewKey = async () => {
         if (!projectId) {
-            alert('Project ID가 아직 로드되지 않았습니다.');
+            alert('Project ID가 .env 파일에 설정되지 않았습니다.');
             return;
         }
         setIsCreating(true);
@@ -102,13 +103,14 @@ const ApiKeys: React.FC = () => {
     };
 
     if (isLoading) {
-        return <div className = { commonStyles.container }>Loading API Keys...</div>;
+        return <div className={commonStyles.container}>Loading API Keys...</div>;
     }
 
     if (error) {
-        return <div className = { commonStyles.container } style = {{ color: 'red' }}>Error: {error}</div>;
+        return <div className={commonStyles.container} style={{ color: 'red' }}>Error: {error}</div>;
     }
 
+    // ... (나머지 JSX 렌더링 부분은 동일)
     return (
         <div className = { commonStyles.container }>
             { /* Host Name Section */ }
