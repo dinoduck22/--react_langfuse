@@ -1,0 +1,249 @@
+/* src/Pages/Tracing/TraceDetailView.module.css */
+.body { 
+  padding: 16px; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 16px; 
+  overflow-y: auto; 
+  flex-grow: 1;
+}
+
+.infoBar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 13px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #30363d;
+}
+
+.infoBarTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.infoBarTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #c9d1d9;
+}
+
+.traceName {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: #e6edf3;
+}
+
+.idButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: #7d8590;
+  cursor: pointer;
+  font-size: 12px;
+}
+.idButton:hover {
+  color: #c9d1d9;
+}
+
+.infoBarActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.actionButton, .actionButtonSecondary {
+  background-color: #21262d;
+  border: 1px solid #30363d;
+  color: #c9d1d9;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.actionButton:hover, .actionButtonSecondary:hover {
+  border-color: #8b949e;
+}
+
+.actionButtonSecondary {
+  padding: 6px;
+}
+
+.annotateButton {
+  display: flex;
+}
+.annotateButton button {
+  background-color: #21262d;
+  border: 1px solid #30363d;
+  color: #c9d1d9;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+.annotateButton .annotateButtonChevron {
+  background-color: #21262d;
+  border: 1px solid #30363d;
+  border-left: none;
+  color: #c9d1d9;
+  padding: 6px;
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.annotateButton:hover button, .annotateButton:hover .annotateButtonChevron {
+  border-color: #8b949e;
+}
+
+
+.infoBarBottom {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.timestamp { 
+  color: #7d8590;
+  font-size: 13px;
+}
+.pills { 
+  display: flex; 
+  gap: 8px; 
+  align-items: center;
+}
+
+.pill {
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pillUser {
+  background-color: #e6edf3;
+  color: #0d1117;
+}
+
+.pillEnv {
+  background-color: #30363d;
+  color: #e6edf3;
+}
+
+.contentCard {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.cardHeader {
+  position: relative;
+  padding: 10px 16px;
+  border-bottom: 1px solid #30363d;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cardTitle {
+  font-size: 13px;
+  font-weight: 500;
+  color: #7d8590;
+}
+.cardBody {
+  padding: 16px;
+  font-size: 13px;
+  max-height: 250px;
+  overflow-y: auto;
+}
+.cardBody pre {
+  margin: 0;
+  font-family: 'D2Coding', 'Courier New', monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #c9d1d9;
+}
+.metadataTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+.metadataTable td {
+  padding: 8px 0;
+  border-bottom: 1px solid #30363d;
+}
+.metadataTable tr:last-child td {
+  border-bottom: none;
+}
+.metadataTable td:first-child {
+  color: #7d8590;
+  width: 120px;
+  padding-right: 16px;
+}
+
+.formatToggle {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+}
+
+.toggleButton {
+  background-color: transparent;
+  border: 1px solid #30363d;
+  color: #7d8590;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.toggleButton:first-of-type {
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+  border-right: none;
+}
+.toggleButton:last-of-type {
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+.toggleButton.active {
+  background-color: #30363d;
+  color: #e6edf3;
+}
+
+.copyButton {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #7d8590;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+.copyButton:hover {
+  background-color: #30363d;
+  color: #e6edf3;
+}
+
+.outputCard .cardBody {
+  background-color: #112a20;
+}
+.outputCard .cardBody pre {
+  color: #6ee7b7;
+}

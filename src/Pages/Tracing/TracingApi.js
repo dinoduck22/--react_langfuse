@@ -37,10 +37,10 @@ export const fetchTraces = async () => {
       version: trace.version ?? 'N/A',
       tags: trace.tags ?? [],
       isFavorited: false,
-      observations: 0,
+      observations: Array.isArray(trace.observations) ? trace.observations.length : 0, // observation 개수 반영
       env: trace.environment ?? 'default',
       latency: trace.latency ?? 0,
-      cost: trace.cost ?? 0,
+      cost: trace.totalCost ?? 0, // totalCost 필드 사용
       public: trace.public,
       metadata: trace.metadata,
       environment: trace.environment

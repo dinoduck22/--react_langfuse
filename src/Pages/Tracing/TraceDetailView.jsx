@@ -1,6 +1,6 @@
 // src/Pages/Tracing/TraceDetailView.jsx
 import React, { useState } from 'react';
-import styles from './TraceDetailPanel.module.css';
+import styles from './TraceDetailView.module.css';
 import { Copy, List, Clipboard, Plus, SquarePen, ChevronDown, MessageSquare } from 'lucide-react';
 import Toast from '../../components/Toast/Toast';
 
@@ -60,7 +60,7 @@ const TraceDetailView = ({ details, isLoading, error }) => {
         <div className={styles.infoBarTop}>
           <div className={styles.infoBarTitle}>
             <List size={20} />
-            <h2 className={styles.traceName}>{details.name}</h2>
+            <h5 className={styles.traceName}>{details.name}</h5>
             <button 
               className={styles.idButton} 
               title="Copy ID" 
