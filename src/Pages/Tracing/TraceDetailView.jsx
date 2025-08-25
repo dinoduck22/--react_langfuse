@@ -1,20 +1,18 @@
 // src/Pages/Tracing/TraceDetailView.jsx
 import React, { useState } from 'react';
 import styles from './TraceDetailView.module.css';
-import { Copy, List, Clipboard, Plus, SquarePen, ChevronDown, MessageSquare } from 'lucide-react';
+import { Copy, List, Clipboard, Plus, SquarePen, ChevronDown, MessageSquare, Info } from 'lucide-react';
 import Toast from '../../components/Toast/Toast';
 
-// Formatted 뷰를 위한 테이블 렌더링 컴포넌트
+// FormattedTable 컴포넌트는 이전과 동일
 const FormattedTable = ({ data }) => {
   if (typeof data !== 'object' || data === null || Array.isArray(data)) {
     return <pre>{data}</pre>;
   }
-
   const entries = Object.entries(data);
   if (entries.length === 0) {
     return <p className={styles.noDataText}>Empty object</p>;
   }
-
   return (
     <table className={styles.formattedTable}>
       <thead>
@@ -28,7 +26,6 @@ const FormattedTable = ({ data }) => {
           <tr key={key}>
             <td className={styles.pathCell}>{key}</td>
             <td className={styles.valueCell}>
-              {/* 값의 타입에 따라 다르게 표시 */}
               {typeof value === 'string' ? `"${value}"` : String(value)}
             </td>
           </tr>
@@ -55,18 +52,15 @@ const TraceDetailView = ({ details, isLoading, error }) => {
       });
   };
 
-  // 뷰 포맷에 따라 콘텐츠를 렌더링하는 함수
   const renderFormattedContent = (data) => {
     if (typeof data === 'object' && data !== null && !Array.isArray(data)) {
       return <FormattedTable data={data} />;
     }
-    // 객체가 아니면 pre 태그로 텍스트를 그대로 표시
     return <pre>{String(data ?? 'null')}</pre>;
   };
 
   const renderContent = (title, data, type = 'default') => {
     const cardStyle = type === 'output' ? styles.outputCard : '';
-
     return (
       <div className={`${styles.contentCard} ${cardStyle}`}>
         <div className={styles.cardHeader}>
@@ -94,6 +88,21 @@ const TraceDetailView = ({ details, isLoading, error }) => {
   const name = details.name ?? 'N/A';
   const id = details.id;
 
+  const formatTimestamp = (isoString) => {
+    if (!isoString) return 'N/A';
+    const date = new Date(isoString);
+    return date.toISOString().replace('T', ' ').substring(0, 23); // YYYY-MM-DD HH:mm:ss.sss 형식
+  };
+
+  // Observation의 usage 정보를 포맷팅하는 함수
+  const formatUsage = (usage) => {
+    if (!usage || (usage.input == null && usage.output == null)) return null;
+    const input = usage.input ?? 0;
+    const output = usage.output ?? 0;
+    const total = usage.total ?? (input + output);
+    return `${input} prompt → ${output} completion (∑ ${total})`;
+  };
+
   return (
     <div className={styles.body}>
       <Toast
@@ -102,8 +111,7 @@ const TraceDetailView = ({ details, isLoading, error }) => {
         onClose={() => setToastInfo({ isVisible: false, message: '' })}
       />
       <div className={styles.infoBar}>
-         {/* ... 기존 infoBar JSX ... */}
-         <div className={styles.infoBarTop}>
+        <div className={styles.infoBarTop}>
           <div className={styles.infoBarTitle}>
             <List size={20} />
             <h2 className={styles.traceName}>{name}</h2>
@@ -116,38 +124,117 @@ const TraceDetailView = ({ details, isLoading, error }) => {
             </button>
           </div>
           <div className={styles.infoBarActions}>
-            <button className={styles.actionButton}>
-              <Plus size={14} /> Add to datasets
-            </button>
-            <div className={styles.annotateButton}>
-              <button>
-                <SquarePen size={14} /> Annotate
-              </button>
-              <div className={styles.annotateButtonChevron}>
-                <ChevronDown size={16} />
-              </div>
-            </div>
+             {/* Observation일 때는 Playground 버튼 추가 */}
+            {isObservation ? (
+                <div className={styles.annotateButton}>
+                    <button>_ Playground</button>
+                    <div className={styles.annotateButtonChevron}>
+                        <ChevronDown size={16} />
+                    </div>
+                </div>
+            ) : (
+                <button className={styles.actionButton}>
+                    <Plus size={14} /> Add to datasets
+                </button>
+            )}
+            
+            {!isObservation && (
+                 <div className={styles.annotateButton}>
+                    <button>
+                        <SquarePen size={14} /> Annotate
+                    </button>
+                    <div className={styles.annotateButtonChevron}>
+                        <ChevronDown size={16} />
+                    </div>
+                </div>
+            )}
             <button className={`${styles.iconButton} ${styles.actionButtonSecondary}`}>
               <MessageSquare size={16} />
             </button>
           </div>
         </div>
+
+        {/* --- infoBarBottom JSX 구조 수정 --- */}
         <div className={styles.infoBarBottom}>
           <span className={styles.timestamp}>
-            {isObservation
-              ? new Date(details.startTime).toISOString()
-              : new Date(details.timestamp).toISOString()
-            }
+            {formatTimestamp(isObservation ? details.startTime : details.timestamp)}
           </span>
-          <div className={styles.pills}>
-            <div className={`${styles.pill} ${styles.pillUser}`}>
-              User ID: {details.userId ?? 'N/A'}
-            </div>
-            <div className={`${styles.pill} ${styles.pillEnv}`}>
-              Env: {details.environment ?? 'default'}
-            </div>
-          </div>
+          
+          {isObservation ? (
+            // Observation View
+            <>
+              <div className={styles.pills}>
+                {details.latency != null && (
+                  <div className={`${styles.pill} ${styles.pillDark}`}>
+                    Latency: {details.latency.toFixed(2)}s
+                  </div>
+                )}
+                <div className={`${styles.pill} ${styles.pillDark}`}>
+                  Env: {details.environment ?? 'default'}
+                </div>
+                {details.totalPrice != null && (
+                  <div className={styles.costPill}>
+                    ${details.totalPrice.toFixed(6)}
+                    <Info size={14} className={styles.infoIcon} />
+                  </div>
+                )}
+                {details.usage && formatUsage(details.usage) && (
+                  <div className={styles.costPill}>
+                    {formatUsage(details.usage)}
+                    <Info size={14} className={styles.infoIcon} />
+                  </div>
+                )}
+              </div>
+              <div className={styles.pills}>
+                {details.model && (
+                  <div className={`${styles.pill} ${styles.pillDark}`}>{details.model}</div>
+                )}
+                {details.modelParameters && Object.entries(details.modelParameters).map(([key, value]) => (
+                  <div key={key} className={`${styles.pill} ${styles.pillDark}`}>
+                    {key}: {String(value)}
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            // Trace View
+            <>
+              <div className={styles.pills}>
+                {details.sessionId && (
+                  <div className={`${styles.pill} ${styles.pillDark}`}>
+                    Session: {details.sessionId}
+                  </div>
+                )}
+                {details.userId && (
+                  <div className={`${styles.pill} ${styles.pillUser}`}>
+                    User ID: {details.userId}
+                  </div>
+                )}
+                <div className={`${styles.pill} ${styles.pillDark}`}>
+                  Env: {details.environment ?? 'default'}
+                </div>
+                {details.latency != null && (
+                  <div className={`${styles.pill} ${styles.pillDark}`}>
+                    Latency: {details.latency.toFixed(2)}s
+                  </div>
+                )}
+              </div>
+              <div className={styles.costBar}>
+                {details.cost != null && (
+                  <div className={styles.costPill}>
+                    Total Cost: ${details.cost.toFixed(6)}
+                    <Info size={14} className={styles.infoIcon} />
+                  </div>
+                )}
+                <div className={styles.costPill}>
+                  8 → 6 (∑ 14)
+                  <Info size={14} className={styles.infoIcon} />
+                </div>
+              </div>
+            </>
+          )}
         </div>
+        {/* --- 여기까지 --- */}
       </div>
 
       <div className={styles.formatToggle}>
@@ -167,9 +254,7 @@ const TraceDetailView = ({ details, isLoading, error }) => {
 
       {renderContent("Input", details.input, 'input')}
       {renderContent("Output", details.output, 'output')}
-
       {isObservation && details.modelParameters && renderContent("Model Parameters", details.modelParameters)}
-
       <div className={styles.contentCard}>
         <div className={styles.cardHeader}>
           <h3 className={styles.cardTitle}>Metadata</h3>
