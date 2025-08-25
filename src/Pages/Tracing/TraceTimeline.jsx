@@ -1,5 +1,5 @@
 // src/Pages/Tracing/TraceTimeline.jsx
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react'; // useRef 제거
 import styles from './TraceTimeline.module.css';
 import {
   MessageSquare,
@@ -13,16 +13,15 @@ import {
   SlidersHorizontal,
   Download,
   GitBranch,
-  ListTree // 아이콘 추가
+  ListTree
 } from 'lucide-react';
 import { fetchObservationsForTrace } from './TraceTimelineApi';
 
-// 재귀적으로 노드를 렌더링하는 컴포넌트
+// ObservationNode 컴포넌트는 변경 없이 그대로 유지합니다.
 const ObservationNode = ({ node, allNodes, level, onSelect, selectedId }) => {
   const [isOpen, setIsOpen] = useState(true);
   const children = useMemo(() => allNodes.filter(n => n.parentObservationId === node.id), [allNodes, node.id]);
 
-  // 아이콘 결정 로직
   const getIcon = (type) => {
     switch (type) {
       case 'SPAN':
@@ -86,6 +85,7 @@ const ObservationNode = ({ node, allNodes, level, onSelect, selectedId }) => {
   );
 };
 
+
 // 메인 컴포넌트
 const TraceTimeline = ({ details, onObservationSelect }) => {
   const [observations, setObservations] = useState([]);
@@ -93,8 +93,20 @@ const TraceTimeline = ({ details, onObservationSelect }) => {
   const [error, setError] = useState(null);
   const [selectedObservationId, setSelectedObservationId] = useState(null);
   const [isTimelineVisible, setIsTimelineVisible] = useState(true);
+  const [searchQuery, setSearchQuery] = useState(''); // 검색어 상태만 유지
 
-  // API 응답 데이터에 점수(scores)와 지연 시간(latency) 추가
+  // 검색 로직: 모든 텍스트 필드를 대상으로 검색
+  const filteredObservations = useMemo(() => {
+      const query = searchQuery.trim().toLowerCase();
+      if (!query) {
+          return observations;
+      }
+      return observations.filter(obs =>
+          JSON.stringify(obs).toLowerCase().includes(query)
+      );
+  }, [searchQuery, observations]);
+
+
   const processObservations = (fetchedObservations) => {
     return fetchedObservations.map(obs => ({
       ...obs,
@@ -104,8 +116,8 @@ const TraceTimeline = ({ details, onObservationSelect }) => {
   };
 
   const rootObservations = useMemo(() =>
-    observations.filter(obs => !obs.parentObservationId),
-    [observations]
+    filteredObservations.filter(obs => !obs.parentObservationId), // 필터링된 데이터 사용
+    [filteredObservations]
   );
 
   useEffect(() => {
@@ -121,12 +133,9 @@ const TraceTimeline = ({ details, onObservationSelect }) => {
         const fetchedObservations = await fetchObservationsForTrace(details.id);
         const processedData = processObservations(fetchedObservations);
 
-        // startTime 기준으로 오름차순 정렬
         processedData.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
 
         setObservations(processedData);
-
-        // Trace 자체를 기본 선택으로 설정
         setSelectedObservationId(null);
         onObservationSelect(null);
 
@@ -164,7 +173,6 @@ const TraceTimeline = ({ details, onObservationSelect }) => {
     }
     return (
       <ul className={styles.timelineList}>
-        {/* Trace 자체를 루트 노드로 렌더링 */}
         <li className={styles.nodeContainer}>
            <div
               className={`${styles.timelineItem} ${selectedObservationId === null ? styles.selected : ''}`}
@@ -195,7 +203,7 @@ const TraceTimeline = ({ details, onObservationSelect }) => {
               <ObservationNode
                 key={obs.id}
                 node={obs}
-                allNodes={observations}
+                allNodes={filteredObservations} // 필터링된 데이터 사용
                 level={1}
                 selectedId={selectedObservationId}
                 onSelect={handleSelect}
@@ -210,10 +218,17 @@ const TraceTimeline = ({ details, onObservationSelect }) => {
   return (
     <div className={styles.timelineContainer}>
       <div className={styles.header}>
+        {/* --- 검색창 JSX 간소화 --- */}
         <div className={styles.searchBar}>
           <Search size={14} />
-          <input type="text" placeholder="Search..." />
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
         </div>
+        {/* --- 여기까지 --- */}
         <div className={styles.headerControls}>
           <button className={styles.controlButton}><SlidersHorizontal size={14} /></button>
           <button className={styles.controlButton}><Download size={14} /></button>
