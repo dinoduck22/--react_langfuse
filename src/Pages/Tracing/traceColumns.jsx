@@ -12,12 +12,6 @@ const formatCost = (cost) => {
 
 export const traceTableColumns = [
     {
-      key: 'favorite',
-      header: <Star size={16} />,
-      accessor: (row) => <Star size={16} className={row.isFavorited ? styles.favorited : ''} />,
-      visible: true,
-    },
-    {
       key: 'timestamp',
       header: 'Timestamp',
       accessor: (row) => row.timestamp,

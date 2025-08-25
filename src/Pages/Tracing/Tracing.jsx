@@ -9,9 +9,9 @@ import FilterControls from 'components/FilterControls/FilterControls';
 import TraceDetailPanel from './TraceDetailPanel.jsx';
 import { useSearch } from '../../hooks/useSearch.js';
 import ColumnVisibilityModal from './ColumnVisibilityModal.jsx';
-import { fetchTraces } from './TracingApi';
+import { fetchTraces, deleteTrace } from './TracingApi'; // deleteTrace import 추가
 import FilterButton from 'components/FilterButton/FilterButton';
-import { Columns, Plus, Edit, Star, Trash2 } from 'lucide-react'; // Star 아이콘을 lucide-react에서 직접 가져옵니다.
+import { Columns, Plus, Edit, Trash2, RefreshCw } from 'lucide-react';
 import { createTrace, updateTrace } from './CreateTrace.jsx';
 import { langfuse } from '../../lib/langfuse';
 
@@ -21,43 +21,27 @@ const Tracing = () => {
   const [traces, setTraces] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-
   const [searchType, setSearchType] = useState('IDs / Names');
   const { searchQuery, setSearchQuery, filteredData: filteredTraces } = useSearch(traces, searchType);
   const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
+  const [favoriteState, setFavoriteState] = useState({});
+  const [selectedRows, setSelectedRows] = useState(new Set());
 
-  // 즐겨찾기 상태를 토글하는 함수를 추가합니다.
-  const toggleFavorite = (traceId, event) => {
-    event.stopPropagation(); // 이벤트 버블링을 막아 행 클릭 이벤트를 방지합니다.
-    setTraces(prevTraces =>
-      prevTraces.map(trace =>
-        trace.id === traceId ? { ...trace, isFavorited: !trace.isFavorited } : trace
-      )
-    );
+  const toggleFavorite = useCallback((traceId) => {
+    setFavoriteState(prev => ({ ...prev, [traceId]: !prev[traceId] }));
+  }, []);
+
+  const toggleAllFavorites = () => {
+    const allFavorited = traces.length > 0 && traces.every(trace => favoriteState[trace.id]);
+    const newFavoriteState = {};
+    traces.forEach(trace => {
+      newFavoriteState[trace.id] = !allFavorited;
+    });
+    setFavoriteState(newFavoriteState);
   };
 
-  // 기존 컬럼 정의에 즐겨찾기 핸들러를 추가하여 새로운 컬럼 배열을 생성합니다.
-  const memoizedTraceTableColumns = useMemo(() => {
-    return traceTableColumns.map(col => {
-      if (col.key === 'favorite') {
-        return {
-          ...col,
-          accessor: (row) => (
-            <Star
-              size={16}
-              className={row.isFavorited ? styles.favorited : ''}
-              onClick={(e) => toggleFavorite(row.id, e)}
-              style={{ cursor: 'pointer' }} // 클릭 가능함을 나타내는 커서 스타일을 추가합니다.
-            />
-          ),
-        };
-      }
-      return col;
-    });
-  }, [traces]); // traces가 변경될 때마다 즐겨찾기 아이콘이 리렌더링되도록 의존성 배열에 추가합니다.
-
   const [columns, setColumns] = useState(
-    memoizedTraceTableColumns.map(c => ({ ...c, visible: true }))
+    traceTableColumns.map(c => ({ ...c, visible: true }))
   );
 
   const loadTraces = async () => {
@@ -66,12 +50,13 @@ const Tracing = () => {
       setError(null);
       const fetchedTraces = await fetchTraces();
       setTraces(fetchedTraces);
+      const initialFavorites = {};
+      fetchedTraces.forEach(trace => {
+        initialFavorites[trace.id] = trace.isFavorited || false;
+      });
+      setFavoriteState(initialFavorites);
     } catch (err) {
-      if (err instanceof Error) {
-          setError(err.message);
-      } else {
-          setError("알 수 없는 오류가 발생했습니다.");
-      }
+      setError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.");
     } finally {
       setIsLoading(false);
     }
@@ -79,64 +64,37 @@ const Tracing = () => {
   
   useEffect(() => { loadTraces(); }, []);
 
-  const handleCreateClick = () => {
-    createTrace(loadTraces);
-  };
+  const handleCreateClick = () => createTrace(loadTraces);
   
   const handleUpdateClick = async () => {
-    const traceNameToUpdate = window.prompt("업데이트할 Trace의 ID를 입력하세요:");
-
-    if (!traceNameToUpdate || traceNameToUpdate.trim() === '') {
-      return;
-    }
-
-    const traceToUpdate = traces.find(t => t.id === traceNameToUpdate.trim());
-
+    const traceIdToUpdate = window.prompt("업데이트할 Trace의 ID를 입력하세요:");
+    if (!traceIdToUpdate) return;
+    const traceToUpdate = traces.find(t => t.id === traceIdToUpdate.trim());
     if (!traceToUpdate) {
-      alert(`ID '${traceNameToUpdate}'에 해당하는 Trace를 찾을 수 없습니다.`);
+      alert(`ID '${traceIdToUpdate}'에 해당하는 Trace를 찾을 수 없습니다.`);
       return;
     }
-
     const langfuseTraceObject = langfuse.trace({ id: traceToUpdate.id, _dangerouslyIgnoreCorruptData: true });
-
     await updateTrace(langfuseTraceObject, loadTraces);
   };
 
-  // 삭제 핸들러 함수 추가
-  const handleDeleteTrace = useCallback((traceId) => {
+  const handleDeleteTrace = useCallback(async (traceId) => {
     if (window.confirm(`정말로 이 트레이스를 삭제하시겠습니까? ID: ${traceId}`)) {
-      setTraces(prevTraces => prevTraces.filter(trace => trace.id !== traceId));
-      console.log(`Trace with ID: ${traceId} deleted.`);
-      // TODO: API를 통해 실제 데이터 삭제 로직 추가
+      try {
+        await deleteTrace(traceId);
+        setTraces(prevTraces => prevTraces.filter(trace => trace.id !== traceId));
+        alert('Trace가 성공적으로 삭제되었습니다.');
+      } catch (err) {
+        alert('Trace 삭제에 실패했습니다.');
+        console.error(err);
+      }
     }
   }, []);
 
-  const handleRowClick = (trace) => { setSelectedTrace(prev => (prev?.id === trace.id ? null : trace)); };
-  const setAllColumnsVisible = (visible) => { setColumns(prev => prev.map(col => ({ ...col, visible }))); };
-  const toggleColumnVisibility = (key) => { setColumns(prev => prev.map(col => col.key === key ? { ...col, visible: !col.visible } : col)); };
+  const handleRowClick = (trace) => setSelectedTrace(prev => (prev?.id === trace.id ? null : trace));
+  const setAllColumnsVisible = (visible) => setColumns(prev => prev.map(col => ({ ...col, visible })));
+  const toggleColumnVisibility = (key) => setColumns(prev => prev.map(col => col.key === key ? { ...col, visible: !col.visible } : col));
   const visibleColumns = useMemo(() => columns.filter(c => c.visible), [columns]);
-
-  // 기존 컬럼에 Actions(삭제 버튼) 컬럼을 추가
-  const columnsWithActions = useMemo(() => [
-    ...visibleColumns,
-    {
-      key: 'actions',
-      header: 'Actions',
-      accessor: (row) => (
-        <button
-          className={styles.iconButton}
-          onClick={(e) => {
-            e.stopPropagation(); // 행 클릭 이벤트 전파 방지
-            handleDeleteTrace(row.id);
-          }}
-          title={`Delete trace ${row.id}`}
-        >
-          <Trash2 size={16} />
-        </button>
-      ),
-    }
-  ], [visibleColumns, handleDeleteTrace]);
-
 
   return (
     <div className={styles.container}>
@@ -157,7 +115,7 @@ const Tracing = () => {
               setSearchType={setSearchType}
               searchTypes={['IDs / Names', 'Full Text']}
             />
-            <FilterControls />
+            <FilterControls onRefresh={loadTraces} />
           </div>
           <div className={styles.filterRightGroup}>
             <FilterButton onClick={handleCreateClick}>
@@ -175,21 +133,28 @@ const Tracing = () => {
         </div>
         
         <div className={styles.contentArea}>
-          {activeTab === 'Traces' ? (
-            isLoading ? ( <div>Loading traces...</div> ) : 
-            error ? ( <div style={{ color: 'red' }}>Error: {error}</div> ) : 
+          {activeTab === 'Traces' && (
+            isLoading ? <div>Loading traces...</div> : 
+            error ? <div style={{ color: 'red' }}>Error: {error}</div> : 
             (
                 <DataTable
-                  columns={columnsWithActions}
+                  columns={visibleColumns}
                   data={filteredTraces}
                   keyField="id"
                   renderEmptyState={() => <div>No traces found.</div>}
-                  showActions={false}
                   onRowClick={handleRowClick}
                   selectedRowKey={selectedTrace?.id || null}
+                  showCheckbox={true}
+                  selectedRows={selectedRows}
+                  onCheckboxChange={setSelectedRows}
+                  onFavoriteClick={toggleFavorite}
+                  favoriteState={favoriteState}
+                  onToggleAllFavorites={toggleAllFavorites}
+                  showDelete={true}
+                  onDeleteClick={handleDeleteTrace}
                 />
             )
-          ) : ( <div>Observations View</div> )}
+          )}
         </div>
       </div>
 

@@ -50,3 +50,16 @@ export const fetchTraces = async () => {
     throw new Error('트레이스 목록을 불러오는 데 실패했습니다.');
   }
 };
+
+/**
+ * ID를 기반으로 트레이스를 삭제합니다.
+ * @param {string} traceId - 삭제할 트레이스의 ID
+ */
+export const deleteTrace = async (traceId) => {
+  try {
+    await langfuse.api.traceDelete(traceId);
+  } catch (error) {
+    console.error(`Failed to delete trace ${traceId}:`, error);
+    throw new Error('Trace 삭제에 실패했습니다.');
+  }
+};

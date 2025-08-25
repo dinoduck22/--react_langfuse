@@ -1,35 +1,28 @@
 // src/pages/Tracing/Sessions/Sessions.jsx
 import React, { useState, useMemo, useEffect } from 'react';
 import styles from './Sessions.module.css';
-import {
-    RefreshCw, // RefreshCw 아이콘은 계속 사용합니다.
-    Star,
-    Columns
-} from 'lucide-react';
+import { RefreshCw, Columns } from 'lucide-react';
 import ColumnVisibilityModal from '../ColumnVisibilityModal.jsx';
 import { DataTable } from '../../../components/DataTable/DataTable.jsx'; 
 import { sessionTableColumns } from './sessionColumns.jsx';
 import FilterButton from '../../../components/FilterButton/FilterButton.jsx';
+import FilterControls from '../../../components/FilterControls/FilterControls';
 import DateRangePicker from '../../../components/DateRange/DateRangePicker.jsx';
 import { fetchSessions } from './SessionApi.js';
-
-import EnvironmentFilter from '../../../components/FilterControls/EnvironmentFilter.jsx';
-import FilterBuilder from '../../../components/FilterControls/FilterBuilder.jsx';
 
 const Sessions = () => {
     const [sessions, setSessions] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
-
     const [selectedSessionId, setSelectedSessionId] = useState(null);
     const [isColumnVisibleModalOpen, setIsColumnVisibleModalOpen] = useState(false);
-
     const [columns, setColumns] = useState(
         sessionTableColumns.map(c => ({ ...c, visible: c.visible }))
     );
-
     const [startDate, setStartDate] = useState(new Date(Date.now() - 24 * 60 * 60 * 1000));
     const [endDate, setEndDate] = useState(new Date());
+    const [favoriteState, setFavoriteState] = useState({});
+    const [selectedRows, setSelectedRows] = useState(new Set());
 
     const loadSessions = async () => {
         try {
@@ -37,28 +30,22 @@ const Sessions = () => {
             setError(null);
             const fetchedSessions = await fetchSessions();
             setSessions(fetchedSessions);
+            const initialFavorites = {};
+            fetchedSessions.forEach(s => {
+              initialFavorites[s.id] = s.isFavorited || false;
+            });
+            setFavoriteState(initialFavorites);
         } catch (err) {
-            if (err instanceof Error) {
-                setError(err.message);
-            } else {
-                setError("An unknown error occurred.");
-            }
+            setError(err instanceof Error ? err.message : "An unknown error occurred.");
         } finally {
             setIsLoading(false);
         }
     };
 
-    useEffect(() => {
-        loadSessions();
-    }, []);
+    useEffect(() => { loadSessions(); }, []);
 
-    const toggleFavorite = (id, e) => {
-        e.stopPropagation(); 
-        setSessions(prevSessions =>
-            prevSessions.map(session =>
-                session.id === id ? { ...session, isFavorited: !session.isFavorited } : session
-            )
-        );
+    const toggleFavorite = (sessionId) => {
+        setFavoriteState(prev => ({ ...prev, [sessionId]: !prev[sessionId] }));
     };
 
     const toggleColumnVisibility = (key) => {
@@ -73,55 +60,29 @@ const Sessions = () => {
 
     const visibleColumns = useMemo(() => columns.filter(c => c.visible), [columns]);
 
-    const columnsWithActions = useMemo(() => [
-        {
-            key: 'checkbox',
-            header: <input type="checkbox" />,
-            accessor: () => <input type="checkbox" />,
-            visible: true
-        },
-        {
-            key: 'favorite',
-            header: '',
-            accessor: (row) => (
-                <Star
-                    size={16}
-                    className={`${styles.starIcon} ${row.isFavorited ? styles.favorited : ''}`}
-                    onClick={(e) => toggleFavorite(row.id, e)}
-                />
-            ),
-            visible: true
-        },
-        ...visibleColumns,
-    ], [visibleColumns, sessions, toggleFavorite]);
-
     const renderTableContent = () => {
-        if (isLoading) {
-            return <div>Loading sessions...</div>;
-        }
-        if (error) {
-            return <div style={{ color: 'red' }}>Error: {error}</div>;
-        }
+        if (isLoading) return <div>Loading sessions...</div>;
+        if (error) return <div style={{ color: 'red' }}>Error: {error}</div>;
         return (
             <DataTable
-                columns={columnsWithActions}
+                columns={visibleColumns}
                 data={sessions}
                 keyField="id"
                 renderEmptyState={() => <>No sessions found.</>}
                 selectedRowKey={selectedSessionId}
                 onRowClick={(row) => setSelectedSessionId(row.id)}
-                showActions={false}
+                showCheckbox={true}
+                selectedRows={selectedRows}
+                onCheckboxChange={setSelectedRows}
+                showFavorite={true}
+                favoriteState={favoriteState}
+                onFavoriteClick={toggleFavorite}
             />
         );
     };
     
     return (
         <div className={styles.container}>
-            <div className={styles.header}>
-                <div className={styles.titleGroup}>
-                </div>
-            </div>
-
             <div className={styles.filterBar}>
                 <div className={styles.filterLeft}>
                     <DateRangePicker 
@@ -130,14 +91,9 @@ const Sessions = () => {
                         setStartDate={setStartDate}
                         setEndDate={setEndDate}
                     />
-                    <EnvironmentFilter />
-                    <FilterBuilder />
                 </div>
                 <div className={styles.filterRight}>
-                    {/* Refresh 아이콘을 오른쪽 필터 그룹으로 이동시키고 FilterButton으로 감싸줍니다. */}
-                    <FilterButton onClick={loadSessions}>
-                        <RefreshCw size={16} />
-                    </FilterButton>
+                    <FilterControls onRefresh={loadSessions} />
                     <FilterButton onClick={() => setIsColumnVisibleModalOpen(true)}>
                         <Columns size={16} /> Columns ({visibleColumns.length}/{columns.length})
                     </FilterButton>
