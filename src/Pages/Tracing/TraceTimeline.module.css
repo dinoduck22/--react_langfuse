@@ -91,17 +91,42 @@
   transform: translateX(-100%);
 }
 
-.timelineList {
+.timelineList, .nodeChildren {
   list-style: none;
   margin: 0;
-  padding: 8px;
+  padding: 0;
   overflow-y: auto;
   flex-grow: 1;
 }
 
+.timelineList {
+  padding-left: 16px;
+}
+
+.nodeChildren {
+  padding-left: 24px;
+}
+
+
 .nodeContainer {
   position: relative;
 }
+
+/* Vertical line for children */
+.nodeContainer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 8px; /* (Icon width / 2) - (line width / 2) */
+  width: 1px;
+  height: 100%;
+  background-color: #30363d;
+}
+
+.nodeContainer:last-child::before {
+  height: 20px; /* Connect only to the item, not below */
+}
+
 
 .timelineItem {
   display: flex;
@@ -112,48 +137,41 @@
   cursor: pointer;
   font-size: 13px;
   position: relative;
-}
-.timelineItem:hover { background-color: #161b22; }
-.timelineItem.selected { background-color: rgba(47, 129, 247, 0.2); }
-
-.itemLineage {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  display: flex;
-  pointer-events: none;
+  margin-left: -24px;
 }
 
-.lineSegment {
-  width: 24px;
-  height: 100%;
-  position: relative;
-}
-
-.lineSegment::before {
+/* Horizontal line connector */
+.timelineItem::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 12px;
-  width: 1px;
-  height: 100%;
+  top: 20px;
+  left: -15px; /* Adjust based on padding and icon size */
+  width: 16px;
+  height: 1px;
   background-color: #30363d;
 }
 
-.timelineItem .itemIcon {
+.timelineItem:hover { background-color: #161b22; }
+.timelineItem.selected { background-color: rgba(47, 129, 247, 0.2); }
+
+.itemIcon {
   position: relative;
   z-index: 1;
   color: #7d8590;
   margin-top: 2px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.timelineItem.selected .itemIcon {
+.timelineItem.selected .itemIcon,
+.timelineItem.selected .itemName {
   color: #58a6ff;
 }
 
 .generationIcon { color: #db61a2 !important; }
+.spanIcon { color: #7d8590; }
 
 .itemContent {
   display: flex;
@@ -192,10 +210,15 @@
 
 .chevron {
   color: #7d8590;
-  margin-left: auto;
-  flex-shrink: 0;
-  align-self: center;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
 }
+.chevronPlaceholder {
+  width: 16px;
+  height: 16px;
+}
+
 
 .status {
   padding: 16px;

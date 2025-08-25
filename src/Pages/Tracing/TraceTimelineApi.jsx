@@ -12,19 +12,22 @@ export const fetchObservationsForTrace = async (traceId) => {
   }
 
   try {
-    // 오류 수정: 올바른 SDK 함수명인 observationsGetMany로 최종 변경
     const response = await langfuse.api.observationsGetMany({
       traceId: traceId,
-      limit: 100, // 필요에 따라 페이징 처리 추가
+      limit: 100,
     });
 
+    // API 응답에서 필요한 모든 데이터를 추출하여 반환
     return response.data.map(obs => ({
       id: obs.id,
+      traceId: obs.traceId,
+      parentObservationId: obs.parentObservationId,
       name: obs.name || obs.type,
-      startTime: new Date(obs.startTime).toLocaleString(),
-      endTime: obs.endTime ? new Date(obs.endTime).toLocaleString() : null,
+      startTime: obs.startTime,
+      endTime: obs.endTime,
       type: obs.type,
       model: obs.model,
+      scores: obs.scores || [], // scores가 없으면 빈 배열로 초기화
     }));
   } catch (error) {
     console.error(`Failed to fetch observations for trace ${traceId}:`, error);

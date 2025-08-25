@@ -1,30 +1,32 @@
 // src/Pages/Tracing/TraceTimeline.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import styles from './TraceTimeline.module.css';
-import { 
-  MessageSquare, 
-  Loader, 
-  AlertTriangle, 
-  ArrowRightLeft, 
+import {
+  MessageSquare,
+  Loader,
+  AlertTriangle,
+  ArrowRightLeft,
   ChevronDown,
+  ChevronRight,
   MessageCircle,
   Search,
   SlidersHorizontal,
   Download,
-  GitBranch
+  GitBranch,
+  ListTree // 아이콘 추가
 } from 'lucide-react';
 import { fetchObservationsForTrace } from './TraceTimelineApi';
 
 // 재귀적으로 노드를 렌더링하는 컴포넌트
-const ObservationNode = ({ node, allNodes, level, selectedId, onSelect }) => {
-  const children = allNodes.filter(n => n.parentObservationId === node.id);
-  const isSelected = selectedId === node.id;
+const ObservationNode = ({ node, allNodes, level, onSelect, selectedId }) => {
+  const [isOpen, setIsOpen] = useState(true);
+  const children = useMemo(() => allNodes.filter(n => n.parentObservationId === node.id), [allNodes, node.id]);
 
   // 아이콘 결정 로직
   const getIcon = (type) => {
     switch (type) {
       case 'SPAN':
-        return <ArrowRightLeft size={16} />;
+        return <ArrowRightLeft size={16} className={styles.spanIcon} />;
       case 'GENERATION':
         return <GitBranch size={16} className={styles.generationIcon} />;
       default:
@@ -32,23 +34,30 @@ const ObservationNode = ({ node, allNodes, level, selectedId, onSelect }) => {
     }
   };
 
+  const hasChildren = children.length > 0;
+
   return (
     <li className={styles.nodeContainer}>
-      <div 
-        className={`${styles.timelineItem} ${isSelected ? styles.selected : ''}`}
+      <div
+        className={`${styles.timelineItem} ${selectedId === node.id ? styles.selected : ''}`}
         style={{ paddingLeft: `${level * 24}px` }}
         onClick={() => onSelect(node.id)}
       >
-        <div className={styles.itemLineage}>
-          {Array.from({ length: level }).map((_, i) => <div key={i} className={styles.lineSegment}></div>)}
+        <div className={styles.itemIcon}>
+          {hasChildren ? (
+            <div onClick={(e) => { e.stopPropagation(); setIsOpen(!isOpen); }} className={styles.chevron}>
+              {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </div>
+          ) : <div className={styles.chevronPlaceholder}></div>}
+          {getIcon(node.type)}
         </div>
-        <div className={styles.itemIcon}>{getIcon(node.type)}</div>
+
         <div className={styles.itemContent}>
           <div className={styles.itemHeader}>
             <span className={styles.itemName}>{node.name}</span>
-            <span className={styles.latency}>{node.latency.toFixed(2)}s</span>
+            {node.latency && <span className={styles.latency}>{node.latency.toFixed(2)}s</span>}
           </div>
-          {node.scores && (
+          {node.scores && node.scores.length > 0 && (
             <div className={styles.scoreTags}>
               {node.scores.map(score => (
                 <span key={score.name} className={styles.scoreTag}>
@@ -58,15 +67,14 @@ const ObservationNode = ({ node, allNodes, level, selectedId, onSelect }) => {
             </div>
           )}
         </div>
-        <ChevronDown size={16} className={styles.chevron} />
       </div>
-      {children.length > 0 && (
+      {isOpen && hasChildren && (
         <ul className={styles.nodeChildren}>
           {children.map(child => (
-            <ObservationNode 
-              key={child.id} 
-              node={child} 
-              allNodes={allNodes} 
+            <ObservationNode
+              key={child.id}
+              node={child}
+              allNodes={allNodes}
               level={level + 1}
               selectedId={selectedId}
               onSelect={onSelect}
@@ -78,11 +86,27 @@ const ObservationNode = ({ node, allNodes, level, selectedId, onSelect }) => {
   );
 };
 
+// 메인 컴포넌트
 const TraceTimeline = ({ details, onObservationSelect }) => {
   const [observations, setObservations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedObservationId, setSelectedObservationId] = useState(null);
+  const [isTimelineVisible, setIsTimelineVisible] = useState(true);
+
+  // API 응답 데이터에 점수(scores)와 지연 시간(latency) 추가
+  const processObservations = (fetchedObservations) => {
+    return fetchedObservations.map(obs => ({
+      ...obs,
+      scores: obs.scores || [],
+      latency: obs.endTime && obs.startTime ? (new Date(obs.endTime).getTime() - new Date(obs.startTime).getTime()) / 1000 : null
+    }));
+  };
+
+  const rootObservations = useMemo(() =>
+    observations.filter(obs => !obs.parentObservationId),
+    [observations]
+  );
 
   useEffect(() => {
     if (!details?.id) {
@@ -95,16 +119,16 @@ const TraceTimeline = ({ details, onObservationSelect }) => {
         setIsLoading(true);
         setError(null);
         const fetchedObservations = await fetchObservationsForTrace(details.id);
-        setObservations(fetchedObservations);
-        
-        // 첫 번째 Observation을 기본으로 선택
-        if (fetchedObservations.length > 0) {
-          setSelectedObservationId(fetchedObservations[0].id);
-          onObservationSelect(fetchedObservations[0].id);
-        } else {
-          // Observation이 없으면 null 대신 trace 원본 데이터를 표시하도록 요청
-          onObservationSelect(null); 
-        }
+        const processedData = processObservations(fetchedObservations);
+
+        // startTime 기준으로 오름차순 정렬
+        processedData.sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+
+        setObservations(processedData);
+
+        // Trace 자체를 기본 선택으로 설정
+        setSelectedObservationId(null);
+        onObservationSelect(null);
 
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred.');
@@ -138,40 +162,47 @@ const TraceTimeline = ({ details, onObservationSelect }) => {
         </div>
       );
     }
-    if (observations.length === 0) {
-      // Observation이 없을 때 Trace 자체를 보여주기 위해 Trace 정보를 기본 아이템으로 표시
-      return (
-        <ul className={styles.timelineList}>
-          <li className={`${styles.timelineItem} ${!selectedObservationId ? styles.selected : ''}`}
-              onClick={() => handleSelect(null)}>
-            <div className={styles.itemIcon}>
-              <MessageSquare size={16} />
-            </div>
-            <div className={styles.itemContent}>
-              <span className={styles.itemName}>{details?.name ?? 'Trace'}</span>
-              <span className={styles.itemMeta}>{details?.timestamp ? new Date(details.timestamp).toLocaleString() : ''}</span>
-            </div>
-          </li>
-        </ul>
-      );
-    }
     return (
       <ul className={styles.timelineList}>
-        {observations.map((obs) => (
-          <li
-            key={obs.id}
-            className={`${styles.timelineItem} ${selectedObservationId === obs.id ? styles.selected : ''}`}
-            onClick={() => handleSelect(obs.id)}
-          >
-            <div className={styles.itemIcon}>
-              <MessageSquare size={16} />
-            </div>
-            <div className={styles.itemContent}>
-              <span className={styles.itemName}>{obs.name}</span>
-              <span className={styles.itemMeta}>{obs.startTime}</span>
-            </div>
-          </li>
-        ))}
+        {/* Trace 자체를 루트 노드로 렌더링 */}
+        <li className={styles.nodeContainer}>
+           <div
+              className={`${styles.timelineItem} ${selectedObservationId === null ? styles.selected : ''}`}
+              onClick={() => handleSelect(null)}
+            >
+              <div className={styles.itemIcon}>
+                <div className={styles.chevronPlaceholder}></div>
+                <ListTree size={16} />
+              </div>
+              <div className={styles.itemContent}>
+                <div className={styles.itemHeader}>
+                  <span className={styles.itemName}>{details?.name ?? 'Trace'}</span>
+                  {details.latency && <span className={styles.latency}>{details.latency.toFixed(2)}s</span>}
+                </div>
+                {details.scores && details.scores.length > 0 && (
+                  <div className={styles.scoreTags}>
+                    {details.scores.map(score => (
+                      <span key={score.name} className={styles.scoreTag}>
+                        {score.name}: {score.value.toFixed(2)} <MessageCircle size={12} />
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+          </div>
+          <ul className={styles.nodeChildren}>
+            {rootObservations.map((obs) => (
+              <ObservationNode
+                key={obs.id}
+                node={obs}
+                allNodes={observations}
+                level={1}
+                selectedId={selectedObservationId}
+                onSelect={handleSelect}
+              />
+            ))}
+          </ul>
+        </li>
       </ul>
     );
   };
@@ -179,7 +210,25 @@ const TraceTimeline = ({ details, onObservationSelect }) => {
   return (
     <div className={styles.timelineContainer}>
       <div className={styles.header}>
-        <h3>Timeline</h3>
+        <div className={styles.searchBar}>
+          <Search size={14} />
+          <input type="text" placeholder="Search..." />
+        </div>
+        <div className={styles.headerControls}>
+          <button className={styles.controlButton}><SlidersHorizontal size={14} /></button>
+          <button className={styles.controlButton}><Download size={14} /></button>
+        </div>
+        <div className={styles.headerToggle}>
+          <input
+            type="checkbox"
+            id="timelineToggle"
+            className={styles.toggleSwitch}
+            checked={isTimelineVisible}
+            onChange={() => setIsTimelineVisible(!isTimelineVisible)}
+          />
+          <label htmlFor="timelineToggle" className={styles.toggleLabel}></label>
+          <span>Timeline</span>
+        </div>
       </div>
       {renderContent()}
     </div>
