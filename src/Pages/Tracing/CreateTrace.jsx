@@ -8,11 +8,13 @@ import { langfuse } from '../../lib/langfuse';
 export const createTrace = async (callback) => { // 1. async 키워드 추가
   try {
     const trace = langfuse.trace({
-      name: "chat-app-session-test",
+      name: "chat-app-session-test4",
       userId: "user_0822",
-      sessionId: "session-12345",
+      sessionId: "session-l",
       metadata: { user: "user@wini-tech.com", from: "createTrace function" },
       tags: ["development", "new-trace"],
+      input: "hello",
+      ouput: "hi what can i help you",
     });
 
     // 2. 데이터를 즉시 서버로 전송하기 위해 flush()를 호출합니다.

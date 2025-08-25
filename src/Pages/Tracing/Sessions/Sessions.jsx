@@ -2,13 +2,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import styles from './Sessions.module.css';
 import {
-    RefreshCw,
+    RefreshCw, // RefreshCw 아이콘은 계속 사용합니다.
     Star,
     Columns
 } from 'lucide-react';
 import ColumnVisibilityModal from '../ColumnVisibilityModal.jsx';
 import { DataTable } from '../../../components/DataTable/DataTable.jsx'; 
-import { sessionTableColumns } from './sessionColumns.jsx'; // .jsx 확장자 추가
+import { sessionTableColumns } from './sessionColumns.jsx';
 import FilterButton from '../../../components/FilterButton/FilterButton.jsx';
 import DateRangePicker from '../../../components/DateRange/DateRangePicker.jsx';
 import { fetchSessions } from './SessionApi.js';
@@ -31,24 +31,24 @@ const Sessions = () => {
     const [startDate, setStartDate] = useState(new Date(Date.now() - 24 * 60 * 60 * 1000));
     const [endDate, setEndDate] = useState(new Date());
 
-    useEffect(() => {
-        const loadSessions = async () => {
-            try {
-                setIsLoading(true);
-                setError(null);
-                const fetchedSessions = await fetchSessions();
-                setSessions(fetchedSessions);
-            } catch (err) {
-                if (err instanceof Error) {
-                    setError(err.message);
-                } else {
-                    setError("An unknown error occurred.");
-                }
-            } finally {
-                setIsLoading(false);
+    const loadSessions = async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
+            const fetchedSessions = await fetchSessions();
+            setSessions(fetchedSessions);
+        } catch (err) {
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError("An unknown error occurred.");
             }
-        };
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
+    useEffect(() => {
         loadSessions();
     }, []);
 
@@ -93,7 +93,7 @@ const Sessions = () => {
             visible: true
         },
         ...visibleColumns,
-    ], [visibleColumns, sessions, toggleFavorite]); // toggleFavorite을 의존성 배열에 추가
+    ], [visibleColumns, sessions, toggleFavorite]);
 
     const renderTableContent = () => {
         if (isLoading) {
@@ -119,8 +119,6 @@ const Sessions = () => {
         <div className={styles.container}>
             <div className={styles.header}>
                 <div className={styles.titleGroup}>
-                    <h1>Sessions</h1>
-                    <RefreshCw size={16} className={styles.refreshIcon} />
                 </div>
             </div>
 
@@ -136,6 +134,10 @@ const Sessions = () => {
                     <FilterBuilder />
                 </div>
                 <div className={styles.filterRight}>
+                    {/* Refresh 아이콘을 오른쪽 필터 그룹으로 이동시키고 FilterButton으로 감싸줍니다. */}
+                    <FilterButton onClick={loadSessions}>
+                        <RefreshCw size={16} />
+                    </FilterButton>
                     <FilterButton onClick={() => setIsColumnVisibleModalOpen(true)}>
                         <Columns size={16} /> Columns ({visibleColumns.length}/{columns.length})
                     </FilterButton>

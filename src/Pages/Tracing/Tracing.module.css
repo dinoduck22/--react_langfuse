@@ -44,6 +44,7 @@
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap; 
 }
 
 /* ▼▼▼ 왼쪽 필터 그룹 스타일 추가 ▼▼▼ */
@@ -109,10 +110,24 @@
   font-weight: 500;
   white-space: nowrap;
 }
+
 .filterRightGroup {
   display: flex;
   align-items: center;
-  /* flex-shrink: 0; 을 추가하여, 부모 요소의 크기가 줄어들어도
-     이 요소의 크기는 줄어들지 않도록 설정합니다. */
   flex-shrink: 0; 
+}
+
+/* ▼▼▼ 아래 스타일을 추가해주세요. ▼▼▼ */
+.iconButton {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.iconButton:hover {
+  background-color: #334155;
+  color: #ef4444; /* 삭제 아이콘에 어울리는 빨간색으로 변경 */
 }
