@@ -1,12 +1,12 @@
 // src/Pages/Tracing/TraceDetailView.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './TraceDetailView.module.css';
 import { Copy, List, Clipboard, Plus, SquarePen, ChevronDown, MessageSquare, Info } from 'lucide-react';
 import Toast from '../../components/Toast/Toast';
 import SidePanel from '../../components/SidePanel/SidePanel'; // SidePanel 임포트
 import Comments from '../../components/Comments/Comments'; // Comments 임포트
-import { dummyComments } from '../../data/dummyComments'; // 임시 데이터 임포트
 import AddToDatasetModal from '../../components/AddToDatasetModal/AddToDatasetModal'; // AddToDatasetModal 임포트
+import { dummyComments } from '../../data/dummyComments'; // 임시 데이터 임포트
 
 // FormattedTable 컴포넌트
 const FormattedTable = ({ data }) => {
@@ -43,20 +43,58 @@ const FormattedTable = ({ data }) => {
 const TraceDetailView = ({ details, isLoading, error }) => {
   const [viewFormat, setViewFormat] = useState('Formatted');
   const [toastInfo, setToastInfo] = useState({ isVisible: false, message: '' });
-  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
-  const [comments, setComments] = useState(dummyComments);
   const [isDatasetModalOpen, setIsDatasetModalOpen] = useState(false); // AddToDatasetModal 상태 추가
+  // --- 댓글 관련 state 수정 ---
+  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
+  const [comments, setComments] = useState([]); // 초기값을 빈 배열로 변경
+  const [isCommentsLoading, setIsCommentsLoading] = useState(false);
+  const [commentsError, setCommentsError] = useState(null);
 
-  // 새 댓글 추가 핸들러
-  const handleAddComment = (content) => {
-    const newComment = {
-      id: Date.now(),
-      author: 'test',
-      email: 'test@test.test',
-      timestamp: '0 minutes ago',
-      content,
-    };
-    setComments(prev => [newComment, ...prev]);
+  // --- 댓글 패널이 열릴 때 API 호출 ---
+  useEffect(() => {
+    if (isCommentsOpen && details?.id) {
+      const loadComments = async () => {
+        setIsCommentsLoading(true);
+        setCommentsError(null);
+        try {
+          const fetchedComments = await fetchComments({
+            objectType: 'TRACE',
+            objectId: details.id,
+          });
+          setComments(fetchedComments);
+        } catch (err) {
+          setCommentsError(err.message);
+        } finally {
+          setIsCommentsLoading(false);
+        }
+      };
+      loadComments();
+    }
+  }, [isCommentsOpen, details?.id]);
+
+  // --- 새 댓글 추가 핸들러 (API 연동) ---
+  const handleAddComment = async (content) => {
+    if (!details?.id) return;
+
+    try {
+      // API 호출하여 새 댓글 생성
+      await createComment({
+        objectType: 'TRACE',
+        objectId: details.id,
+        content,
+      });
+
+      // 댓글 생성 성공 시, 목록을 다시 불러와 갱신
+      const updatedComments = await fetchComments({
+        objectType: 'TRACE',
+        objectId: details.id,
+      });
+      setComments(updatedComments);
+      setToastInfo({ isVisible: true, message: '댓글이 성공적으로 작성되었습니다.' });
+
+    } catch (err) {
+      alert(err.message); // 사용자에게 에러 알림
+    }
   };
 
   const handleCopy = (text, type) => {
@@ -285,6 +323,21 @@ const TraceDetailView = ({ details, isLoading, error }) => {
         </div>
       </div>
 
+      {/* SidePanel 및 Comments 렌더링 부분 수정 */}
+      <SidePanel
+        title="Comments"
+        isOpen={isCommentsOpen}
+        onClose={() => setIsCommentsOpen(false)}
+      >
+        <Comments 
+          comments={comments} 
+          onAddComment={handleAddComment}
+          isLoading={isCommentsLoading}
+          error={commentsError}
+        />
+      </SidePanel>
+
+      {/* AddToDatasetModal 렌더링은 변경 없음 */}
       <AddToDatasetModal
         isOpen={isDatasetModalOpen}
         onClose={() => setIsDatasetModalOpen(false)}
@@ -292,14 +345,6 @@ const TraceDetailView = ({ details, isLoading, error }) => {
         output={details?.output}
         metadata={details?.metadata}
       />
-
-      <SidePanel
-        title="Comments"
-        isOpen={isCommentsOpen}
-        onClose={() => setIsCommentsOpen(false)}
-      >
-        <Comments comments={comments} onAddComment={handleAddComment} />
-      </SidePanel>
     </div>
   );
 };
