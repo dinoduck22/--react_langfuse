@@ -20,7 +20,8 @@ import Playground from './Pages/Playground/Playground';
 // ⭐ 추가: 게이트 컴포넌트 임포트
 import ProjectGate from './components/ProjectId/ProjectGate';
 
-// import JudgePage from './pages/Evaluation/Judge/JudgePage';
+import Dataset from './Pages/Evaluation/DataSets/DatasetsPage'
+import JudgePage from './Pages/Evaluation/Judge/JudgePage';
 
 // import Dashboards from './pages/Dashboards/Dashboards';
 // import DashboardNew from './pages/Dashboards/DashboardNew';
@@ -93,7 +94,8 @@ export default function App() {
         {/* 👇 기존: <Route path="playground" element={<Playground />} /> 를 교체 */}
         <Route path="playground" element={<ProjectGate />} />
 
-        {/* <Route path="llm-as-a-judge" element={<JudgePage />} /> */}
+        <Route path="llm-as-a-judge" element={<JudgePage />} />
+        <Route path="datasets" element={<Dataset />} />
 
         {/* <Route path="evaluation" element={<Navigate to="/scores" replace />} />
         <Route path="evaluation/new" element={<Navigate to="/scores/new" replace />} />
