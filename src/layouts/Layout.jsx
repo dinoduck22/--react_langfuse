@@ -282,7 +282,10 @@ export default function Layout({ session }) {
                             <NavLink
                                 key={item.label}
                                 to={item.path}
-                                className={navClass}
+                                // className={navClass} 
+                                // <<< START: 수정된 부분 >>>
+                                className={navClass(item.path)}
+                                // <<< END: 수정된 부분 >>>                                        
                                 title={collapsed ? item.label : undefined}
                                 aria-label={collapsed ? item.label : undefined}
                                 role="menuitem"
