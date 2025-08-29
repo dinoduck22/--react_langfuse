@@ -17,10 +17,23 @@ import {
 import styles from "./Layout.module.css";
 import PageHeader from "../components/PageHeader/PageHeader";
 
+import useProjectId from "../hooks/useProjectId";
+import useHeaderMeta from "../hooks/useHeaderMeta";
+
+
 export default function Layout({ session }) {
     const [collapsed, setCollapsed] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
+
+    // 현재 활성 프로젝트 ID (세션 검증 포함)
+    const { projectId: activeProjectId } = useProjectId({
+        location,
+        validateAgainstSession: true,
+    });
+    // 헤더에 뿌릴 조직/프로젝트/배지
+    const { orgName, projectName, envBadge } = useHeaderMeta(activeProjectId);
+
 
     const [headerConfig, setHeaderConfig] = useState({});
 
@@ -149,7 +162,7 @@ export default function Layout({ session }) {
     // Playground 경로를 위한 특별 로직을 추가합니다.
     const isPathActive = (path) => {
         if (path === "/playground") {
-        return location.pathname.includes("/playground");
+            return location.pathname.includes("/playground");
         }
         // 기존 로직은 `NavLink`의 `isActive`에 의존하거나 `startsWith`를 사용합니다.
         return !!matchPath({ path, end: path === "/" }, location.pathname) ||
@@ -177,7 +190,7 @@ export default function Layout({ session }) {
     };
 
     const pageTitle = useMemo(() => {
-        const p = location.pathname;
+        const p = stripProjectPrefix(location.pathname);
         if (p === "/") return "Home";
         if (p.startsWith("/llm-as-a-judge")) return "LLM-as-a-Judge Evaluators";
         if (p.startsWith("/datasets")) return "Datasets";
@@ -325,9 +338,9 @@ export default function Layout({ session }) {
 
             <main className={styles.mainContainer}>
                 <PageHeader
-                    orgName="Organization"
-                    projectName="Project"
-                    envBadge="Hobby"
+                    orgName={orgName}
+                    projectName={projectName}
+                    envBadge={envBadge}
                     title={headerConfig.title ?? pageTitle}
                     onToggleSidebar={() => setCollapsed((prev) => !prev)}
                     flushLeft
